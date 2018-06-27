@@ -1,0 +1,381 @@
+/*
+
+Copyright (c) 2015, M. Kerber, D. Morozov, A. Nigmetov
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
+
+1. Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
+
+2. Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
+
+3. Neither the name of the copyright holder nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+
+You are under no obligation whatsoever to provide any bug fixes, patches, or
+upgrades to the features, functionality or performance of the source code
+(Enhancements) to anyone; however, if you choose to make your Enhancements
+available either publicly, or directly to copyright holder,
+without imposing a separate written license agreement for such Enhancements,
+then you hereby grant the following license: a  non-exclusive, royalty-free
+perpetual license to install, use, modify, prepare derivative works, incorporate
+into other computer software, distribute, and sublicense such enhancements or
+derivative works thereof, in binary and source code form.
+
+  */
+
+#ifndef HERA_WASSERSTEIN_H
+#define HERA_WASSERSTEIN_H
+
+#include <vector>
+#include <map>
+#include <math.h>
+
+#include "def_debug_ws.h"
+#include "basic_defs_ws.h"
+#include "diagram_reader.h"
+#include "auction_runner_gs.h"
+#include "auction_runner_gs_single_diag.h"
+#include "auction_runner_jac.h"
+#include "auction_runner_fr.h"
+#include "lower_bound.h"
+#include "bottleneck/diagram_traits.h"
+
+namespace hera
+{
+
+//template<class PairContainer_, class PointType_ = typename std::remove_reference< decltype(*std::declval<PairContainer_>().begin())>::type >
+//struct DiagramTraits
+//{
+//    using Container = PairContainer_;
+//    using PointType = PointType_;
+//    using RealType  = typename std::remove_reference< decltype(std::declval<PointType>()[0]) >::type;
+//
+//    static RealType get_x(const PointType& p)       { return p[0]; }
+//    static RealType get_y(const PointType& p)       { return p[1]; }
+//};
+//
+//template<class PairContainer_>
+//struct DiagramTraits<PairContainer_, std::pair<double, double>>
+//{
+//    using PointType = std::pair<double, double>;
+//    using RealType  = double;
+//    using Container = std::vector<PointType>;
+//
+//    static RealType get_x(const PointType& p)       { return p.first; }
+//    static RealType get_y(const PointType& p)       { return p.second; }
+//};
+
+
+namespace ws
+{
+
+    // compare as multisets
+    template<class PairContainer>
+    bool are_equal(const PairContainer& dgm1, const PairContainer& dgm2)
+    {
+        if (dgm1.size() != dgm2.size()) {
+            return false;
+        }
+
+        using Traits = typename hera::DiagramTraits<PairContainer>;
+        using PointType = typename Traits::PointType;
+
+        std::map<PointType, int> m1, m2;
+
+        for(const auto& pair1 : dgm1) {
+            m1[pair1]++;
+        }
+
+        for(const auto& pair2 : dgm2) {
+            m2[pair2]++;
+        }
+
+        return m1 == m2;
+    }
+
+    // to handle points with one coordinate = infinity
+    template<class RealType>
+    RealType get_one_dimensional_cost(std::vector<RealType>& set_A,
+            std::vector<RealType>& set_B,
+            const RealType wasserstein_power)
+    {
+        if (set_A.size() != set_B.size()) {
+            return std::numeric_limits<RealType>::infinity();
+        }
+        std::sort(set_A.begin(), set_A.end());
+        std::sort(set_B.begin(), set_B.end());
+        RealType result = 0.0;
+        for(size_t i = 0; i < set_A.size(); ++i) {
+            result += std::pow(std::fabs(set_A[i] - set_B[i]), wasserstein_power);
+        }
+        return result;
+    }
+
+
+    // CAUTION:
+    // this function assumes that all coordinates are finite
+    // points at infinity are processed in wasserstein_cost
+    template<class RealType>
+    RealType wasserstein_cost_vec(const std::vector<DiagramPoint<RealType>>& A,
+                                  const std::vector<DiagramPoint<RealType>>& B,
+                                  const AuctionParams<RealType>& params,
+                                  const std::string& _log_filename_prefix)
+    {
+        if (params.wasserstein_power < 1.0) {
+            throw std::runtime_error("Bad q in Wasserstein " + std::to_string(params.wasserstein_power));
+        }
+        if (params.delta < 0.0) {
+            throw std::runtime_error("Bad delta in Wasserstein " + std::to_string(params.delta));
+        }
+        if (params.initial_epsilon < 0.0) {
+            throw std::runtime_error("Bad initial epsilon in Wasserstein" + std::to_string(params.initial_epsilon));
+        }
+        if (params.epsilon_common_ratio < 0.0) {
+            throw std::runtime_error("Bad epsilon factor in Wasserstein " + std::to_string(params.epsilon_common_ratio));
+        }
+
+        //AuctionRunnerFR<RealType> auction(A, B, params, _log_filename_prefix);
+        //AuctionRunnerGS<RealType, AuctionOracleStupidSparseRestricted<RealType>> auction(A, B, params);
+        //AuctionRunnerJac<RealType, AuctionOracleStupidSparseRestricted<150, RealType>> auction(A, B, params, _log_filename_prefix);
+        //AuctionRunnerJac<RealType> auction(A, B, params, _log_filename_prefix);
+        AuctionRunnerGS<RealType> auction(A, B, params, _log_filename_prefix);
+        auction.run_auction();
+
+    //    RealType init_eps = auction.get_epsilon();
+    ////    AuctionRunnerJac<RealType, AuctionOracleStupidSparseRestricted<50, RealType>> auction_1(A, B, q,  delta, _internal_p, init_eps, _eps_factor, _max_num_phases, _gamma_threshold, 1, _log_filename_prefix);
+    //    AuctionRunnerJac<RealType> auction_1(A, B, params,  _log_filename_prefix + "_1");
+    //    auto prices = auction.oracle.get_prices();
+    //    auto console_logger = spdlog::get("console");
+    //    if (console_logger) {
+    //        console_logger->info("Started updating prices");
+    //    }
+    //    for(IdxType  item_idx = 0; item_idx < static_cast<IdxType>(B.size()); ++item_idx) {
+    //        auction_1.oracle.set_price(item_idx, prices[item_idx]);
+    //    }
+    //    if (console_logger) {
+    //        console_logger->info("Finished updating prices");
+    //    }
+    //    auction_1.run_auction();
+        return auction.get_wasserstein_cost();
+
+    }
+
+} // ws
+
+
+template<class PairContainer, class DgmPoint, class RealType>
+void add_projections(const PairContainer& A,
+                     const PairContainer& B,
+                     const AuctionParams< typename DiagramTraits<PairContainer>::RealType >& params,
+                     std::vector<DgmPoint>& dgm_A,
+                     std::vector<DgmPoint>& dgm_B,
+                     RealType& total_cost_A,
+                     RealType& total_cost_B,
+                     RealType& infinity_cost,
+                     bool& a_empty,
+                     bool& b_empty)
+
+{
+    using Traits = DiagramTraits<PairContainer>;
+    // coordinates of points at infinity
+    std::vector<RealType> x_plus_A, x_minus_A, y_plus_A, y_minus_A;
+    std::vector<RealType> x_plus_B, x_minus_B, y_plus_B, y_minus_B;
+    // loop over A, add projections of A-points to corresponding positions
+    // in B-vector
+    for(auto& pair_A : A) {
+        a_empty = false;
+        RealType x = Traits::get_x(pair_A);
+        RealType y = Traits::get_y(pair_A);
+        if ( x == std::numeric_limits<RealType>::infinity()) {
+            y_plus_A.push_back(y);
+        } else if (x == -std::numeric_limits<RealType>::infinity()) {
+            y_minus_A.push_back(y);
+        } else if (y == std::numeric_limits<RealType>::infinity()) {
+            x_plus_A.push_back(x);
+        } else if (y == -std::numeric_limits<RealType>::infinity()) {
+            x_minus_A.push_back(x);
+        } else {
+            dgm_A.emplace_back(x, y,  DgmPoint::NORMAL);
+            dgm_B.emplace_back(x, y,  DgmPoint::DIAG);
+            total_cost_A += std::pow(dgm_A.back().persistence_lp(params.internal_p), params.wasserstein_power);
+        }
+    }
+
+    // the same for B
+    for(auto& pair_B : B) {
+        b_empty = false;
+        RealType x = Traits::get_x(pair_B);
+        RealType y = Traits::get_y(pair_B);
+        if (x == std::numeric_limits<RealType>::infinity()) {
+            y_plus_B.push_back(y);
+        } else if (x == -std::numeric_limits<RealType>::infinity()) {
+            y_minus_B.push_back(y);
+        } else if (y == std::numeric_limits<RealType>::infinity()) {
+            x_plus_B.push_back(x);
+        } else if (y == -std::numeric_limits<RealType>::infinity()) {
+            x_minus_B.push_back(x);
+        } else {
+            dgm_A.emplace_back(x, y,  DgmPoint::DIAG);
+            dgm_B.emplace_back(x, y,  DgmPoint::NORMAL);
+            total_cost_B += std::pow(dgm_B.back().persistence_lp(params.internal_p), params.wasserstein_power);
+        }
+    }
+
+    infinity_cost = ws::get_one_dimensional_cost(x_plus_A, x_plus_B, params.wasserstein_power);
+    infinity_cost += ws::get_one_dimensional_cost(x_minus_A, x_minus_B, params.wasserstein_power);
+    infinity_cost += ws::get_one_dimensional_cost(y_plus_A, y_plus_B, params.wasserstein_power);
+    infinity_cost += ws::get_one_dimensional_cost(y_minus_A, y_minus_B, params.wasserstein_power);
+}
+
+
+
+template<class PairContainer>
+typename DiagramTraits<PairContainer>::RealType
+wasserstein_cost(const PairContainer& A,
+                const PairContainer& B,
+                const AuctionParams< typename DiagramTraits<PairContainer>::RealType >& params,
+                const std::string& _log_filename_prefix = "")
+{
+    using Traits = DiagramTraits<PairContainer>;
+
+    //using PointType = typename Traits::PointType;
+    using RealType  = typename Traits::RealType;
+
+    if (hera::ws::are_equal(A, B)) {
+        return 0.0;
+    }
+
+    bool a_empty = true;
+    bool b_empty = true;
+    RealType total_cost_A = 0.0;
+    RealType total_cost_B = 0.0;
+
+    using DgmPoint = hera::ws::DiagramPoint<RealType>;
+
+    std::vector<DgmPoint> dgm_A, dgm_B;
+    RealType infinity_cost;
+    add_projections<PairContainer, DgmPoint, RealType>(A, B, params, dgm_A, dgm_B, total_cost_A, total_cost_B, infinity_cost, a_empty, b_empty);
+
+    if (a_empty)
+        return infinity_cost + total_cost_B;
+
+    if (b_empty)
+        return infinity_cost + total_cost_A;
+
+    if (infinity_cost == std::numeric_limits<RealType>::infinity()) {
+        return infinity_cost;
+    } else {
+        return infinity_cost + wasserstein_cost_vec(dgm_A, dgm_B, params, _log_filename_prefix);
+    }
+
+}
+
+
+template<class PairContainer>
+bool is_wasserstein_distance_less(const PairContainer& A,
+                                  const PairContainer& B,
+                                  typename DiagramTraits<PairContainer>::RealType threshold,
+                                  const bool strictly,
+                                  typename DiagramTraits<PairContainer>::RealType& approx_dist,
+                                  const AuctionParams< typename DiagramTraits<PairContainer>::RealType >& params,
+                                  const std::string& _log_filename_prefix = "")
+{
+    using Traits = DiagramTraits<PairContainer>;
+    using RealType  = typename Traits::RealType;
+
+    if (hera::ws::are_equal(A, B)) {
+        approx_dist = 0.0;
+        return threshold > 0.0;
+    }
+
+    bool a_empty = true;
+    bool b_empty = true;
+    RealType total_cost_A = 0.0;
+    RealType total_cost_B = 0.0;
+
+    using DgmPoint = hera::ws::DiagramPoint<RealType>;
+    std::vector<DgmPoint> dgm_A, dgm_B;
+    RealType infinity_cost;
+    add_projections<PairContainer, DgmPoint, RealType>(A, B, params, dgm_A, dgm_B, total_cost_A, total_cost_B, infinity_cost, a_empty, b_empty);
+    if (infinity_cost != 0.0)
+        throw std::runtime_error("not implemented");
+
+    hera::ws::AuctionRunnerGS<RealType> auction(dgm_A, dgm_B, params, _log_filename_prefix);
+    bool result = auction.is_wasserstein_distance_less(threshold, strictly, approx_dist);
+    approx_dist = std::pow(approx_dist, 1.0 / params.wasserstein_power);
+    return result;
+}
+
+
+template<class PairContainer>
+bool is_wasserstein_distance_greater(const PairContainer& A,
+                                     const PairContainer& B,
+                                     typename DiagramTraits<PairContainer>::RealType threshold,
+                                     const bool strictly,
+                                     typename DiagramTraits<PairContainer>::RealType& approx_dist,
+                                     const AuctionParams< typename DiagramTraits<PairContainer>::RealType >& params,
+                                     const std::string& _log_filename_prefix = "")
+{
+   return not is_wasserstein_distance_less(A, B, threshold, not strictly, approx_dist, params, _log_filename_prefix);
+}
+
+template<class PairContainer>
+typename DiagramTraits<PairContainer>::RealType
+wasserstein_dist(PairContainer& A,
+                 PairContainer& B,
+                 const AuctionParams<typename DiagramTraits<PairContainer>::RealType> params,
+                 const std::string& _log_filename_prefix = "")
+{
+    using Real = typename DiagramTraits<PairContainer>::RealType;
+    return std::pow(hera::wasserstein_cost(A, B, params, _log_filename_prefix), Real(1.)/params.wasserstein_power);
+}
+
+
+template<class PairContainer>
+typename DiagramTraits<PairContainer>::RealType
+wasserstein_dist_lower_bound(const PairContainer& A,
+                             const PairContainer& B,
+                             const AuctionParams< typename DiagramTraits<PairContainer>::RealType >& params)
+{
+    using Traits = DiagramTraits<PairContainer>;
+
+    //using PointType = typename Traits::PointType;
+    using RealType  = typename Traits::RealType;
+
+    if (hera::ws::are_equal(A, B)) {
+        return 0.0;
+    }
+
+    bool a_empty = true;
+    bool b_empty = true;
+    RealType total_cost_A = 0.0;
+    RealType total_cost_B = 0.0;
+
+    using DgmPoint = hera::ws::DiagramPoint<RealType>;
+
+    std::vector<DgmPoint> dgm_A, dgm_B;
+    RealType infinity_cost;
+    add_projections<PairContainer, DgmPoint, RealType>(A, B, params, dgm_A, dgm_B, total_cost_A, total_cost_B, infinity_cost, a_empty, b_empty);
+
+    if (a_empty)
+        return infinity_cost + total_cost_B;
+
+    if (b_empty)
+        return infinity_cost + total_cost_A;
+
+    if (infinity_cost == std::numeric_limits<RealType>::infinity()) {
+        return infinity_cost;
+    } else {
+        return infinity_cost + ws::lower_bound(dgm_A, dgm_B, params);
+    }
+
+}
+
+
+
+} // end of namespace hera
+
+#endif
