@@ -23,10 +23,10 @@ namespace wasser_spanner {
 //        prefix += "%v";
 //        spd::set_pattern(prefix);
 
-        if (console) { console->debug("Entered gen_wspd, a = {}, b = {}, rec_depth = {}", a, b, rec_depth); }
+      //if (console) { console->debug("Entered gen_wspd, a = {}, b = {}, rec_depth = {}", a, b, rec_depth); }
 
         if (a.is_leaf_node() and a.get_node_ptr() == b.get_node_ptr()) {
-            if (console) { console->info("a is leaf, a == b, return empty set. Exit"); }
+	  //if (console) { console->info("a is leaf, a == b, return empty set. Exit"); }
             return;
         }
 
@@ -34,9 +34,11 @@ namespace wasser_spanner {
         double b_delta = b.delta();
         bool swap_needed = a_delta < b_delta or (a_delta == b_delta and a.get_point_idx() > b.get_point_idx());
         if (swap_needed) {
-            if (console) {
+	  /*
+	    if (console) {
                 console->debug("swap needed, a_delta = {}, b_delta = {}. Recursing, same depth", a_delta, b_delta);
             }
+	  */
             gen_wspd(result, b, a, rec_depth);
             return;
         }
@@ -49,15 +51,15 @@ namespace wasser_spanner {
 //            auto a_desc = a.get_all_descendants();
 //            auto b_desc = b.get_all_descendants();
 //            if (a_desc.count(2) == 1 and b_desc.count(3) == 1)
-//                console->debug("Rec_depth = {}, adding pair with 2, 3, a: {}, b: {}", rec_depth, a, b);
+//                //console->debug("Rec_depth = {}, adding pair with 2, 3, a: {}, b: {}", rec_depth, a, b);
 //
 //            if (a_desc.count(3) == 1 and b_desc.count(2) == 1)
-//                console->debug("Rec_depth = {}, adding pair with 3, 2, a: {}, b: {}", rec_depth, a, b);
-            if (console) { console->debug("Nodes are well-separated, add to result."); }
+//                //console->debug("Rec_depth = {}, adding pair with 3, 2, a: {}, b: {}", rec_depth, a, b);
+	  //if (console) { console->debug("Nodes are well-separated, add to result."); }
             result.emplace(a, b);
             return;
         } else {
-            if (console) { console->debug("Nodes are not well-separated, recurse to a's children."); }
+	  //if (console) { console->debug("Nodes are not well-separated, recurse to a's children."); }
             for (const auto& a_child : a.get_next_layer_children()) {
                 // avoid unnecessary calls
                 if (a_child.is_leaf_node() and a_child.get_node_ptr() == b.get_node_ptr()) {
@@ -83,11 +85,11 @@ namespace wasser_spanner {
             const Node& node_a = node_pair.first;
             const Node& node_b = node_pair.second;
             if (std::max(node_a.diameter(), node_b.diameter()) > m_epsilon * node_a.get_distance_to_node(node_b)) {
-                if (console) { console->critical("not well separated!"); }
+	      //if (console) { console->critical("not well separated!"); }
                 return false;
             }
         }
-        if (console) { console->debug("WSPD check: well-separated OK"); }
+        //if (console) { console->debug("WSPD check: well-separated OK"); }
 
         // all  pairs must be covered
         std::vector<std::pair<std::unordered_set<int>, std::unordered_set<int>>> unrolled_wspd;
@@ -122,9 +124,11 @@ namespace wasser_spanner {
                     }
                 }
                 if (count != 1) {
+		  /*
                     if (console) {
                         console->critical("WSPD is not a decomposition, i = {}, j = {}, count = {}", i, j, count);
                     }
+		  */
                     return false;
                 }
             }

@@ -5,18 +5,23 @@
 #include <memory>
 #include <set>
 #include <unordered_set>
+#include <unordered_map>
 
-#include "spdlog/spdlog.h"
-#include "wasserstein/wasserstein_space_point.h"
+//#include "spdlog/spdlog.h"
+#include "dynamic_spanner.h"
 
-namespace spd = spdlog;
+//namespace spd = spdlog;
 
 namespace wasser_spanner {
 
+  struct Point {
+    int id;
+    Point(int i) : id(i) {}
+  };
+
     using DynamicSpannerR = DynamicSpanner<double>;
-    using AuctionParamsR = hera::AuctionParams<double>;
-    using Point = DynamicSpannerR::WassersteinSpacePoint;
-    using MatrixR = DynamicSpannerR::MatrixR;
+    
+    using MatrixR = DynamicSpannerR::MatrixReal;
 
 
     struct CoverTree
@@ -51,12 +56,11 @@ namespace wasser_spanner {
 
             friend std::ostream& operator<<(std::ostream& os, const Node& node);
 
-            std::shared_ptr<spd::logger> console { spd::get("console") };
+	  //std::shared_ptr<spd::logger> console { spd::get("console") };
         };
 
         // data members
         static constexpr double m_base { 2.0 };
-        std::vector<Point> m_points;
         unsigned int m_num_points;
         int m_max_level;
         int m_min_level;
@@ -65,14 +69,13 @@ namespace wasser_spanner {
         unsigned int m_num_nodes { 0 };
         std::unordered_map<int, Node*> m_point_to_node;
 
-        std::shared_ptr<spd::logger> console { spd::get("console") };
+      //std::shared_ptr<spd::logger> console { spd::get("console") };
 
 
         // member functions
         CoverTree(double max_dist,
-                  const std::vector<Point>& points,
-                  const MatrixR& distance_matrix = MatrixR(),
-                  const AuctionParamsR& _ap = AuctionParamsR());
+                  const DynamicSpannerR& spanner);
+                  
 
         void insert(const Point& new_point);
 

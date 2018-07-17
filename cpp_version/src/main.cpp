@@ -2,153 +2,162 @@
 
 //#define LOG_AUCTION
 
-#include "spdlog/spdlog.h"
+//#include "spdlog/spdlog.h"
 
-#include "wasserstein/wasserstein_space_point.h"
+#include <fstream>
+#include <iostream>
+
 #include "cover_tree/cover_tree.h"
 #include "cover_tree/wspd.h"
-#include "experiment_helper.h"
+#include "dynamic_spanner.h"
 
-std::mt19937_64 twister;
+//std::mt19937_64 twister;
 
-namespace spd = spdlog;
+//namespace spd = spdlog;
 using namespace wasser_spanner;
+
+bool
+read_distance_matrix(MatrixR& distance_matrix, double& max_distance, double& min_distance, const std::string& fname)
+{
+  using Real = std::remove_reference<decltype(min_distance)>::type;
+  std::ifstream matr_file(fname);
+  if (not matr_file.good()) {
+    std::cerr << "Cannot read matrix from file " << fname << std::endl;
+    return false;
+  }
+  
+  min_distance = std::numeric_limits<Real>::max();
+  max_distance = -1.0;
+  size_t n_diagrams;
+  matr_file >> n_diagrams;
+  
+  distance_matrix = MatrixR(n_diagrams, std::vector<Real>(n_diagrams, 0.0));
+  
+  for (size_t i = 0; i < n_diagrams; ++i) {
+    for (size_t j = 0; j < n_diagrams; ++j) {
+      matr_file >> distance_matrix[i][j];
+      max_distance = std::max(distance_matrix[i][j], max_distance);
+      if (i != j) {
+	min_distance = std::min(distance_matrix[i][j], min_distance);
+      }
+    }
+  }
+  
+  assert(0.0 < min_distance and min_distance <= max_distance);
+  for (size_t i = 0; i < n_diagrams; ++i) {
+    for (size_t j = i; j < n_diagrams; ++j) {
+      if (i == j)
+	assert(distance_matrix[i][j] == 0.0);
+      else
+	assert(distance_matrix[i][j] == distance_matrix[j][i]);
+    }
+  }
+  return true;
+}
+
+double get_expansion_constant(const MatrixR& dist_matrix, double base)
+{
+  assert(base > 1.0);
+  double result = base;
+  for (auto v : dist_matrix) {
+    std::sort(v.begin(), v.end());
+    assert(v[0] == 0.0);
+    for (size_t i = 1; i < v.size(); ++i) {
+      if (i + 1 < v.size() and v[i] == v[i + 1]) {
+	continue;
+      }
+      double r = v[i];
+      size_t n_points_in_ring = 0;
+      for (size_t j = i + 1; j < v.size() and v[j] < base * r; ++j)
+	++n_points_in_ring;
+      result = std::max(result, (i + n_points_in_ring + 1.0) / (i + 1.0));
+    }
+  }
+  return result;
+}
+
 
 int main(int argc, char** argv)
 {
-    auto console = spd::stdout_color_mt("console");
-    console->set_level(spd::level::info);
+  //auto console = spd::stdout_color_mt("console");
+  //console->set_level(spd::level::info);
 
-    DgmVec dgms;
     MatrixR dist_matrix;
-    RandomDiagParams par;
     double max_dist = -1.0;
     double min_dist = std::numeric_limits<double>::max();
 
-//    par.auction_params.wasserstein_power = atof(argv[2]);
-//    create_dist_matr_from_dir(argv[1], par.auction_params, dist_matrix, max_dist, min_dist);
-//    return 0;
-
-    if (false) {
-
-        if (argc < 10) {
-            std::cout << "Usage: " << argv[0]
-                      << " dir_name wasser_power number_of_diagrams min_diagram_size max_diagram_size max_x std_dev std_dev_decay WSPD_epsilon [seed]"
-                      << std::endl;
-            return 0;
-        }
-
-        int arg_idx = 1;
-        std::string dir_name = argv[arg_idx++];
-        create_dir_if_not_exists(dir_name);
-
-        par.auction_params.wasserstein_power = atof(argv[arg_idx++]);
-        par.n_diagrams = atoi(argv[arg_idx++]);
-        par.min_diagram_size = atoi(argv[arg_idx++]);
-        par.max_diagram_size = atoi(argv[arg_idx++]);
-        par.upper_bound_hor = atof(argv[arg_idx++]);
-        par.std_dev = atof(argv[arg_idx++]);
-        par.std_dev_decay = atof(argv[arg_idx++]);
-        double eps = atof(argv[arg_idx++]);
-        par.random_generator_seed = (argc > arg_idx) ? atoi(argv[arg_idx++]) : 1;
-
-        par.strategy = RandomDiagParams::Strategy::CLUSTERED;
-
-        twister.seed(par.random_generator_seed);
-
-    }
-
-    if (argc < 5) {
+    if (argc < 3) {
         std::cout << "Usage: " << argv[0]
-                  << " dir_name wasser_power WSPD_epsilon subsample_prob"
+                  << " input_name epsilon"
                   << std::endl;
         return 0;
     }
 
     int arg_idx = 1;
-    std::string dir_name = argv[arg_idx++];
+    std::string dist_name = argv[arg_idx++];
 
-    par.auction_params.wasserstein_power = atof(argv[arg_idx++]);
     double eps = atof(argv[arg_idx++]);
-    double subsample_factor = atof(argv[arg_idx++]);
 
-    std::string log_fname = dir_name + "/experiment_log.txt";
-    auto file_log = spd::basic_logger_mt("experiment_logger", log_fname);
-    file_log->set_level(spd::level::info);
-    file_log->set_pattern("[%H:%M:%S.%e] %v");
-    file_log->flush_on(spd::level::info);
-    file_log->info("Started running. Parameters: {}", par);
+    std::cout << "eps=" << eps << std::endl;
 
+    read_distance_matrix(dist_matrix, max_dist, min_dist, dist_name);
 
-    // setup_random_test(par, dgms, dist_matrix, max_dist, min_dist, dir_name);
-    load_test_from_dir(dgms, dist_matrix, max_dist, min_dist, dir_name);
+    size_t n = dist_matrix.size();
+    
+    std::cout << "Distance Marix of size " << n << " computed; max distance = " << max_dist << std::endl;
 
-    twister.seed(1);
-    subsample_test(dgms, dist_matrix, max_dist, min_dist, subsample_factor);
-
-    par.n_diagrams = dist_matrix.size();
-
-    int n_dist_pairs = dgms.size() * (dgms.size() - 1) / 2;
-
-    console->info("dist_matrix size = {}, dgms.size = {}", dist_matrix.size(), dgms.size());
-
+    //console->info("dist_matrix size = {}", dist_matrix.size());
+    
+    /*
     file_log->info("Distances calculated. max_dist / min_dist =  {} / {} = {} ",
             max_dist, min_dist, max_dist / min_dist);
+    */
 
+    DynamicSpannerR spanner(dist_matrix);
 
-    CoverTree ct(max_dist, dgms, dist_matrix, par.auction_params);
+    std::cout << "Spanner initialized" << std::endl;
+
+    CoverTree ct(max_dist, spanner);
+
+    std::cout << "cover tree constructed" << std::endl;
     // ct.print_tree(std::cout);
-    DynamicSpannerR& ds = ct.m_dspanner;
 
-    console->info("Cover tree built. Requested distance : {}, computed distances : {}, cached calls: {}, total distances: {}, geom_lb_useful = {}",
-                  ds.m_requested_distances.size() / 2, ds.m_distance_cache.size() / 2, ds.m_cached_calls, n_dist_pairs, ds.m_geom_lower_bound_useful);
-    file_log->info("Cover tree built. Requested distance = {}, computed distances =  {}, cached calls = {}, total distances = {}, geom_lb_usefule = {}",
-                   ds.m_requested_distances.size() / 2, ds.m_distance_cache.size() / 2, ds.m_cached_calls, n_dist_pairs, ds.m_geom_lower_bound_useful);
+    // TODO very ugly
+    DynamicSpannerR* ds = &ct.m_dspanner;
+
+    std::cout << "Cover tree built. Requested distance : " << ds->get_fraction_of_requested_distances()
+	      << ", computed distances : " << ds->get_fraction_of_computed_distances() << std::endl;
 
     WspdNode::dspanner = &ct.m_dspanner;
     WSPD wspd(ct, eps);
 
-    console->info(
-            "WSPD built, size = {}, requested distance : {}, computed distances : {}, cached calls: {}, total distances: {}",
-            wspd.size(), ds.m_requested_distances.size() / 2, ds.m_distance_cache.size() / 2,
-            ds.m_cached_calls, n_dist_pairs);
-    file_log->info(
-            "WSPD built, size = {}, requested distance : {}, computed distances : {}, cached calls: {}, total distances: {}",
-            wspd.size(), ds.m_requested_distances.size() / 2, ds.m_distance_cache.size() / 2,
-            ds.m_cached_calls, n_dist_pairs);
+    std::cout << "WSPD built. Requested distance : " << ds->get_fraction_of_requested_distances()
+	      << ", computed distances : " << ds->get_fraction_of_computed_distances() << std::endl;
 
-    file_log->info("Started estimating spanner quality");
-    console->info("Started estimating spanner quality");
-    double max_rel_error = wspd.get_max_relative_error();
-    file_log->info("Max. relative error: {}", max_rel_error);
-    console->info("Max. relative error: {}", max_rel_error);
+    wspd.make_spanner();
+    std::cout << "Spanner built. Requested distance : " << ds->get_fraction_of_requested_distances()
+	      << ", computed distances : " << ds->get_fraction_of_computed_distances() << std::endl;
 
-    file_log->info("Started estimating dynamic spanner quality");
-    std::vector<double> deltas { 0.01, 0.05, 0.1, 0.5, 1.0, 2.0, 4.0 };
-    auto spanner_estimate = ct.m_dspanner.get_bounds_quality(deltas);
-    for(const auto x : spanner_estimate) {
-        file_log->info("Spanner estimates with relative error at most {}: {}", x.first, x.second);
-        console->info("Spanner estimates with relative error at most {}: {}", x.first, x.second);
+    for(size_t i=0;i<n;i++) {
+      for(size_t j=0;j<n;j++) {
+	if(i==j) {
+	  std::cout << "1 ";
+	} else {
+	  std::cout << wspd.get_spanner_distance(i,j)/ds->m_matrix[i][j].distance << " ";
+	}
+      }
+      std::cout << std::endl;
     }
 
-    console->info("Started calculating expansion constant");
-    file_log->info("Started calculating expansion constant");
-    double exp_const = get_expansion_constant(dist_matrix);
-    console->info("expansion constant = {}", exp_const);
-    file_log->info("expansion constant = {}", exp_const);
-
-
-
-    // validation of data structures
+    //double exp_const = get_expansion_constant(dist_matrix);
+    //std::cout << "expansion_constant: " << exp_const << std::endl;
 
     bool is_valid_tree = ct.is_valid_tree();
-    console->info("Is valid tree: {}", is_valid_tree);
-    file_log->info("Is valid tree: {}", is_valid_tree);
+    std::cout << "Is valid tree:" << is_valid_tree << std::endl;
 
     bool is_valid_wspd = wspd.is_valid();
 
-    console->info("WSPD is valid: {}", is_valid_wspd);
-    file_log->info("WSPD is valid: {}", is_valid_wspd);
+    std::cout << "WSPD is valid: " << is_valid_wspd << std::endl;
 
     return 0;
 }

@@ -10,13 +10,13 @@
 #include <boost/graph/dijkstra_shortest_paths.hpp>
 #include <boost/graph/incremental_components.hpp>
 
-#include "spdlog/spdlog.h"
+//#include "spdlog/spdlog.h"
 
 #include "cover_tree/cover_tree.h"
 #include "cover_tree/wspd_node.h"
 #include "cover_tree/boost_graph_import.h"
 
-namespace spd = spdlog;
+//namespace spd = spdlog;
 
 namespace wasser_spanner {
 
@@ -47,7 +47,7 @@ namespace wasser_spanner {
         DynamicSpannerR* m_spanner;
         NodePairSet m_wspd;
 
-        std::shared_ptr<spd::logger> console{spd::get("console")};
+      //std::shared_ptr<spd::logger> console{spd::get("console")};
 
         std::unique_ptr<Graph> m_graph { nullptr };
         std::vector<size_t> m_rank;
