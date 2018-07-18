@@ -115,29 +115,62 @@ int main(int argc, char** argv)
 
     DynamicSpannerR spanner(dist_matrix);
 
-    std::cout << "Spanner initialized" << std::endl;
+    std::cout << "Spanner initialized" << std::endl << std::endl;
 
+#if 1
+
+    DynamicSpannerR copy(spanner);
+
+    copy.construct_greedy_eps_spanner(eps);
+
+    std::cout << "eps Spanner built from scratch. Requested distance : " << copy.get_fraction_of_requested_distances()
+	      << ", computed distances : " << copy.get_fraction_of_computed_distances() << std::endl << std::endl;
+    
     CoverTree ct(max_dist, spanner);
 
-    std::cout << "cover tree constructed" << std::endl;
+    //std::cout << "cover tree constructed" << std::endl;
     // ct.print_tree(std::cout);
 
     // TODO very ugly
     DynamicSpannerR* ds = &ct.m_dspanner;
 
     std::cout << "Cover tree built. Requested distance : " << ds->get_fraction_of_requested_distances()
-	      << ", computed distances : " << ds->get_fraction_of_computed_distances() << std::endl;
+	      << ", computed distances : " << ds->get_fraction_of_computed_distances() << std::endl << std::endl;
+
+
+
+    copy = *ds;
+
+    copy.construct_greedy_eps_spanner(eps);
+
+    std::cout << "eps Spanner built from cover tree. Requested distance : " << copy.get_fraction_of_requested_distances()
+	      << ", computed distances : " << copy.get_fraction_of_computed_distances() << std::endl << std::endl;
+
 
     WspdNode::dspanner = &ct.m_dspanner;
     WSPD wspd(ct, eps);
 
     std::cout << "WSPD built. Requested distance : " << ds->get_fraction_of_requested_distances()
-	      << ", computed distances : " << ds->get_fraction_of_computed_distances() << std::endl;
+	      << ", computed distances : " << ds->get_fraction_of_computed_distances() << std::endl << std::endl;
 
+    copy = *ds;
+
+    copy.construct_greedy_eps_spanner(eps);
+
+    std::cout << "eps Spanner built from wspd. Requested distance : " << copy.get_fraction_of_requested_distances()
+	      << ", computed distances : " << copy.get_fraction_of_computed_distances() << std::endl << std::endl;
+
+    
+
+    //ds->print_ratios();
     wspd.make_spanner();
-    std::cout << "Spanner built. Requested distance : " << ds->get_fraction_of_requested_distances()
-	      << ", computed distances : " << ds->get_fraction_of_computed_distances() << std::endl;
+    std::cout << "eps-Spanner built with WSPD method. Requested distance : " << ds->get_fraction_of_requested_distances()
+	      << ", computed distances : " << ds->get_fraction_of_computed_distances() << std::endl << std::endl;
 
+    //ds->print_ratios();
+    //std::cout << std::endl << std::endl;
+
+    /*
     for(size_t i=0;i<n;i++) {
       for(size_t j=0;j<n;j++) {
 	if(i==j) {
@@ -148,6 +181,7 @@ int main(int argc, char** argv)
       }
       std::cout << std::endl;
     }
+    */
 
     //double exp_const = get_expansion_constant(dist_matrix);
     //std::cout << "expansion_constant: " << exp_const << std::endl;
@@ -158,6 +192,20 @@ int main(int argc, char** argv)
     bool is_valid_wspd = wspd.is_valid();
 
     std::cout << "WSPD is valid: " << is_valid_wspd << std::endl;
+
+#else
+
+    spanner.construct_greedy_eps_spanner(eps);
+
+    std::cout << "Spanner built. Requested distance : " << spanner.get_fraction_of_requested_distances()
+	      << ", computed distances : " << spanner.get_fraction_of_computed_distances() << std::endl;
+
+    std::cout << std::endl << std::endl;
+    spanner.print_ratios();
+
+    
+
+#endif
 
     return 0;
 }

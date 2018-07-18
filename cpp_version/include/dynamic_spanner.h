@@ -5,6 +5,7 @@
 #include <utility>
 #include <vector>
 #include <limits>
+#include <algorithm>
 
 //#include "spdlog/spdlog.h"
 
@@ -290,6 +291,77 @@ public:
 
     return num/denom;
 
+  }
+
+  void find_worst_ratio(size_t& x, size_t& y, double& ratio) {
+    
+    std::vector<std::pair<size_t,size_t> > candidates;
+
+    double result=0.0;
+    for(size_t i=0;i<m_num_points;i++) {
+      for(size_t j=i+1;j<m_num_points;j++) {
+	Real low = m_matrix[i][j].lower_bound;
+	Real upp = m_matrix[i][j].upper_bound;
+	if(low==0.0 or upp==std::numeric_limits<Real>::max()) {
+	  if(result != std::numeric_limits<Real>::max()) {
+	    candidates.clear();
+	  }
+	  result = std::numeric_limits<Real>::max();
+	  candidates.push_back(std::make_pair(i,j));
+	    
+	} else {
+	  double curr = upp/low;
+	  if(curr>result) {
+	    candidates.clear();
+	  }
+	  if(curr>=result) {
+	    candidates.push_back(std::make_pair(i,j));
+	    result = curr;
+	  }
+	}
+      }
+    }
+    std::random_shuffle(candidates.begin(),candidates.end());
+    x = candidates.begin()->first;
+    y = candidates.begin()->second;
+    ratio = result;
+    //std::cout << "Worst ratio at " << x << ", " << y << ": " << ratio << std::endl;
+  }
+
+  void construct_greedy_eps_spanner(double eps) {
+    size_t i,j;
+    double ratio;
+
+    find_worst_ratio(i,j,ratio);
+
+    while(ratio>(1+eps)) {
+      get_distance(i,j);
+      find_worst_ratio(i,j,ratio);
+    }
+
+  }
+  
+    
+    
+
+
+  void print_ratios() {
+    for(size_t i=0;i<m_num_points;i++) {
+      for(size_t j=0;j<m_num_points;j++) {
+	if(i==j) {
+	  std::cout <<"0 ";
+	} else {
+	  Real low = m_matrix[i][j].lower_bound;
+	  Real upp = m_matrix[i][j].upper_bound;
+	  if(low==0.0 or upp==std::numeric_limits<Real>::max()) {
+	    std::cout << "inf ";
+	  } else {
+	    std::cout << upp/low << " ";
+	  }
+	}
+      }
+      std::cout << std::endl;
+    }
   }
 
 

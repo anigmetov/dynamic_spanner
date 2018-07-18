@@ -194,7 +194,7 @@ namespace wasser_spanner {
     {
       m_num_points = spanner.get_num_points();
       for (size_t i=0;i<m_num_points;i++) {
-	std::cout << "Insert " << i << std::endl;
+	//std::cout << "Insert " << i << std::endl;
 	     //if (console) { console->debug("in CoverTree ctor, processing point, id = {}", i); }
             insert(Point(i));
         }
