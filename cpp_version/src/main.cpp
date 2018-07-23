@@ -136,7 +136,7 @@ int main(int argc, char** argv)
 
     DynamicSpannerR copy(spanner);
 
-    copy.construct_greedy_eps_spanner(eps);
+    copy.construct_blind_greedy_eps_spanner(eps);
 
     std::cout << "eps Spanner built from scratch. Requested distance : " << copy.get_fraction_of_requested_distances()
 	      << ", computed distances : " << copy.get_fraction_of_computed_distances() << std::endl << std::endl;
@@ -156,7 +156,7 @@ int main(int argc, char** argv)
 
     copy = *ds;
 
-    copy.construct_greedy_eps_spanner(eps);
+    copy.construct_blind_greedy_eps_spanner(eps);
 
     std::cout << "eps Spanner built from cover tree. Requested distance : " << copy.get_fraction_of_requested_distances()
 	      << ", computed distances : " << copy.get_fraction_of_computed_distances() << std::endl << std::endl;
@@ -170,7 +170,7 @@ int main(int argc, char** argv)
 
     copy = *ds;
 
-    copy.construct_greedy_eps_spanner(eps);
+    copy.construct_blind_greedy_eps_spanner(eps);
 
     std::cout << "eps Spanner built from wspd. Requested distance : " << copy.get_fraction_of_requested_distances()
 	      << ", computed distances : " << copy.get_fraction_of_computed_distances() << std::endl << std::endl;
@@ -210,9 +210,22 @@ int main(int argc, char** argv)
 
 #else
 
-    spanner.construct_greedy_eps_spanner(eps);
+    DynamicSpannerR another_spanner(dist_matrix);
 
-    std::cout << "Spanner built. Requested distance : " << spanner.get_fraction_of_requested_distances()
+    another_spanner.construct_greedy_eps_spanner(eps);
+    
+    std::cout << "Greedy Spanner built. Requested distance : " << another_spanner.get_fraction_of_requested_distances()
+	      << ", computed distances : " << another_spanner.get_fraction_of_computed_distances() << std::endl;
+
+    std::cout << std::endl;
+
+    //another_spanner.print_ratios();
+
+    //    return 0;
+
+    spanner.construct_blind_greedy_eps_spanner(eps);
+
+    std::cout << "Blind greedy Spanner built. Requested distance : " << spanner.get_fraction_of_requested_distances()
 	      << ", computed distances : " << spanner.get_fraction_of_computed_distances() << std::endl;
 
     std::cout << std::endl << std::endl;
