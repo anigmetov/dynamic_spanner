@@ -30,10 +30,12 @@ endif(NOT WIN32)
 
 file(GLOB WS_HEADERS ${CMAKE_CURRENT_SOURCE_DIR}/include/wasserstein/*.h ${CMAKE_CURRENT_SOURCE_DIR}/include/*.hpp)
 file(GLOB CT_HEADERS ${CMAKE_CURRENT_SOURCE_DIR}/include/cover_tree/*.h)
+file(GLOB DS_HEADERS ${CMAKE_CURRENT_SOURCE_DIR}/include/*.h)
+
 file(GLOB SRC_FILES  ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp)
 
 find_package (Threads)
 set (libraries ${libraries}     ${CMAKE_THREAD_LIBS_INIT} ${Boost_FILESYSTEM_LIBRARY} ${Boost_SYSTEM_LIBRARY} )
 
-add_executable(spanner_wasserstein ${SRC_FILES} ${WS_HEADERS} ${CT_HEADERS} include/cover_tree/wspd_node.h src/wspd_node.cpp include/experiment_helper.h src/experiment_helper.cpp include/wasserstein/lower_bound.h include/cover_tree/boost_graph_import.h)
+add_executable(spanner_wasserstein ${SRC_FILES} ${WS_HEADERS} ${CT_HEADERS} ${DS_HEADERS})
 target_link_libraries(spanner_wasserstein PUBLIC ${libraries})
