@@ -19,85 +19,85 @@
 using namespace wasser_spanner;
 
 bool
-read_distance_matrix_and_queries(MatrixR& distance_matrix, MatrixR& queries, double& max_distance, double& min_distance, const std::string& fname)
+read_distance_matrix_and_queries(MatrixR& distance_matrix, MatrixR& queries, double& max_distance, double& min_distance,
+        const std::string& fname)
 {
-  using Real = std::remove_reference<decltype(min_distance)>::type;
-  std::ifstream matr_file(fname);
-  if (not matr_file.good()) {
-    std::cerr << "Cannot read matrix from file " << fname << std::endl;
-    return false;
-  }
-  
-  min_distance = std::numeric_limits<Real>::max();
-  max_distance = -1.0;
-  size_t n_diagrams;
-  matr_file >> n_diagrams;
-  
-  distance_matrix = MatrixR(n_diagrams, std::vector<Real>(n_diagrams, 0.0));
-  
-  for (size_t i = 0; i < n_diagrams; ++i) {
-    for (size_t j = 0; j < n_diagrams; ++j) {
-      matr_file >> distance_matrix[i][j];
-      max_distance = std::max(distance_matrix[i][j], max_distance);
-      if (i != j) {
-	min_distance = std::min(distance_matrix[i][j], min_distance);
-      }
+    using Real = std::remove_reference<decltype(min_distance)>::type;
+    std::ifstream matr_file(fname);
+    if (not matr_file.good()) {
+        std::cerr << "Cannot read matrix from file " << fname << std::endl;
+        return false;
     }
-  }
-  
-  assert(0.0 < min_distance and min_distance <= max_distance);
-  for (size_t i = 0; i < n_diagrams; ++i) {
-    for (size_t j = i; j < n_diagrams; ++j) {
-      if (i == j)
-	assert(distance_matrix[i][j] == 0.0);
-      else
-	assert(distance_matrix[i][j] == distance_matrix[j][i]);
+
+    min_distance = std::numeric_limits<Real>::max();
+    max_distance = -1.0;
+    size_t n_diagrams;
+    matr_file >> n_diagrams;
+
+    distance_matrix = MatrixR(n_diagrams, std::vector<Real>(n_diagrams, 0.0));
+
+    for (size_t i = 0; i < n_diagrams; ++i) {
+        for (size_t j = 0; j < n_diagrams; ++j) {
+            matr_file >> distance_matrix[i][j];
+            max_distance = std::max(distance_matrix[i][j], max_distance);
+            if (i != j) {
+                min_distance = std::min(distance_matrix[i][j], min_distance);
+            }
+        }
     }
-  }
 
-  size_t no_queries;
-
-  matr_file >> no_queries;
-
-  queries = MatrixR(no_queries, std::vector<Real>(n_diagrams, 0.0));
-
-  for(size_t i=0; i<no_queries;i++) {
-    for(size_t j=0;j<n_diagrams;j++) {
-      matr_file >> queries[i][j];
+    assert(0.0 < min_distance and min_distance <= max_distance);
+    for (size_t i = 0; i < n_diagrams; ++i) {
+        for (size_t j = i; j < n_diagrams; ++j) {
+            if (i == j)
+                assert(distance_matrix[i][j] == 0.0);
+            else
+                assert(distance_matrix[i][j] == distance_matrix[j][i]);
+        }
     }
-  }
 
-  return true;
+    size_t no_queries;
+
+    matr_file >> no_queries;
+
+    queries = MatrixR(no_queries, std::vector<Real>(n_diagrams, 0.0));
+
+    for (size_t i = 0; i < no_queries; i++) {
+        for (size_t j = 0; j < n_diagrams; j++) {
+            matr_file >> queries[i][j];
+        }
+    }
+
+    return true;
 }
 
 double get_expansion_constant(const MatrixR& dist_matrix, double base)
 {
-  assert(base > 1.0);
-  double result = base;
-  for (auto v : dist_matrix) {
-    std::sort(v.begin(), v.end());
-    assert(v[0] == 0.0);
-    for (size_t i = 1; i < v.size(); ++i) {
-      if (i + 1 < v.size() and v[i] == v[i + 1]) {
-	continue;
-      }
-      double r = v[i];
-      size_t n_points_in_ring = 0;
-      for (size_t j = i + 1; j < v.size() and v[j] < base * r; ++j)
-	++n_points_in_ring;
-      result = std::max(result, (i + n_points_in_ring + 1.0) / (i + 1.0));
+    assert(base > 1.0);
+    double result = base;
+    for (auto v : dist_matrix) {
+        std::sort(v.begin(), v.end());
+        assert(v[0] == 0.0);
+        for (size_t i = 1; i < v.size(); ++i) {
+            if (i + 1 < v.size() and v[i] == v[i + 1]) {
+                continue;
+            }
+            double r = v[i];
+            size_t n_points_in_ring = 0;
+            for (size_t j = i + 1; j < v.size() and v[j] < base * r; ++j)
+                ++n_points_in_ring;
+            result = std::max(result, (i + n_points_in_ring + 1.0) / (i + 1.0));
+        }
     }
-  }
-  return result;
+    return result;
 }
-
 
 int main(int argc, char** argv)
 {
-  //auto console = spd::stdout_color_mt("console");
-  //console->set_level(spd::level::info);
+    //auto console = spd::stdout_color_mt("console");
+    //console->set_level(spd::level::info);
 
-  MatrixR dist_matrix, queries;
+    MatrixR dist_matrix, queries;
     double max_dist = -1.0;
     double min_dist = std::numeric_limits<double>::max();
 
@@ -118,11 +118,11 @@ int main(int argc, char** argv)
     read_distance_matrix_and_queries(dist_matrix, queries, max_dist, min_dist, dist_name);
 
     size_t n = dist_matrix.size();
-    
+
     std::cout << "Distance Marix of size " << n << " computed; max distance = " << max_dist << std::endl;
 
     //console->info("dist_matrix size = {}", dist_matrix.size());
-    
+
     /*
     file_log->info("Distances calculated. max_dist / min_dist =  {} / {} = {} ",
             max_dist, min_dist, max_dist / min_dist);
@@ -132,15 +132,15 @@ int main(int argc, char** argv)
 
     std::cout << "Spanner initialized" << std::endl << std::endl;
 
-#if 0
+#if 1
 
     DynamicSpannerR copy(spanner);
 
     copy.construct_blind_greedy_eps_spanner(eps);
 
     std::cout << "eps Spanner built from scratch. Requested distance : " << copy.get_fraction_of_requested_distances()
-	      << ", computed distances : " << copy.get_fraction_of_computed_distances() << std::endl << std::endl;
-    
+              << ", computed distances : " << copy.get_fraction_of_computed_distances() << std::endl << std::endl;
+
     CoverTree ct(max_dist, spanner);
 
     //std::cout << "cover tree constructed" << std::endl;
@@ -150,37 +150,34 @@ int main(int argc, char** argv)
     DynamicSpannerR* ds = &ct.m_dspanner;
 
     std::cout << "Cover tree built. Requested distance : " << ds->get_fraction_of_requested_distances()
-	      << ", computed distances : " << ds->get_fraction_of_computed_distances() << std::endl << std::endl;
-
-
+              << ", computed distances : " << ds->get_fraction_of_computed_distances() << std::endl << std::endl;
 
     copy = *ds;
 
     copy.construct_blind_greedy_eps_spanner(eps);
 
     std::cout << "eps Spanner built from cover tree. Requested distance : " << copy.get_fraction_of_requested_distances()
-	      << ", computed distances : " << copy.get_fraction_of_computed_distances() << std::endl << std::endl;
-
+              << ", computed distances : " << copy.get_fraction_of_computed_distances() << std::endl << std::endl;
 
     WspdNode::dspanner = &ct.m_dspanner;
     WSPD wspd(ct, eps);
 
     std::cout << "WSPD built. Requested distance : " << ds->get_fraction_of_requested_distances()
-	      << ", computed distances : " << ds->get_fraction_of_computed_distances() << std::endl << std::endl;
+              << ", computed distances : " << ds->get_fraction_of_computed_distances() << std::endl << std::endl;
 
     copy = *ds;
 
     copy.construct_blind_greedy_eps_spanner(eps);
 
     std::cout << "eps Spanner built from wspd. Requested distance : " << copy.get_fraction_of_requested_distances()
-	      << ", computed distances : " << copy.get_fraction_of_computed_distances() << std::endl << std::endl;
+              << ", computed distances : " << copy.get_fraction_of_computed_distances() << std::endl << std::endl;
 
-    
+
 
     //ds->print_ratios();
     wspd.make_spanner();
     std::cout << "eps-Spanner built with WSPD method. Requested distance : " << ds->get_fraction_of_requested_distances()
-	      << ", computed distances : " << ds->get_fraction_of_computed_distances() << std::endl << std::endl;
+              << ", computed distances : " << ds->get_fraction_of_computed_distances() << std::endl << std::endl;
 
     //ds->print_ratios();
     //std::cout << std::endl << std::endl;
@@ -188,11 +185,11 @@ int main(int argc, char** argv)
     /*
     for(size_t i=0;i<n;i++) {
       for(size_t j=0;j<n;j++) {
-	if(i==j) {
-	  std::cout << "1 ";
-	} else {
-	  std::cout << wspd.get_spanner_distance(i,j)/ds->m_matrix[i][j].distance << " ";
-	}
+    if(i==j) {
+      std::cout << "1 ";
+    } else {
+      std::cout << wspd.get_spanner_distance(i,j)/ds->m_matrix[i][j].distance << " ";
+    }
       }
       std::cout << std::endl;
     }
@@ -213,9 +210,9 @@ int main(int argc, char** argv)
     DynamicSpannerR another_spanner(dist_matrix);
 
     another_spanner.construct_greedy_eps_spanner(eps);
-    
+
     std::cout << "Greedy Spanner built. Requested distance : " << another_spanner.get_fraction_of_requested_distances()
-	      << ", computed distances : " << another_spanner.get_fraction_of_computed_distances() << std::endl;
+              << ", computed distances : " << another_spanner.get_fraction_of_computed_distances() << std::endl;
 
     std::cout << std::endl;
 
@@ -226,24 +223,26 @@ int main(int argc, char** argv)
     spanner.construct_blind_greedy_eps_spanner(eps);
 
     std::cout << "Blind greedy Spanner built. Requested distance : " << spanner.get_fraction_of_requested_distances()
-	      << ", computed distances : " << spanner.get_fraction_of_computed_distances() << std::endl;
+              << ", computed distances : " << spanner.get_fraction_of_computed_distances() << std::endl;
 
     std::cout << std::endl << std::endl;
-    
-    for(size_t i=0;i<queries.size();i++) {
 
-      std::vector<double>& query = queries[i];
+    for(size_t i = 0; i < queries.size(); i++)
+    {
 
-      Nearest_neighbor_search<double> nns(query, &spanner);
+        std::vector<double>& query = queries[i];
 
-      size_t result = nns.find_nearest_neighbor();
-      
-      std::cout << "Query " << i << ", answer: " << result << " - Computed distances: " << nns.get_fraction_of_computed_distances() << std::endl;
-      std::cout << "(correct answer is " << std::distance(query.begin(),std::min_element(query.begin(),query.end())) << ")" << std::endl << std::endl;
+        Nearest_neighbor_search<double> nns(query, &spanner);
+
+        size_t result = nns.find_nearest_neighbor();
+
+        std::cout << "Query " << i << ", answer: " << result << " - Computed distances: "
+                  << nns.get_fraction_of_computed_distances() << std::endl;
+        std::cout << "(correct answer is " << std::distance(query.begin(), std::min_element(query.begin(), query.end()))
+                  << ")" << std::endl << std::endl;
 
     }
 
-    
 
 #endif
 
