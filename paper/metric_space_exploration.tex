@@ -28,6 +28,7 @@
 \newcommand{\R}{\mathbb{R}}
 \newcommand{\Z}{\mathbb{Z}}
 \renewcommand{\S}{\mathbb{S}}
+\newcommand{\dappr}{\tilde{d}}
 %\newcommand{\Wlog}{W.l.o.g.\ }
 %\newcommand{\wlog}{w.l.o.g.\ }
 \newcommand{\eps}{\epsilon}
@@ -38,7 +39,7 @@
 \newcommand{\parent}{\mathrm{par}}
 \newcommand{\point}{p}
 \newcommand{\level}{\ell}
-\newcommand{\diameter}{\mathrm{diam}}
+\newcommand{\diam}{\mathrm{diam}}
 \newcommand{\pointset}{P}
 \newcommand{\metricspace}{\mathcal{M}}
 \newcommand{\metric}{\delta}
@@ -239,9 +240,73 @@ Exansion constant, doubling dimension.
 
 \subsection{Cover trees}
 
+
 \subsection{WSPD}
+Given $s > 1$, two disjoint subsets $A, B$ of a metric space $(X, d)$ are called $s$-\textit{well-separated},
+if 
+\[
+\forall a \in A \, \forall b \in B \, d(a, b) \geq s \max(\diam(A), \diam(B))
+\]
+A well-separated pair decomposition (WSPD) is a set of unordered pairs of sets $\{ \{A_1, B_1 \}, 
+\dots, \{A_s, B_s\} \}$ such that each pair $\{A_i, B_i\}$ is $s$-well-separated, and for every unordered pair $\{a, b\}$ of distinct points of $X$ there exists a unique $j$ such that $a \in A_j$ and $b \in B_j$.
+The notion of WSPD was introduced by Callahan and Kosaraju \cite{cal-kos-wspd}.
+
 
 \subsection{Spanners}
+
+\subsection{Approximate Greedy Spannner}
+
+Suppose that we have fast algorithms for computing $\lambda$-approximation of $d(x,y)$.
+In other words, for every pair of points $x,y$ we can compute an interval $[c, \lambda c]$ that is guaranteed to contain 
+the true distance $d(x,y)$.  Note that for every interval of this form there exists 
+a unique $k \in \{1, \dots, N-1 \}$ such that $[c, \lambda c] \subset [\lambda^k, \lambda^{k+2}]$. 
+Indeed, $k = \lceil \log_{\lambda}(c) \rceil$.
+We also assume that we know the range of all possible values of $k$ and they are all non-negative,
+$k = 1\dots N$. We call the intervals $[\lambda^k, \lambda^{k+2}]$ \textit{buckets}, even though they are overlapping.
+Now we can formulate the algorithm for finding a spanner.
+
+\begin{algorithmic}
+\label{alg:local_init}
+\Function{Approximate greedy spanner}{$rho$}
+    \ForAll {pairs $x,y \in X$}
+    \State {Place $x, y$ into corresponding bucket }
+    \EndFor
+\EndFunction
+\end{algorithmic}
+
+We can use essentially the same proof as in \cite{bose2010computing}.
+Claim 1. If $s > \lambda^2 $ and $A, B$ are $s$-separated, then all pairs $(a, a')$, $(b, b')$ with $a, a' \in A$
+and $b, b' \in B$ are processed before any of the pairs $(a, b)$.
+
+Indeed, if $s > \lambda^2$, then for every points $a_1, a_2 \in A$ and $b \in B$
+we have $\lambda^2 d(a_1, a_2) < d(a_1, b)$. If $\dappr(a_1, a_2)$ and $\dappr(a_1, b)$ denote the $\lambda$-approximations
+of the corresponding distances, then the inequality $\frac{\dappr(a_1, b)}{\dappr(a_1, a_2)} > \lambda$
+holds , hence $(a_1, a_2)$ will be placed in the bucket that precedes the bucket of $(a_1, b)$.
+
+
+Claim 2. If $s > \max(\lambda^2, \frac{2t+2}{t-1})$ and $A, B$ are two $s$-well-separated subsets of $X$,
+then in the approximate greedy spanner computed by \ref{alg:approx_greedy_spanner} there is at most one edge between $A$ and $B$.
+
+Suppose that the pair $(a_1, b_1)$ with $a_1 \in A$, $b_1 \in B$ was processed and the edge $(a, b)$
+was added to the spanner. Then from claim 1 we know that we already have a $t$-spanner on $A$ and $B$.
+Consider another pair $(a_2, b_2)$. Let $G$ be the weighted graph we have immediately after the edge $(a_1, b_1)$ has been added
+to the spanner. By claim 1
+$d_G(a_2, a_1) \leq td(a_2, a_1)$ and $d_G(b_1, b_2) \leq t d(b_1, b_2)$.
+By properties of WSPD, $d_G(a_1, b_1) = d(a_1, b_1) \leq (1 + \frac{2}{s})d(a_2, b_2)$
+and $t d(a_2, a_1) \leq \frac{t}{s} d(a_2, b_2)$, $t d(b_1, b_2) \leq \frac{t}{s} d(a_2, b_2)$.
+
+Combining these inequalities, we get
+
+\begin{equation}
+    \begin{split}
+        d_G(a_2, b_2) & \leq  d_G(a_2, a_1) + d_G(a_1, b_1) + d_G(b_1, b_2)  \\
+                      & \leq  \frac{t}{s} d(a_2, b_2) + (1 + \frac{2}{s})d(a_2, b_2) + \frac{t}{s} d(a_2, b_2) \\
+                      & =     (1 + \frac{2t + 2}{s}) d(a_2, b_2)
+    \end{split}
+\end{equation}
+
+Solving for $s$ the inequality $1 + \frac{2t + 2}{s} < t$ gives $s > \frac{2t+2}{t-1}$.
+
 
 \section{Distance Bounds in Partially Revealed Metrics}
 %
