@@ -77,20 +77,8 @@ class BlindGreedySpanner:
 
 
     def worst_pair_blind(self):
-        # worst_ratio = inf_dist
-        # candidates = [ (worst_ratio, i, j) for i in range(self.n_points)
-        #         for j in range(i + 1, self.n_points)
-        #         if self.upper_bounds[i][j] == inf_dist ]
-        # if candidates:
-        #     return random.choice(candidates)
-        # candidates = [ (worst_ratio, i, j) for i in range(self.n_points)
-        #         for j in range(i + 1, self.n_points)
-        #         if self.lower_bounds[i][j] == 0.0]
-        # if candidates:
-        #     return random.choice(candidates)
-        # mask = np.ones((self.n_points, self.n_points), dtype = np.bool)
-        # np.fill_diagonal(mask, 0)
         ratio_matr = self.upper_bounds / self.lower_bounds
+        ratio_matr[ratio_matr == np.inf] = -np.inf
         np.fill_diagonal(ratio_matr, -np.inf)
         worst_ratio = ratio_matr.max()
         row, col = np.where(ratio_matr == worst_ratio)

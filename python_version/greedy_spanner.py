@@ -139,7 +139,7 @@ if __name__ == "__main__":
     dims = [2]
     points_generators = [get_points, get_exponential_points, get_uniform_points]
 
-    all_results = jl.Parallel(n_jobs=-1)(jl.delayed(run_experiment)(dim, n_points, points_generator, eps)
+    all_results = jl.Parallel(n_jobs=5)(jl.delayed(run_experiment)(dim, n_points, points_generator, eps)
                                          for dim in dims
                                          for n_points in n_pointses
                                          for points_generator in points_generators
@@ -151,35 +151,5 @@ if __name__ == "__main__":
         for er in r:
             print(er)
 
-    # for dim in dims:
-    #     for n_points in n_pointses:
-    #         # points = get_points(n_points, dim)
-    #         points = get_exponential_points(n_points, dim)
-    #
-    #         dist_list = distances_list(points)
-    #         max_dist = max(dist_list)[0]
-    #         for eps in epsilons:
-    #             gs = greedy_spanner(points, eps, sorted(dist_list))
-    #             total_n_pairs = n_points * (n_points - 1) / 2.0
-    #             n_gs_edges = gs.number_of_edges()
-    #             sparseness = n_gs_edges / total_n_pairs
-    #             print(
-    #                 f"dim = {dim}, eps = {eps}, #points = {n_points}, greedy spanner sparseness = {n_gs_edges} / {total_n_pairs}  = {sparseness}")
-    #
-    #             random_dist_list = dist_list[:]
-    #             random.shuffle(random_dist_list)
-    #             gs_random = greedy_spanner(points, eps, random_dist_list)
-    #
-    #             n_gs_random_edges = gs_random.number_of_edges()
-    #             sparseness_random = n_gs_random_edges / total_n_pairs
-    #             print(
-    #                 f"dim = {dim}, eps = {eps}, #points = {n_points}, random order spanner sparseness = {n_gs_random_edges} / {total_n_pairs}  = {sparseness_random}")
-    #
-    #             sd = quasi_sorted_distances(points, dist_list)
-    #             gs = greedy_spanner(points, eps, sd.qsorted_distances)
-    #             n_gs_quasi_edges = gs.number_of_edges()
-    #             sparseness = n_gs_quasi_edges / total_n_pairs
-    #             print(
-    #                 f"dim = {dim}, eps = {eps}, #points = {n_points}, #buckets =  {sd.n_buckets} with quasi-sorted distances sparseness = {n_gs_quasi_edges} / {total_n_pairs}  = {sparseness}")
 
     sys.exit(0)
