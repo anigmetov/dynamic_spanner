@@ -6,6 +6,7 @@ import random
 import sys
 import matplotlib.pyplot as plt
 import joblib as jl
+from spanner_experiment_result import ExperimentResult
 
 from utils_euclidean import *
 
@@ -81,46 +82,31 @@ def greedy_spanner(points, eps, sd=None):
     return spanner
 
 
-class ExperimentResult:
-    def __init__(self, dim, n_points, eps, points_gen_method, spanner_method, spanner_edges):
-        self.dim = dim
-        self.n_points = n_points
-        self.eps = eps
-        self.total_n_pairs = n_points * (n_points - 1) / 2.0
-        self.spanner_method = spanner_method
-        self.spanner_edges = spanner_edges
-        self.sparseness = spanner_edges / self.total_n_pairs
-        self.points_method = points_gen_method
-
-    def __str__(self):
-        return f"dim = {self.dim}, eps = {self.eps}, #points = {self.n_points}, points method = {self.points_method}, spanner = {self.spanner_method}, sparseness = {self.spanner_edges} / {self.total_n_pairs}  = {self.sparseness}"
-
-
-def run_experiment(dim, n_points, points_generator, eps):
-    points = points_generator(n_points, dim)
+def run_experiment(dim, n_points, epsilon, points_generator, ps_gen_args):
+    points = points_generator(n_points, dim, *ps_gen_args)
     dist_list = distances_list(points)
 
     result = []
 
-    gs = greedy_spanner(points, eps, sorted(dist_list))
+    gs = greedy_spanner(points, epsilon, sorted(dist_list))
     n_gs_edges = gs.number_of_edges()
 
-    result.append(ExperimentResult(dim, n_points, eps, points_generator.__name__, "greedy", n_gs_edges))
+    result.append(ExperimentResult(dim, n_points, epsilon, points_generator.__name__, "greedy", n_gs_edges))
 
     print(result[-1])
 
     random_dist_list = dist_list[:]
     random.shuffle(random_dist_list)
-    gs_random = greedy_spanner(points, eps, random_dist_list)
+    gs_random = greedy_spanner(points, epsilon, random_dist_list)
 
     n_gs_random_edges = gs_random.number_of_edges()
-    result.append(ExperimentResult(dim, n_points, eps, points_generator.__name__, "random", n_gs_random_edges))
+    result.append(ExperimentResult(dim, n_points, epsilon, points_generator.__name__, "random", n_gs_random_edges))
     print(result[-1])
 
     sd = quasi_sorted_distances(points, dist_list)
-    gs_quasi = greedy_spanner(points, eps, sd.qsorted_distances)
+    gs_quasi = greedy_spanner(points, epsilon, sd.qsorted_distances)
     n_gs_quasi_edges = gs_quasi.number_of_edges()
-    result.append(ExperimentResult(dim, n_points, eps, points_generator.__name__, "quasi", n_gs_quasi_edges))
+    result.append(ExperimentResult(dim, n_points, epsilon, points_generator.__name__, "quasi", n_gs_quasi_edges))
     print(result[-1])
 
     sys.stdout.flush()
@@ -129,7 +115,6 @@ def run_experiment(dim, n_points, points_generator, eps):
 
 
 if __name__ == "__main__":
-
     # min_dist = 0.01
     # max_dist = 3.0
     # print(get_buckets(min_dist, max_dist))
@@ -137,19 +122,26 @@ if __name__ == "__main__":
     n_pointses = [100]
     epsilons = [0.1]
     dims = [2]
-    points_generators = [get_points, get_exponential_points, get_uniform_points]
+    # ps_gen_methods = [get_points, get_exponential_points, get_uniform_points]
 
-    all_results = jl.Parallel(n_jobs=5)(jl.delayed(run_experiment)(dim, n_points, points_generator, eps)
-                                         for dim in dims
-                                         for n_points in n_pointses
-                                         for points_generator in points_generators
-                                         for eps in epsilons)
 
-    print("##################################################")
+    # n_pointses = [50, 100, 200, 400, 800, 1600, 3200, 6400, 12800]
+    # dims = [2, 3, 4, 5]
+    ps_gen_methods = [get_points, get_uniform_points, get_exponential_points]
+    ps_gen_args = [[], [10.0], []]
+    # epsilons = [0.01, 0.1, 0.2, 0.5, 2.0]
+
+    all_results = jl.Parallel(n_jobs=6)(
+        jl.delayed(run_experiment)(dim, n_points, epsilon, ps_gen_method, ps_arg)
+        for dim in dims
+        for n_points in n_pointses
+        for epsilon in epsilons
+        for (ps_gen_method, ps_arg) in zip(ps_gen_methods, ps_gen_args))
+
+    print("################################################################################")
 
     for r in all_results:
         for er in r:
             print(er)
-
 
     sys.exit(0)

@@ -5,7 +5,9 @@ import math
 import numpy as np
 import random
 import sys
+import joblib as jl
 
+from spanner_experiment_result import ExperimentResult
 from utils_euclidean import *
 
 inf_dist = 10000000000.0
@@ -19,7 +21,7 @@ class BlindGreedySpanner:
         self.n_points = len(points)
 
         # common shape for all matrices
-        matr_shape = (n_points, n_points)
+        matr_shape = (self.n_points, self.n_points)
 
         if dist_matrix != None:
             self.dist_matrix = dist_matrix
@@ -41,15 +43,14 @@ class BlindGreedySpanner:
         for i in range(self.n_points):
             self.spanner.add_node(i)
 
-
     def set_upper_bound(self, i, j, value):
-        assert(value >= 0.0 and value <= self.upper_bounds[i][j])
-        assert(value >= self.get_distance_no_cache(i, j))
+        assert (value >= 0.0 and value <= self.upper_bounds[i][j])
+        assert (value >= self.get_distance_no_cache(i, j))
         self.upper_bounds[i][j] = self.upper_bounds[j][i] = value
 
     def set_lower_bound(self, i, j, value):
-        assert(value >= self.lower_bounds[i][j])
-        assert(value <= self.get_distance_no_cache(i, j))
+        assert (value >= self.lower_bounds[i][j])
+        assert (value <= self.get_distance_no_cache(i, j))
         self.lower_bounds[i][j] = self.lower_bounds[j][i] = value
 
     def upper_bound(self, i, j):
@@ -64,7 +65,7 @@ class BlindGreedySpanner:
         if result == 0.0:
             result = self.dist_function(self.points[i], self.points[j])
             self.dist_matrix[i][j] = self.dist_matrix[j][i] = result
-        print(f"in distance, result = {result}, i = {i}, j = {j}")
+        # print(f"in distance, result = {result}, i = {i}, j = {j}")
         self.set_lower_bound(i, j, result)
         self.set_upper_bound(i, j, result)
         return result
@@ -75,23 +76,21 @@ class BlindGreedySpanner:
             result = self.dist_function(self.points[i], self.points[j])
         return result
 
-
     def worst_pair_blind(self):
+        np.seterr(divide='ignore')
         ratio_matr = self.upper_bounds / self.lower_bounds
-        ratio_matr[ratio_matr == np.inf] = -np.inf
+        # ratio_matr[ratio_matr == np.inf] = -np.inf
         np.fill_diagonal(ratio_matr, -np.inf)
         worst_ratio = ratio_matr.max()
         row, col = np.where(ratio_matr == worst_ratio)
         i = np.random.randint(len(row))
         return (worst_ratio, row[i], col[i])
 
-
     def add_edge_to_spanner(self, i, j):
         dist_ij = self.distance(i, j)
-        assert(dist_ij > 0.0 and i != j)
+        assert (dist_ij > 0.0 and i != j)
         self.spanner.add_weighted_edges_from([(i, j, dist_ij)])
         self.update_bounds_using_distance(i, j)
-
 
     def number_of_edges(self):
         return self.spanner.number_of_edges()
@@ -113,11 +112,10 @@ class BlindGreedySpanner:
         # print(f"Upper bounds do not change after second run: {(self.upper_bounds == new_upper_bounds_1).all()}")
         # print(f"Lower bounds do not change after second run: {(self.lower_bounds == new_lower_bounds_1).all()}")
 
-
     def update_upper_bounds(self, i, j):
         dist_ij = self.dist_matrix[i][j]
-        assert(dist_ij > 0.0)
-        assert(dist_ij < inf_dist)
+        assert (dist_ij > 0.0)
+        assert (dist_ij < inf_dist)
 
         for x in range(self.n_points):
             for y in range(x + 1, self.n_points):
@@ -128,24 +126,22 @@ class BlindGreedySpanner:
                              self.upper_bounds[x][j] + dist_ij + self.upper_bounds[y][i])
                 self.set_upper_bound(x, y, new_ub)
 
-
     def update_lower_bounds_1(self, i, j):
         dist_ij = self.dist_matrix[i][j]
-        assert(dist_ij > 0.0)
+        assert (dist_ij > 0.0)
 
         for x in range(self.n_points):
             for y in range(x + 1, self.n_points):
                 if self.dist_computed[x][y]:
                     continue
                 new_lb = max(self.lower_bounds[x][y],
-                           dist_ij - self.upper_bounds[x][i] - self.upper_bounds[y][j],
-                           dist_ij - self.upper_bounds[x][j] - self.upper_bounds[y][i])
+                             dist_ij - self.upper_bounds[x][i] - self.upper_bounds[y][j],
+                             dist_ij - self.upper_bounds[x][j] - self.upper_bounds[y][i])
                 self.set_lower_bound(x, y, new_lb)
-
 
     def update_lower_bounds_2(self, i, j):
         dist_ij = self.dist_matrix[i][j]
-        assert(dist_ij > 0.0)
+        assert (dist_ij > 0.0)
         for x in range(self.n_points):
             for y in range(x + 1, self.n_points):
                 if self.dist_computed[x][y]:
@@ -165,7 +161,6 @@ class BlindGreedySpanner:
             self.add_edge_to_spanner(i, j)
 
 
-
 def distance_matrix(points):
     n_points = len(points)
     result = np.zeros((n_points, n_points))
@@ -178,36 +173,33 @@ def distance_matrix(points):
 
 
 
-class ExperimentResult:
-    def __init__(self, dim, n_points, epsilon, point_generation_method, number_of_edges):
-        self.dim = dim
-        self.n_points = n_points
-        self.epsilon = epsilon
-        self.point_generation_method = point_generation_method
-        self.number_of_edges = number_of_edges
-        self.sparseness = float(number_of_edges) / float(n_points * (n_points - 1.0) / 2.0)
-
-    def __str__(self):
-        return "{};{};{};{};{};{}".format(self.dim, self.n_points, self.epsilon,
-                self.point_generation_method, self.number_of_edges, self.sparseness)
-
-
-
-def run_experiment(dim, n_points, points_generator, epsilon):
-    points = points_generator(n_points, dim)
+def run_experiment(dim, n_points, epsilon, points_generator, ps_gen_args):
+    points = points_generator(n_points, dim, *ps_gen_args)
     result = []
-    gs = BlindGreedySpanner(points, inf_dist, dist_function = euclidean_distance, dist_matrix = None)
+    gs = BlindGreedySpanner(points, inf_dist, dist_function=euclidean_distance, dist_matrix=None)
     gs.build_blind(epsilon)
     n_gs_edges = gs.number_of_edges()
-    result.append(ExperimentResult(dim, n_points, epsilon, points_generator.__name__, n_gs_edges))
+    result.append(ExperimentResult(dim, n_points, epsilon, points_generator.__name__, "blind_greedy", n_gs_edges))
     print(result[-1])
     sys.stdout.flush()
     return result
 
 
 if __name__ == "__main__":
-    dim = 2
-    n_points = 200
-    points_generator = get_points
-    epsilon = 0.1
-    run_experiment(dim, n_points, points_generator, epsilon)
+    np.random.seed(1)
+
+    n_pointses = [50, 100, 200, 400, 800, 1600, 3200, 6400, 12800]
+    dims = [2, 3, 4, 5]
+    ps_gen_methods = [get_points, get_uniform_points, get_exponential_points]
+    ps_gen_args = [[], [10.0], []]
+    epsilons = [0.01, 0.1, 0.2, 0.5, 2.0]
+
+    results = jl.Parallel(n_jobs=6)(
+        jl.delayed(run_experiment)(dim, n_points, epsilon, ps_gen_method, ps_arg)
+        for dim in dims
+        for n_points in n_pointses
+        for epsilon in epsilons
+        for (ps_gen_method, ps_arg) in zip(ps_gen_methods, ps_gen_args))
+    print("################################################################################")
+    for r in results:
+        print(r)
