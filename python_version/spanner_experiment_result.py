@@ -15,3 +15,7 @@ class ExperimentResult:
         return "{};{};{};{};{};{};{}".format(self.spanner_method, self.dim, self.n_points, self.epsilon,
                                              self.point_generation_method, self.spanner_edges, self.sparseness)
 
+
+
+if __name__ == "__main__":
+    pass

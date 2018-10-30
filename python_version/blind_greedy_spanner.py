@@ -6,6 +6,7 @@ import numpy as np
 import random
 import sys
 import joblib as jl
+import pandas as pd
 
 from spanner_experiment_result import ExperimentResult
 from utils_euclidean import *
@@ -172,7 +173,6 @@ def distance_matrix(points):
     return result
 
 
-
 def run_experiment(dim, n_points, epsilon, points_generator, ps_gen_args):
     points = points_generator(n_points, dim, *ps_gen_args)
     result = []
@@ -188,18 +188,35 @@ def run_experiment(dim, n_points, epsilon, points_generator, ps_gen_args):
 if __name__ == "__main__":
     np.random.seed(1)
 
-    n_pointses = [50, 100, 200, 400, 800, 1600, 3200, 6400, 12800]
+    # n_pointses = [10]
+    # dims = [2]
+    # ps_gen_methods = [get_points, get_uniform_points, get_exponential_points]
+    # ps_gen_args = [[], [10.0], []]
+    # epsilons = [0.2]
+
+    n_pointses = [50, 100, 200, 400, 800, 1600, 3200, 6400]
     dims = [2, 3, 4, 5]
     ps_gen_methods = [get_points, get_uniform_points, get_exponential_points]
     ps_gen_args = [[], [10.0], []]
     epsilons = [0.01, 0.1, 0.2, 0.5, 2.0]
 
-    results = jl.Parallel(n_jobs=6)(
+    results = jl.Parallel(n_jobs=-1)(
         jl.delayed(run_experiment)(dim, n_points, epsilon, ps_gen_method, ps_arg)
         for dim in dims
         for n_points in n_pointses
         for epsilon in epsilons
         for (ps_gen_method, ps_arg) in zip(ps_gen_methods, ps_gen_args))
     print("################################################################################")
+
+    df_arg = [{"Dim": er.dim, "N_points": er.n_points,
+               "Epsilon": er.epsilon,
+               "Point_Generation_Method": er.point_generation_method,
+               "Spanner_Method": er.spanner_method, "Spanner_Edges": er.spanner_edges,
+               "Sparseness": er.sparseness} for r in results for er in r]
+
+    df = pd.DataFrame(df_arg)
+    df.to_pickle("blind_greedy_spanner_results_pandas.pkl")
+
     for r in results:
-        print(r)
+        for er in r:
+            print(er)
