@@ -13,8 +13,7 @@ from utils_euclidean import *
 
 inf_dist = 10000000000.0
 
-
-class BlindGreedySpanner:
+class BlindSpanner:
 
     def __init__(self, points, inf_dist, dist_function=None, dist_matrix=None, compute_distance_matrix=False):
         assert (dist_function != None or dist_matrix != None)
@@ -161,7 +160,7 @@ class BlindGreedySpanner:
                              self.lower_bounds[x][j] - dist_ij - self.upper_bounds[y][i])
                 self.set_lower_bound(x, y, new_lb)
 
-    def build_blind(self, epsilon):
+    def build_greedy(self, epsilon):
         self.clear_spanner()
         while True:
             worst_ratio, i, j = self.worst_pair_blind()
@@ -195,10 +194,10 @@ def distance_matrix(points):
 def run_experiment(dim, n_points, epsilon, points_generator, ps_gen_args):
     points = points_generator(n_points, dim, *ps_gen_args)
     result = []
-    gs = BlindGreedySpanner(points, inf_dist, dist_function=euclidean_distance, dist_matrix=None)
+    gs = BlindSpanner(points, inf_dist, dist_function=euclidean_distance, dist_matrix=None)
     gs.build_random(epsilon)
     n_gs_edges = gs.number_of_edges()
-    result.append(ExperimentResult(dim, n_points, epsilon, points_generator.__name__, "blind_greedy", n_gs_edges))
+    result.append(ExperimentResult(dim, n_points, epsilon, points_generator.__name__, "blind_random", n_gs_edges))
     print(result[-1])
     sys.stdout.flush()
     return result
@@ -207,17 +206,17 @@ def run_experiment(dim, n_points, epsilon, points_generator, ps_gen_args):
 if __name__ == "__main__":
     np.random.seed(1)
 
-    n_pointses = [70]
-    dims = [2]
+    # n_pointses = [70]
+    # dims = [2]
+    # ps_gen_methods = [get_points, get_uniform_points]
+    # ps_gen_args = [[], [10.0]]
+    # epsilons = [0.2]
+
+    n_pointses = [100, 200, 400, 600]
+    dims = [2, 3]
     ps_gen_methods = [get_points, get_uniform_points]
     ps_gen_args = [[], [10.0]]
-    epsilons = [0.2]
-
-    # n_pointses = [50, 100, 200, 400, 800, 1600, 3200, 6400]
-    # dims = [2, 3, 4, 5]
-    # ps_gen_methods = [get_points, get_uniform_points, get_exponential_points]
-    # ps_gen_args = [[], [10.0], []]
-    # epsilons = [0.01, 0.1, 0.2, 0.5, 2.0]
+    epsilons = [0.1, 0.5]
 
     results = jl.Parallel(n_jobs=-1)(
         jl.delayed(run_experiment)(dim, n_points, epsilon, ps_gen_method, ps_arg)
@@ -234,7 +233,7 @@ if __name__ == "__main__":
                "Sparseness": er.sparseness} for r in results for er in r]
 
     df = pd.DataFrame(df_arg)
-    df.to_pickle("blind_greedy_spanner_results_pandas-rm.pkl")
+    df.to_pickle("blind_random_spanner_results_pandas-m.pkl")
 
     for r in results:
         for er in r:

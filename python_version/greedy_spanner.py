@@ -127,7 +127,7 @@ if __name__ == "__main__":
     # ps_gen_methods = [get_points, get_exponential_points, get_uniform_points]
 
 
-    n_pointses = [50, 100, 200, 400, 800, 1600, 3200, 6400]
+    n_pointses = [50, 100, 200, 400]
     dims = [2, 3, 4, 5]
     ps_gen_methods = [get_points, get_uniform_points, get_exponential_points]
     ps_gen_args = [[], [10.0], []]
