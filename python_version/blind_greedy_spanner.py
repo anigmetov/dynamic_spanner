@@ -22,6 +22,7 @@ class BlindGreedySpanner:
         self.n_points = len(points)
 
         # common shape for all matrices
+        self.clear_spanner()
         matr_shape = (self.n_points, self.n_points)
 
         if dist_matrix != None:
@@ -33,12 +34,17 @@ class BlindGreedySpanner:
                     for j in range(i + 1, self.n_points):
                         self.dist_matrix[i][j] = dist_function(points[i], points[j])
 
+        self.dist_function = dist_function
+
+    def clear_spanner(self):
+        # common shape for all matrices
+        matr_shape = (self.n_points, self.n_points)
+
         self.lower_bounds = np.zeros(matr_shape)
         self.upper_bounds = np.full(matr_shape, inf_dist)
 
         self.dist_requested = np.zeros(matr_shape, dtype=np.bool)
         self.dist_computed = np.eye(self.n_points, dtype=np.bool)
-        self.dist_function = dist_function
 
         self.spanner = nx.Graph()
         for i in range(self.n_points):
@@ -76,6 +82,7 @@ class BlindGreedySpanner:
         if result == 0.0:
             result = self.dist_function(self.points[i], self.points[j])
         return result
+
 
     def worst_pair_blind(self):
         np.seterr(divide='ignore')
@@ -155,11 +162,23 @@ class BlindGreedySpanner:
                 self.set_lower_bound(x, y, new_lb)
 
     def build_blind(self, epsilon):
+        self.clear_spanner()
         while True:
             worst_ratio, i, j = self.worst_pair_blind()
             if worst_ratio <= (1 + epsilon):
                 break
             self.add_edge_to_spanner(i, j)
+
+    def build_random(self, epsilon):
+        self.clear_spanner()
+        edge_list = [(i, j) for i in range(self.n_points) for j in range(i+1, self.n_points)]
+        random_edge_list = np.random.permutation(edge_list).tolist()
+        while True:
+            worst_ratio, _, _ = self.worst_pair_blind()
+            if worst_ratio <= (1 + epsilon):
+                break
+            random_edge = random_edge_list.pop()
+            self.add_edge_to_spanner(random_edge[0], random_edge[1])
 
 
 def distance_matrix(points):
@@ -177,7 +196,7 @@ def run_experiment(dim, n_points, epsilon, points_generator, ps_gen_args):
     points = points_generator(n_points, dim, *ps_gen_args)
     result = []
     gs = BlindGreedySpanner(points, inf_dist, dist_function=euclidean_distance, dist_matrix=None)
-    gs.build_blind(epsilon)
+    gs.build_random(epsilon)
     n_gs_edges = gs.number_of_edges()
     result.append(ExperimentResult(dim, n_points, epsilon, points_generator.__name__, "blind_greedy", n_gs_edges))
     print(result[-1])
@@ -188,17 +207,17 @@ def run_experiment(dim, n_points, epsilon, points_generator, ps_gen_args):
 if __name__ == "__main__":
     np.random.seed(1)
 
-    # n_pointses = [10]
-    # dims = [2]
+    n_pointses = [70]
+    dims = [2]
+    ps_gen_methods = [get_points, get_uniform_points]
+    ps_gen_args = [[], [10.0]]
+    epsilons = [0.2]
+
+    # n_pointses = [50, 100, 200, 400, 800, 1600, 3200, 6400]
+    # dims = [2, 3, 4, 5]
     # ps_gen_methods = [get_points, get_uniform_points, get_exponential_points]
     # ps_gen_args = [[], [10.0], []]
-    # epsilons = [0.2]
-
-    n_pointses = [50, 100, 200, 400, 800, 1600, 3200, 6400]
-    dims = [2, 3, 4, 5]
-    ps_gen_methods = [get_points, get_uniform_points, get_exponential_points]
-    ps_gen_args = [[], [10.0], []]
-    epsilons = [0.01, 0.1, 0.2, 0.5, 2.0]
+    # epsilons = [0.01, 0.1, 0.2, 0.5, 2.0]
 
     results = jl.Parallel(n_jobs=-1)(
         jl.delayed(run_experiment)(dim, n_points, epsilon, ps_gen_method, ps_arg)
@@ -215,7 +234,7 @@ if __name__ == "__main__":
                "Sparseness": er.sparseness} for r in results for er in r]
 
     df = pd.DataFrame(df_arg)
-    df.to_pickle("blind_greedy_spanner_results_pandas.pkl")
+    df.to_pickle("blind_greedy_spanner_results_pandas-rm.pkl")
 
     for r in results:
         for er in r:
