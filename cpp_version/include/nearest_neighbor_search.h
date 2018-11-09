@@ -28,7 +28,7 @@ protected:
       Point_info() { }
 
       Point_info(Real distance)
-              :distance(distance)
+              : distance(distance)
       {
           exact_distance_used = false;
           upper_bound = std::numeric_limits<Real>::max();
@@ -55,7 +55,7 @@ public:
 
     Nearest_neighbor_search(const VectorReal& distance_vector,
             DynamicSpanner<Real>* ptr_dspanner)
-            :m_dspanner(ptr_dspanner)
+            : m_dspanner(ptr_dspanner)
     {
 
         m_num_points = m_dspanner->get_num_points();

@@ -2,7 +2,7 @@
 
 //#define LOG_AUCTION
 
-//#include "spdlog/spdlog.h"
+#include "spdlog/spdlog.h"
 
 #include <fstream>
 #include <iostream>
@@ -15,7 +15,8 @@
 
 //std::mt19937_64 twister;
 
-//namespace spd = spdlog;
+namespace spd = spdlog;
+
 using namespace wasser_spanner;
 
 bool
@@ -94,8 +95,8 @@ double get_expansion_constant(const MatrixR& dist_matrix, double base)
 
 int main(int argc, char** argv)
 {
-    //auto console = spd::stdout_color_mt("console");
-    //console->set_level(spd::level::info);
+    auto console = spd::stdout_color_mt("console");
+    console->set_level(spd::level::info);
 
     MatrixR dist_matrix, queries;
     double max_dist = -1.0;
@@ -112,39 +113,28 @@ int main(int argc, char** argv)
     std::string dist_name = argv[arg_idx++];
 
     double eps = atof(argv[arg_idx++]);
-
-    std::cout << "eps=" << eps << std::endl;
+    console->info("Reading from file {}, epsilon = {}", argv[1], argv[2]);
 
     read_distance_matrix_and_queries(dist_matrix, queries, max_dist, min_dist, dist_name);
 
     size_t n = dist_matrix.size();
 
-    std::cout << "Distance Marix of size " << n << " computed; max distance = " << max_dist << std::endl;
-
-    //console->info("dist_matrix size = {}", dist_matrix.size());
-
-    /*
-    file_log->info("Distances calculated. max_dist / min_dist =  {} / {} = {} ",
-            max_dist, min_dist, max_dist / min_dist);
-    */
+    console->info("dist_matrix size = {}, spread = {} / {} = {}", dist_matrix.size(), max_dist, min_dist, max_dist / min_dist);
 
     DynamicSpannerR spanner(dist_matrix);
 
-    std::cout << "Spanner initialized" << std::endl << std::endl;
+    std::cout << "Spanner initialized" << std::endl;
 
-#if 1
+#if 0
 
     DynamicSpannerR copy(spanner);
 
     copy.construct_blind_greedy_eps_spanner(eps);
 
-    std::cout << "eps Spanner built from scratch. Requested distance : " << copy.get_fraction_of_requested_distances()
-              << ", computed distances : " << copy.get_fraction_of_computed_distances() << std::endl << std::endl;
+    console->info("eps Spanner built from scratch. Requested distances: {}, computed distances: {}\n", copy.get_fraction_of_requested_distances(),
+            copy.get_fraction_of_computed_distances());
 
     CoverTree ct(max_dist, spanner);
-
-    //std::cout << "cover tree constructed" << std::endl;
-    // ct.print_tree(std::cout);
 
     // TODO very ugly
     DynamicSpannerR* ds = &ct.m_dspanner;
@@ -171,7 +161,6 @@ int main(int argc, char** argv)
 
     std::cout << "eps Spanner built from wspd. Requested distance : " << copy.get_fraction_of_requested_distances()
               << ", computed distances : " << copy.get_fraction_of_computed_distances() << std::endl << std::endl;
-
 
 
     //ds->print_ratios();
@@ -211,10 +200,8 @@ int main(int argc, char** argv)
 
     another_spanner.construct_greedy_eps_spanner(eps);
 
-    std::cout << "Greedy Spanner built. Requested distance : " << another_spanner.get_fraction_of_requested_distances()
-              << ", computed distances : " << another_spanner.get_fraction_of_computed_distances() << std::endl;
-
-    std::cout << std::endl;
+    console->info("Greedy spanner built. Requested distances: {}, computed distances: {}\n", another_spanner.get_fraction_of_requested_distances(),
+        another_spanner.get_fraction_of_computed_distances());
 
     //another_spanner.print_ratios();
 
@@ -222,28 +209,19 @@ int main(int argc, char** argv)
 
     spanner.construct_blind_greedy_eps_spanner(eps);
 
-    std::cout << "Blind greedy Spanner built. Requested distance : " << spanner.get_fraction_of_requested_distances()
-              << ", computed distances : " << spanner.get_fraction_of_computed_distances() << std::endl;
-
-    std::cout << std::endl << std::endl;
+    console->info("Blind greedy spanner built. Requested distances: {}, computed distances: {}\n", spanner.get_fraction_of_requested_distances(),
+        spanner.get_fraction_of_computed_distances());
 
     for(size_t i = 0; i < queries.size(); i++)
     {
-
         std::vector<double>& query = queries[i];
-
         Nearest_neighbor_search<double> nns(query, &spanner);
-
         size_t result = nns.find_nearest_neighbor();
-
         std::cout << "Query " << i << ", answer: " << result << " - Computed distances: "
                   << nns.get_fraction_of_computed_distances() << std::endl;
         std::cout << "(correct answer is " << std::distance(query.begin(), std::min_element(query.begin(), query.end()))
                   << ")" << std::endl << std::endl;
-
     }
-
-
 #endif
 
     return 0;

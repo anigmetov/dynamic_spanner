@@ -9,9 +9,9 @@
 
 #include <cassert>
 
-//#include "spdlog/spdlog.h"
+#include "spdlog/spdlog.h"
 
-//namespace spd = spdlog;
+namespace spd = spdlog;
 
 constexpr int INVALID_ID = -1;
 
@@ -166,9 +166,7 @@ public:
                 Real new_upper_bound_1;
                 Real new_upper_bound_1_1 = m_matrix[x][i].upper_bound;
                 Real new_upper_bound_1_2 = m_matrix[j][y].upper_bound;
-                if (new_upper_bound_1_1 == std::numeric_limits<Real>::max()
-                        or
-                                new_upper_bound_1_2 == std::numeric_limits<Real>::max()) {
+                if (new_upper_bound_1_1 == std::numeric_limits<Real>::max() or new_upper_bound_1_2 == std::numeric_limits<Real>::max()) {
                     new_upper_bound_1 = std::numeric_limits<Real>::max();
                 }
                 else {
@@ -177,9 +175,7 @@ public:
                 Real new_upper_bound_2;
                 Real new_upper_bound_2_1 = m_matrix[x][j].upper_bound;
                 Real new_upper_bound_2_2 = m_matrix[i][y].upper_bound;
-                if (new_upper_bound_2_1 == std::numeric_limits<Real>::max()
-                        or
-                                new_upper_bound_2_2 == std::numeric_limits<Real>::max()) {
+                if (new_upper_bound_2_1 == std::numeric_limits<Real>::max() or new_upper_bound_2_2 == std::numeric_limits<Real>::max()) {
                     new_upper_bound_2 = std::numeric_limits<Real>::max();
                 }
                 else {
@@ -204,9 +200,7 @@ public:
                 Real new_lower_bound_1_1 = m_matrix[x][i].upper_bound;
                 Real new_lower_bound_1_2 = m_matrix[j][y].upper_bound;
                 //std::cout << x << " " << y << "Upper bounds xi " <<  new_lower_bound_1_1 << " jy " << new_lower_bound_1_2 << std::endl;
-                if (new_lower_bound_1_1 == std::numeric_limits<Real>::max()
-                        or
-                                new_lower_bound_1_2 == std::numeric_limits<Real>::max()) {
+                if (new_lower_bound_1_1 == std::numeric_limits<Real>::max() or new_lower_bound_1_2 == std::numeric_limits<Real>::max()) {
                     new_lower_bound_1 = 0.0;
                 }
                 else {
@@ -216,9 +210,7 @@ public:
                 Real new_lower_bound_2_1 = m_matrix[x][j].upper_bound;
                 Real new_lower_bound_2_2 = m_matrix[i][y].upper_bound;
                 //std::cout << "Upper bounds xj " <<  new_lower_bound_2_1 << " iy " << new_lower_bound_2_2 << std::endl;
-                if (new_lower_bound_2_1 == std::numeric_limits<Real>::max()
-                        or
-                                new_lower_bound_2_2 == std::numeric_limits<Real>::max()) {
+                if (new_lower_bound_2_1 == std::numeric_limits<Real>::max() or new_lower_bound_2_2 == std::numeric_limits<Real>::max()) {
                     new_lower_bound_2 = 0.0;
                 }
                 else {
@@ -245,9 +237,7 @@ public:
                     Real new_lower_bound_1_1 = m_matrix[x][i].upper_bound;
                     Real new_lower_bound_1_2 = m_matrix[j][y].lower_bound;
                     //std::cout << x << " " << y << "Upper bounds xi " <<  new_lower_bound_1_1 << " jy " << new_lower_bound_1_2 << std::endl;
-                    if (new_lower_bound_1_1 == std::numeric_limits<Real>::max()
-                            or
-                                    new_lower_bound_1_2 == 0.0) {
+                    if (new_lower_bound_1_1 == std::numeric_limits<Real>::max() or new_lower_bound_1_2 == 0.0) {
                         new_lower_bound_1 = 0.0;
                     }
                     else {
@@ -257,9 +247,7 @@ public:
                     Real new_lower_bound_2_1 = m_matrix[x][j].upper_bound;
                     Real new_lower_bound_2_2 = m_matrix[i][y].lower_bound;
                     //std::cout << "Upper bounds xj " <<  new_lower_bound_2_1 << " iy " << new_lower_bound_2_2 << std::endl;
-                    if (new_lower_bound_2_1 == std::numeric_limits<Real>::max()
-                            or
-                                    new_lower_bound_2_2 == 0.0) {
+                    if (new_lower_bound_2_1 == std::numeric_limits<Real>::max() or new_lower_bound_2_2 == 0.0) {
                         new_lower_bound_2 = 0.0;
                     }
                     else {
@@ -269,9 +257,7 @@ public:
                     Real new_lower_bound_3_1 = m_matrix[j][y].upper_bound;
                     Real new_lower_bound_3_2 = m_matrix[x][i].lower_bound;
                     //std::cout << x << " " << y << "Upper bounds xi " <<  new_lower_bound_1_1 << " jy " << new_lower_bound_1_2 << std::endl;
-                    if (new_lower_bound_3_1 == std::numeric_limits<Real>::max()
-                            or
-                                    new_lower_bound_3_2 == 0.0) {
+                    if (new_lower_bound_3_1 == std::numeric_limits<Real>::max() or new_lower_bound_3_2 == 0.0) {
                         new_lower_bound_3 = 0.0;
                     }
                     else {
@@ -281,9 +267,7 @@ public:
                     Real new_lower_bound_4_1 = m_matrix[i][y].upper_bound;
                     Real new_lower_bound_4_2 = m_matrix[x][j].lower_bound;
                     //std::cout << "Upper bounds xj " <<  new_lower_bound_2_1 << " iy " << new_lower_bound_2_2 << std::endl;
-                    if (new_lower_bound_4_1 == std::numeric_limits<Real>::max()
-                            or
-                                    new_lower_bound_4_2 == 0.0) {
+                    if (new_lower_bound_4_1 == std::numeric_limits<Real>::max() or new_lower_bound_4_2 == 0.0) {
                         new_lower_bound_4 = 0.0;
                     }
                     else {
@@ -316,8 +300,7 @@ public:
 
     }
 
-    bool is_distance_greater(VertexDescriptor i, VertexDescriptor j,
-            Real value, bool strict)
+    bool is_distance_greater(VertexDescriptor i, VertexDescriptor j, Real value, bool strict)
     {
         return not is_distance_less(i, j, value, not strict);
     }
@@ -393,7 +376,6 @@ public:
 
     void find_worst_ratio(size_t& x, size_t& y, double& ratio)
     {
-
         std::vector<std::pair<size_t, size_t> > candidates;
 
         double result = 0.0;
@@ -439,7 +421,6 @@ public:
             get_distance(i, j);
             find_worst_ratio(i, j, ratio);
         }
-
     }
 
     struct Value_with_index {

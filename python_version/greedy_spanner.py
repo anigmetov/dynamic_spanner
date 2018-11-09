@@ -127,13 +127,13 @@ if __name__ == "__main__":
     # ps_gen_methods = [get_points, get_exponential_points, get_uniform_points]
 
 
-    n_pointses = [50, 100, 200, 400]
-    dims = [2, 3, 4, 5]
+    n_pointses = [800]
+    dims = [2, 3, 4]
     ps_gen_methods = [get_points, get_uniform_points, get_exponential_points]
     ps_gen_args = [[], [10.0], []]
     epsilons = [0.01, 0.1, 0.2, 0.5, 2.0]
 
-    all_results = jl.Parallel(n_jobs=-1)(
+    all_results = jl.Parallel(n_jobs=5)(
         jl.delayed(run_experiment)(dim, n_points, epsilon, ps_gen_method, ps_arg)
         for dim in dims
         for n_points in n_pointses
@@ -142,14 +142,14 @@ if __name__ == "__main__":
 
     print("################################################################################")
 
-    df_arg = [ { "Dim" : er.dim,  "N_points" : er.n_points,
-                 "Epsilon" : er.epsilon,
-                 "Point_Generation_Method" : er.point_generation_method,
-                 "Spanner_Method" : er.spanner_method,  "Spanner_Edges" : er.spanner_edges,
-                 "Sparseness" : er.sparseness } for r in all_results for er in r ]
+    df_arg = [{"Dim": er.dim, "N_points": er.n_points,
+               "Epsilon": er.epsilon,
+               "Point_Generation_Method": er.point_generation_method,
+               "Spanner_Method": er.spanner_method, "Spanner_Edges": er.spanner_edges,
+               "Sparseness": er.sparseness} for r in all_results for er in r]
 
     df = pd.DataFrame(df_arg)
-    df.to_pickle("greedy_spanner_results_pandas.pkl")
+    df.to_pickle("greedy_spanner_results_pandas-800.pkl")
 
     for r in all_results:
         for er in r:
