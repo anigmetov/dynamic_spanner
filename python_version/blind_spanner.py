@@ -10,6 +10,7 @@ import pandas as pd
 
 from spanner_experiment_result import ExperimentResult
 from utils_euclidean import *
+from weakly_sorted import quasi_sorted_distances
 
 inf_dist = 10000000000.0
 
@@ -42,6 +43,12 @@ class BlindSpanner:
         self.lower_bounds = np.zeros(matr_shape)
         self.upper_bounds = np.full(matr_shape, inf_dist)
 
+        self.ratios = self.upper_bounds / self.lower_bounds
+        np.fill_diagonal(self.ratios, -np.inf)
+
+        self.worst_ratio = np.inf
+        self.worst_ratio
+
         self.dist_requested = np.zeros(matr_shape, dtype=np.bool)
         self.dist_computed = np.eye(self.n_points, dtype=np.bool)
 
@@ -51,6 +58,8 @@ class BlindSpanner:
 
     def set_upper_bound(self, i, j, value):
         assert (value >= 0.0 and value <= self.upper_bounds[i][j])
+        # if value < self.get_distance_no_cache(i, j):
+        #     print(f"i = {i}, j = {j}, value = {value}, true distance = {self.get_distance_no_cache(i, j)}")
         assert (value >= self.get_distance_no_cache(i, j))
         self.upper_bounds[i][j] = self.upper_bounds[j][i] = value
 
@@ -92,6 +101,13 @@ class BlindSpanner:
         row, col = np.where(ratio_matr == worst_ratio)
         i = np.random.randint(len(row))
         return (worst_ratio, row[i], col[i])
+
+
+    def is_blind_spanner_done(self, epsilon):
+        np.seterr(divide='ignore')
+        ratio_matr = self.upper_bounds / self.lower_bounds
+        np.fill_diagonal(ratio_matr, -np.inf)
+        return (ratio_matr <= epsilon).all()
 
     def add_edge_to_spanner(self, i, j):
         dist_ij = self.distance(i, j)
@@ -180,6 +196,37 @@ class BlindSpanner:
             self.add_edge_to_spanner(random_edge[0], random_edge[1])
 
 
+    def build_quasi_sorted_greedy(self, epsilon):
+        self.clear_spanner()
+        dist_list = distances_list(self.points)
+        sd = quasi_sorted_distances(self.points, dist_list)
+        for dist_ij, i, j in sd.qsorted_distances:
+            if self.is_blind_spanner_done(epsilon):
+                break
+            self.add_edge_to_spanner(i,j)
+
+
+    def build_quasi_sorted_shaker(self, epsilon):
+        self.clear_spanner()
+        dist_list = distances_list(self.points)
+        sd = quasi_sorted_distances(self.points, dist_list).qsorted_distances
+        idx_min = 0
+        idx_max = len(sd) - 1
+        go_up = True
+        for dist_ij, i, j in sd:
+            if self.is_blind_spanner_done(epsilon):
+                break
+            if go_up:
+                _, i, j = sd[idx_min]
+                idx_min = idx_min + 1
+            else:
+                _, i, j = sd[idx_max]
+                idx_max = idx_max - 1
+            go_up = not go_up
+            self.add_edge_to_spanner(i,j)
+
+
+
 def distance_matrix(points):
     n_points = len(points)
     result = np.zeros((n_points, n_points))
@@ -202,6 +249,33 @@ def run_experiment(dim, n_points, epsilon, points_generator, ps_gen_args):
     sys.stdout.flush()
     return result
 
+def run_experiment_quasi_greedy(dim, n_points, epsilon, points_generator, ps_gen_args):
+    points = points_generator(n_points, dim, *ps_gen_args)
+    result = []
+    gs = BlindSpanner(points, inf_dist, dist_function=euclidean_distance, dist_matrix=None)
+    gs.build_quasi_sorted_greedy(epsilon)
+    n_gs_edges = gs.number_of_edges()
+    result.append(ExperimentResult(dim, n_points, epsilon, points_generator.__name__, "blind_quasi_sorted_greedy", n_gs_edges))
+    print(result[-1])
+    sys.stdout.flush()
+    gs.clear_spanner()
+    gs.build_quasi_sorted_shaker(epsilon)
+    n_gs_edges = gs.number_of_edges()
+    result.append(ExperimentResult(dim, n_points, epsilon, points_generator.__name__, "blind_quasi_sorted_shaker", n_gs_edges))
+    print(result[-1])
+    sys.stdout.flush()
+    return result
+
+def run_experiment_quasi_shaker(dim, n_points, epsilon, points_generator, ps_gen_args):
+    points = points_generator(n_points, dim, *ps_gen_args)
+    result = []
+    gs = BlindSpanner(points, inf_dist, dist_function=euclidean_distance, dist_matrix=None)
+    gs.build_quasi_sorted_shaker(epsilon)
+    n_gs_edges = gs.number_of_edges()
+    result.append(ExperimentResult(dim, n_points, epsilon, points_generator.__name__, "blind_quasi_sorted_shaker", n_gs_edges))
+    print(result[-1])
+    sys.stdout.flush()
+    return result
 
 if __name__ == "__main__":
     np.random.seed(1)
@@ -217,9 +291,10 @@ if __name__ == "__main__":
     ps_gen_methods = [get_points, get_uniform_points]
     ps_gen_args = [[], [10.0]]
     epsilons = [0.1, 0.5]
+    # run_experiment_quasi_greedy(2, 20, 0.5, get_points, [])
 
     results = jl.Parallel(n_jobs=-1)(
-        jl.delayed(run_experiment)(dim, n_points, epsilon, ps_gen_method, ps_arg)
+        jl.delayed(run_experiment_quasi_greedy)(dim, n_points, epsilon, ps_gen_method, ps_arg)
         for dim in dims
         for n_points in n_pointses
         for epsilon in epsilons
@@ -233,7 +308,7 @@ if __name__ == "__main__":
                "Sparseness": er.sparseness} for r in results for er in r]
 
     df = pd.DataFrame(df_arg)
-    df.to_pickle("blind_random_spanner_results_pandas-m.pkl")
+    df.to_pickle("blind_random_spanner_results_pandas-quasi.pkl")
 
     for r in results:
         for er in r:
