@@ -1,3 +1,6 @@
+#!/usr/bin/env python3
+
+import sys
 import numpy as np
 
 def euclidean_distance(a, b):
@@ -7,7 +10,7 @@ def get_points(n_points, dim):
     return np.random.randn(n_points, dim)
 
 
-def get_uniform_points(n_points, dim, max_coord=1.0):
+def get_uniform_points(n_points, dim, max_coord=100.0):
     return np.random.uniform(0.0, max_coord, (n_points, dim))
 
 
@@ -38,5 +41,4 @@ def distances_list(points):
 
 def sorted_distances(points):
     return sorted(distances_list(points))
-
 

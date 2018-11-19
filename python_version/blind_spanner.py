@@ -218,13 +218,12 @@ class BlindSpanner:
                 break
             if go_up:
                 _, i, j = sd[idx_min]
-                idx_min = idx_min + 1
+                idx_min += 1
             else:
                 _, i, j = sd[idx_max]
-                idx_max = idx_max - 1
+                idx_max -= 1
             go_up = not go_up
             self.add_edge_to_spanner(i,j)
-
 
 
 def distance_matrix(points):
@@ -299,6 +298,7 @@ if __name__ == "__main__":
         for n_points in n_pointses
         for epsilon in epsilons
         for (ps_gen_method, ps_arg) in zip(ps_gen_methods, ps_gen_args))
+
     print("################################################################################")
 
     df_arg = [{"Dim": er.dim, "N_points": er.n_points,

@@ -7,11 +7,16 @@
 #include <fstream>
 #include <iostream>
 #include <algorithm>
+#include <random>
 
 #include "cover_tree/cover_tree.h"
 #include "cover_tree/wspd.h"
 #include "dynamic_spanner.h"
 #include "nearest_neighbor_search.h"
+
+#include <armadillo>
+
+//using namespace arma;
 
 //std::mt19937_64 twister;
 
@@ -19,9 +24,70 @@ namespace spd = spdlog;
 
 using namespace wasser_spanner;
 
-bool
-read_distance_matrix_and_queries(MatrixR& distance_matrix, MatrixR& queries, double& max_distance, double& min_distance,
-        const std::string& fname)
+int get_num_points(const std::string& fname, const char delimiter = ' ')
+{
+    std::ifstream matr_file(fname);
+    if (not matr_file.good()) {
+        std::cerr << "Cannot read matrix from file " << fname << std::endl;
+        return -1;
+    }
+
+    std::string s;
+    std::getline(matr_file, s);
+
+    int result = 0;
+    bool in_delim = false;
+    for(int i = 0; i < s.length(); ++i) {
+        if (not in_delim and s[i] == delimiter) {
+            result++;
+            in_delim = true;
+        } else if (in_delim and s[i] != delimiter) {
+            in_delim = false;
+        }
+    }
+
+    matr_file.close();
+    return result;
+}
+
+bool read_distance_matrix(MatrixR& distance_matrix, double& max_distance, double& min_distance, const std::string& fname)
+{
+    std::ifstream matr_file(fname);
+    if (not matr_file.good()) {
+        std::cerr << "Cannot read matrix from file " << fname << std::endl;
+        return false;
+    }
+
+    min_distance = std::numeric_limits<double>::max();
+    max_distance = -1.0;
+    int n_points = get_num_points(fname);
+
+    distance_matrix = MatrixR(n_points, std::vector<double>(n_points, 0.0));
+
+    for (size_t i = 0; i < n_points; ++i) {
+        for (size_t j = 0; j < n_points; ++j) {
+            matr_file >> distance_matrix[i][j];
+            max_distance = std::max(distance_matrix[i][j], max_distance);
+            if (i != j) {
+                min_distance = std::min(distance_matrix[i][j], min_distance);
+            }
+        }
+    }
+
+    assert(0.0 < min_distance and min_distance <= max_distance);
+    for (size_t i = 0; i < n_points; ++i) {
+        for (size_t j = i; j < n_points; ++j) {
+            if (i == j)
+                assert(distance_matrix[i][j] == 0.0);
+            else
+                assert(distance_matrix[i][j] == distance_matrix[j][i]);
+        }
+    }
+
+    return true;
+}
+
+bool read_distance_matrix_and_queries(MatrixR& distance_matrix, MatrixR& queries, double& max_distance, double& min_distance, const std::string& fname)
 {
     using Real = std::remove_reference<decltype(min_distance)>::type;
     std::ifstream matr_file(fname);
@@ -93,11 +159,62 @@ double get_expansion_constant(const MatrixR& dist_matrix, double base)
     return result;
 }
 
+arma::mat generate_uniform_points(int dim, int n_points)
+{
+    return arma::randu(n_points, dim);
+}
+
+MatrixR get_distance_matrix(const arma::mat& points)
+{
+    int n_points = points.n_rows;
+//    arma::mat dist_matr = arma::zeros(n_points, n_points);
+    MatrixR result (n_points, std::vector<double>(n_points, 0.0));
+    for(int i = 0; i < n_points; ++i) {
+        for (int j = i + 1; j < n_points; ++j) {
+            double d = arma::norm(points.row(i) - points.row(j), 2);
+            result[i][j] = d;
+            result[j][i] = d;
+//            dist_matr(i, j) = d;
+//            dist_matr(j, i) = d;
+        }
+    }
+    return result;
+}
+
 int main(int argc, char** argv)
 {
     auto console = spd::stdout_color_mt("console");
     console->set_level(spd::level::info);
 
+
+#if 0
+    if (argc < 4) {
+        std::cout << "Usage: " << argv[0] << " DIM NPOINTS EPSILON" << std::endl;
+        return 0;
+    }
+    int dim = std::atoi(argv[1]);
+    int n_points = std::atoi(argv[2]);
+    double eps = std::atof(argv[3]);
+    if (dim < 1) {
+        std::cerr << "Bad dimension" << std::endl;
+        return 1;
+    }
+
+    if (n_points < 1) {
+        std::cerr << "Bad number of points" << std::endl;
+        return 1;
+    }
+
+    if (eps <= 0.0) {
+        std::cerr << "Bad epsilon" << std::endl;
+        return 1;
+    }
+    auto points = generate_uniform_points(dim, n_points);
+    auto dist_matrix = get_distance_matrix(points);
+    DynamicSpannerR spanner(dist_matrix);
+    spanner.construct_blind_random_eps_spanner(eps);
+    std::cout << "sparseness: " << spanner.get_fraction_of_computed_distances() << std::endl;
+#else
     MatrixR dist_matrix, queries;
     double max_dist = -1.0;
     double min_dist = std::numeric_limits<double>::max();
@@ -115,7 +232,7 @@ int main(int argc, char** argv)
     double eps = atof(argv[arg_idx++]);
     console->info("Reading from file {}, epsilon = {}", argv[1], argv[2]);
 
-    read_distance_matrix_and_queries(dist_matrix, queries, max_dist, min_dist, dist_name);
+    read_distance_matrix(dist_matrix, max_dist, min_dist, dist_name);
 
     size_t n = dist_matrix.size();
 
@@ -196,33 +313,81 @@ int main(int argc, char** argv)
 
 #else
 
-    DynamicSpannerR another_spanner(dist_matrix);
 
-    another_spanner.construct_greedy_eps_spanner(eps);
-
-    console->info("Greedy spanner built. Requested distances: {}, computed distances: {}\n", another_spanner.get_fraction_of_requested_distances(),
-        another_spanner.get_fraction_of_computed_distances());
-
-    //another_spanner.print_ratios();
-
-    //    return 0;
-
-    spanner.construct_blind_greedy_eps_spanner(eps);
-
-    console->info("Blind greedy spanner built. Requested distances: {}, computed distances: {}\n", spanner.get_fraction_of_requested_distances(),
-        spanner.get_fraction_of_computed_distances());
-
-    for(size_t i = 0; i < queries.size(); i++)
     {
-        std::vector<double>& query = queries[i];
-        Nearest_neighbor_search<double> nns(query, &spanner);
-        size_t result = nns.find_nearest_neighbor();
-        std::cout << "Query " << i << ", answer: " << result << " - Computed distances: "
-                  << nns.get_fraction_of_computed_distances() << std::endl;
-        std::cout << "(correct answer is " << std::distance(query.begin(), std::min_element(query.begin(), query.end()))
-                  << ")" << std::endl << std::endl;
+        DynamicSpannerR greedy_spanner(dist_matrix);
+        greedy_spanner.construct_greedy_eps_spanner(eps);
+        console->info("Greedy-non-blind;{};{};{};{}", greedy_spanner.get_fraction_of_requested_distances(), greedy_spanner.get_fraction_of_computed_distances(),
+                greedy_spanner.get_number_of_requested_distances(), greedy_spanner.get_number_of_computed_distances());
+
     }
+
+    {
+        DynamicSpannerR quasi_greedy_spanner(dist_matrix);
+        quasi_greedy_spanner.construct_blind_quasi_sorted_greedy_eps_spanner(eps);
+        console->info("Quasi-sorted-blind-greedy;{};{};{};{}", quasi_greedy_spanner.get_fraction_of_requested_distances(),
+                quasi_greedy_spanner.get_fraction_of_computed_distances(),
+                quasi_greedy_spanner.get_number_of_requested_distances(),
+                quasi_greedy_spanner.get_number_of_computed_distances());
+
+    }
+
+    {
+        DynamicSpannerR quasi_shaker_spanner(dist_matrix);
+        quasi_shaker_spanner.construct_blind_quasi_sorted_shaker_eps_spanner(eps);
+        console->info("Quasi-sorted-blind-shaker;{};{};{};{}", quasi_shaker_spanner.get_fraction_of_requested_distances(),
+                quasi_shaker_spanner.get_fraction_of_computed_distances(),
+                quasi_shaker_spanner.get_number_of_requested_distances(),
+                quasi_shaker_spanner.get_number_of_computed_distances());
+    }
+
+    {
+        DynamicSpannerR blind_random_spanner_1_1(dist_matrix);
+        blind_random_spanner_1_1.construct_blind_random_ratio_eps_spanner(true, true, eps);
+        console->info("Blind-random-ratio-connect-first-lower-bound-first;{};{};{};{}", blind_random_spanner_1_1.get_fraction_of_requested_distances(),
+                blind_random_spanner_1_1.get_fraction_of_computed_distances(),
+                blind_random_spanner_1_1.get_number_of_requested_distances(),
+                blind_random_spanner_1_1.get_number_of_computed_distances());
+    }
+
+    {
+        DynamicSpannerR blind_random_spanner_0_0(dist_matrix);
+        blind_random_spanner_0_0.construct_blind_random_ratio_eps_spanner(false, false, eps);
+        console->info("Blind-random-ratio;{};{};{};{}", blind_random_spanner_0_0.get_fraction_of_requested_distances(),
+                blind_random_spanner_0_0.get_fraction_of_computed_distances(),
+                blind_random_spanner_0_0.get_number_of_requested_distances(),
+                blind_random_spanner_0_0.get_number_of_computed_distances());
+    }
+
+    {
+        DynamicSpannerR blind_random_spanner_1_0(dist_matrix);
+        blind_random_spanner_1_0.construct_blind_random_ratio_eps_spanner(true, false, eps);
+        console->info("Blind-random-ratio-connect-first;{};{};{};{}", blind_random_spanner_1_0.get_fraction_of_requested_distances(),
+                blind_random_spanner_1_0.get_fraction_of_computed_distances(),
+                blind_random_spanner_1_0.get_number_of_requested_distances(),
+                blind_random_spanner_1_0.get_number_of_computed_distances());
+    }
+
+    {
+        DynamicSpannerR blind_random_spanner_0_1(dist_matrix);
+        blind_random_spanner_0_1.construct_blind_random_ratio_eps_spanner(false, true, eps);
+        console->info("Blind-random-ratio-lower-bound-first;{};{};{};{}", blind_random_spanner_0_1.get_fraction_of_requested_distances(),
+                blind_random_spanner_0_1.get_fraction_of_computed_distances(),
+                blind_random_spanner_0_1.get_number_of_requested_distances(),
+                blind_random_spanner_0_1.get_number_of_computed_distances());
+    }
+
+//    for (size_t i = 0; i < queries.size(); i++) {
+//        std::vector<double>& query = queries[i];
+//        Nearest_neighbor_search<double> nns(query, &spanner);
+//        size_t result = nns.find_nearest_neighbor();
+//        std::cout << "Query " << i << ", answer: " << result << " - Computed distances: "
+//                  << nns.get_fraction_of_computed_distances() << std::endl;
+//        std::cout << "(correct answer is " << std::distance(query.begin(), std::min_element(query.begin(), query.end()))
+//                  << ")" << std::endl << std::endl;
+//    }
 #endif
 
+#endif
     return 0;
 }

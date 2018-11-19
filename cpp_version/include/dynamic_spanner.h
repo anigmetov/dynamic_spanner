@@ -6,6 +6,8 @@
 #include <vector>
 #include <limits>
 #include <algorithm>
+#include <math.h>
+#include <random>
 
 #include <cassert>
 
@@ -54,12 +56,18 @@ public:
 
     size_t m_num_points;
     Matrix m_matrix;
+    double m_min_dist;
+    double m_max_dist;
+    std::mt19937 m_twister;
 
 public:
 
     DynamicSpanner(const MatrixReal& distance_matrix)
+            :
+            m_min_dist(std::numeric_limits<double>::max()),
+            m_max_dist(0.0),
+            m_twister(std::random_device()())
     {
-
         m_num_points = distance_matrix.size();
         m_matrix.resize(m_num_points);
 
@@ -76,6 +84,69 @@ public:
             m_matrix[i][i].lower_bound = m_matrix[i][i].upper_bound = 0.0;
             m_matrix[i][i].exact_distance_used = true; // not sure that is ever queried
         }
+
+        for (int i = 0; i < m_num_points; ++i) {
+            for (int j = i + 1; j < m_num_points; ++j) {
+                m_max_dist = std::max(m_max_dist, distance_matrix[i][j]);
+                m_min_dist = std::min(m_min_dist, distance_matrix[i][j]);
+            }
+        }
+    }
+
+    std::vector<std::pair<double, double>> get_buckets()
+    {
+        int n_buckets = ceil(log2(m_max_dist / m_min_dist));
+        std::vector<std::pair<double, double>> result;
+        result.reserve(n_buckets);
+        double scaling_factor = m_min_dist;
+        for (int k = 0; k < n_buckets; ++k) {
+            result.emplace_back(scaling_factor * std::pow(2.0, k), 4.0 * scaling_factor * std::pow(2.0, k));
+        }
+        return result;
+    }
+
+    int get_bucket_index(const std::vector<std::pair<double, double>>& buckets, double value)
+    {
+        std::vector<int> cand_list;
+        for (int i = 0; i < buckets.size(); ++i) {
+            auto bucket = buckets[i];
+            if (value >= buckets[i].first and value <= buckets[i].second) {
+                cand_list.push_back(i);
+            }
+        }
+        assert(not cand_list.empty());
+        if (cand_list.size() == 1)
+            return cand_list[0];
+        else {
+            std::random_shuffle(cand_list.begin(), cand_list.end());
+            return cand_list[0];
+        }
+    }
+
+    decltype(auto) weakly_sorted_edges()
+    {
+        auto buckets = get_buckets();
+        int n_buckets = buckets.size();
+        using EdgeInfo = std::tuple<double, int, int>;
+        using EdgeVectorVec = std::vector<EdgeInfo>;
+        std::vector<EdgeVectorVec> result_1(n_buckets, EdgeVectorVec());
+        for (int i = 0; i < m_num_points; ++i) {
+            for (int j = i + 1; j < m_num_points; ++j) {
+                double d = m_matrix[i][j].distance;
+                EdgeInfo ei{d, i, j};
+                int bucket_idx = get_bucket_index(buckets, d);
+                result_1[bucket_idx].emplace_back(d, i, j);
+            }
+        }
+        for (auto& v : result_1)
+            std::random_shuffle(v.begin(), v.end());
+        EdgeVectorVec result;
+        for (auto&& v : result_1) {
+            for (auto&& x : v) {
+                result.push_back(x);
+            }
+        }
+        return result;
     }
 
     Real get_distance_no_cache(VertexDescriptor i, VertexDescriptor j) const
@@ -149,45 +220,50 @@ public:
 
     }
 
-    void update_bounds_using_distance(VertexDescriptor i,
-            VertexDescriptor j)
+    void update_bounds_using_distance(VertexDescriptor i, VertexDescriptor j, Real dist_ij = -1.0)
     {
 
-        Real dist_ij = m_matrix[i][j].distance;
+        if (dist_ij == -1.0)
+            dist_ij = m_matrix[i][j].distance;
 
-        for (size_t x = 0; x < m_num_points; x++) {
-            for (size_t y = x + 1; y < m_num_points; y++) {
-                Pair_of_points_info& info_xy = m_matrix[x][y];
-                Pair_of_points_info& info_yx = m_matrix[y][x];
-                if (info_xy.exact_distance_used) {
-                    continue;
-                }
+#pragma omp parallel
+        {
+#pragma omp for schedule(dynamic)
+            for (size_t x = 0; x < m_num_points; x++) {
+                for (size_t y = x + 1; y < m_num_points; y++) {
+                    Pair_of_points_info& info_xy = m_matrix[x][y];
+                    Pair_of_points_info& info_yx = m_matrix[y][x];
+                    if (info_xy.exact_distance_used) {
+                        continue;
+                    }
 
-                Real new_upper_bound_1;
-                Real new_upper_bound_1_1 = m_matrix[x][i].upper_bound;
-                Real new_upper_bound_1_2 = m_matrix[j][y].upper_bound;
-                if (new_upper_bound_1_1 == std::numeric_limits<Real>::max() or new_upper_bound_1_2 == std::numeric_limits<Real>::max()) {
-                    new_upper_bound_1 = std::numeric_limits<Real>::max();
-                }
-                else {
-                    new_upper_bound_1 = new_upper_bound_1_1 + dist_ij + new_upper_bound_1_2;
-                }
-                Real new_upper_bound_2;
-                Real new_upper_bound_2_1 = m_matrix[x][j].upper_bound;
-                Real new_upper_bound_2_2 = m_matrix[i][y].upper_bound;
-                if (new_upper_bound_2_1 == std::numeric_limits<Real>::max() or new_upper_bound_2_2 == std::numeric_limits<Real>::max()) {
-                    new_upper_bound_2 = std::numeric_limits<Real>::max();
-                }
-                else {
-                    new_upper_bound_2 = new_upper_bound_2_1 + dist_ij + new_upper_bound_2_2;
-                }
-                Real new_upper_bound = std::min(new_upper_bound_1, new_upper_bound_2);
+                    Real new_upper_bound_1;
+                    Real new_upper_bound_1_1 = m_matrix[x][i].upper_bound;
+                    Real new_upper_bound_1_2 = m_matrix[j][y].upper_bound;
+                    if (new_upper_bound_1_1 == std::numeric_limits<Real>::max() or new_upper_bound_1_2 == std::numeric_limits<Real>::max()) {
+                        new_upper_bound_1 = std::numeric_limits<Real>::max();
+                    }
+                    else {
+                        new_upper_bound_1 = new_upper_bound_1_1 + dist_ij + new_upper_bound_1_2;
+                    }
+                    Real new_upper_bound_2;
+                    Real new_upper_bound_2_1 = m_matrix[x][j].upper_bound;
+                    Real new_upper_bound_2_2 = m_matrix[i][y].upper_bound;
+                    if (new_upper_bound_2_1 == std::numeric_limits<Real>::max() or new_upper_bound_2_2 == std::numeric_limits<Real>::max()) {
+                        new_upper_bound_2 = std::numeric_limits<Real>::max();
+                    }
+                    else {
+                        new_upper_bound_2 = new_upper_bound_2_1 + dist_ij + new_upper_bound_2_2;
+                    }
+                    Real new_upper_bound = std::min(new_upper_bound_1, new_upper_bound_2);
 
-                info_xy.upper_bound = std::min(info_xy.upper_bound, new_upper_bound);
-                info_yx.upper_bound = info_xy.upper_bound;
+                    info_xy.upper_bound = std::min(info_xy.upper_bound, new_upper_bound);
+                    info_yx.upper_bound = info_xy.upper_bound;
+                }
             }
         }
 
+#pragma omp for schedule(dynamic)
         for (size_t x = 0; x < m_num_points; x++) {
             for (size_t y = x + 1; y < m_num_points; y++) {
                 Pair_of_points_info& info_xy = m_matrix[x][y];
@@ -224,7 +300,9 @@ public:
         }
 
 #if 1
+#pragma omp parallel
         {
+#pragma omp for schedule(dynamic)
             for (size_t x = 0; x < m_num_points; x++) {
                 for (size_t y = x + 1; y < m_num_points; y++) {
                     Pair_of_points_info& info_xy = m_matrix[x][y];
@@ -287,14 +365,14 @@ public:
 
 #if DEBUG
         for(size_t x=0;x<m_num_points;x++) {
-        for(size_t y=0;y<m_num_points;y++) {
-          Pair_of_points_info& info_xy = m_matrix[x][y];
-          Pair_of_points_info& info_yx = m_matrix[y][x];
-          assert(info_xy.upper_bound>=info_xy.distance);
-          assert(info_xy.lower_bound<=info_xy.distance);
-          assert(info_xy.upper_bound==info_yx.upper_bound);
-          assert(info_xy.lower_bound==info_yx.lower_bound);
-        }
+            for(size_t y=0;y<m_num_points;y++) {
+                Pair_of_points_info& info_xy = m_matrix[x][y];
+                Pair_of_points_info& info_yx = m_matrix[y][x];
+                assert(info_xy.upper_bound>=info_xy.distance);
+                assert(info_xy.lower_bound<=info_xy.distance);
+                assert(info_xy.upper_bound==info_yx.upper_bound);
+                assert(info_xy.lower_bound==info_yx.lower_bound);
+            }
         }
 #endif
 
@@ -310,6 +388,8 @@ public:
         //console->debug("get_distance called for {} {}", i, j);
         Pair_of_points_info& info = m_matrix[i][j];
         Pair_of_points_info& info_mirror = m_matrix[j][i];
+        info.distance_requested = true;
+        info_mirror.distance_requested = true;
         info.exact_distance_used = true;
         info_mirror.exact_distance_used = true;
         info.upper_bound = info.lower_bound = info.distance;
@@ -374,9 +454,54 @@ public:
 
     }
 
+    bool find_random_bad_ratio(int& i, int& j, bool connect_first, bool lower_bound_first, double epsilon)
+    {
+        std::vector<std::pair<size_t, size_t>> candidates;
+
+        double result = 0.0;
+        bool is_disconnected = false;
+        bool is_lower_bound_zero = false;
+        for (size_t i = 0; i < m_num_points; i++) {
+            for (size_t j = i + 1; j < m_num_points; j++) {
+                if (m_matrix[i][j].exact_distance_used)
+                    continue;
+                Real low = m_matrix[i][j].lower_bound;
+                Real upp = m_matrix[i][j].upper_bound;
+                if (upp == std::numeric_limits<Real>::max()) {
+                    if (connect_first and not is_disconnected) {
+                        candidates.clear();
+                        is_disconnected = true;
+                    }
+                    candidates.emplace_back(i, j);
+                }
+                else if (not is_disconnected and low == 0.0) {
+                    if (lower_bound_first and not is_lower_bound_zero) {
+                        candidates.clear();
+                        is_lower_bound_zero = true;
+                    }
+                    candidates.emplace_back(i, j);
+                }
+                else if (not is_disconnected and
+                        not is_lower_bound_zero and
+                        upp / low > 1.0 + epsilon) {
+                    candidates.emplace_back(i, j);
+                }
+            }
+        }
+
+        if (candidates.empty())
+            return false;
+
+        std::uniform_int_distribution<int> dis(0, candidates.size()-1);
+        int idx = dis(m_twister);
+        i = candidates[idx].first;
+        j = candidates[idx].second;
+        return true;
+    }
+
     void find_worst_ratio(size_t& x, size_t& y, double& ratio)
     {
-        std::vector<std::pair<size_t, size_t> > candidates;
+        std::vector<std::pair<size_t, size_t>> candidates;
 
         double result = 0.0;
         for (size_t i = 0; i < m_num_points; i++) {
@@ -389,7 +514,6 @@ public:
                     }
                     result = std::numeric_limits<Real>::max();
                     candidates.push_back(std::make_pair(i, j));
-
                 }
                 else {
                     double curr = upp / low;
@@ -410,6 +534,22 @@ public:
         //std::cout << "Worst ratio at " << x << ", " << y << ": " << m_matrix[x][y].lower_bound << " " << m_matrix[x][y].upper_bound << std::endl;
     }
 
+    double find_worst_ratio()
+    {
+        double result = 0.0;
+        for (size_t i = 0; i < m_num_points; i++) {
+            for (size_t j = i + 1; j < m_num_points; j++) {
+                Real low = m_matrix[i][j].lower_bound;
+                Real upp = m_matrix[i][j].upper_bound;
+                if (low == 0.0 or upp == std::numeric_limits<Real>::max()) {
+                    return std::numeric_limits<Real>::max();
+                }
+                result = std::max(result, upp / low);
+            }
+        }
+        return result;
+    }
+
     void construct_blind_greedy_eps_spanner(double eps)
     {
         size_t i, j;
@@ -421,6 +561,111 @@ public:
             get_distance(i, j);
             find_worst_ratio(i, j, ratio);
         }
+    }
+
+    void construct_blind_random_eps_spanner(double eps)
+    {
+        size_t i, j;
+        double ratio;
+
+        ratio = find_worst_ratio();
+
+        std::vector<Value_with_index> vec;
+
+        for (size_t i = 0; i < m_num_points; i++) {
+            for (size_t j = i + 1; j < m_num_points; j++) {
+                vec.push_back(Value_with_index(m_matrix[i][j].distance, i, j));
+            }
+        }
+
+        std::random_shuffle(vec.begin(), vec.end());
+
+        while (ratio > (1 + eps)) {
+            get_distance(i, j);
+            ratio = find_worst_ratio();
+        }
+    }
+
+    void construct_blind_quasi_sorted_greedy_eps_spanner(double eps)
+    {
+        update_bounds_from_approximate_distances(2.0);
+        auto quasi_sorted_edges = weakly_sorted_edges();
+        int i, j;
+        int edge_idx = 0;
+        double dist;
+        double ratio = find_worst_ratio();
+
+        while (ratio > (1 + eps)) {
+            std::tie(dist, i, j) = quasi_sorted_edges[edge_idx++];
+            get_distance(i, j);
+            ratio = find_worst_ratio();
+        }
+    }
+
+    void construct_blind_quasi_sorted_shaker_eps_spanner(double eps)
+    {
+        update_bounds_from_approximate_distances(2.0);
+        auto quasi_sorted_edges = weakly_sorted_edges();
+        int i, j;
+        int edge_idx_low = 0;
+        int edge_idx_high = quasi_sorted_edges.size() - 1;
+        double dist;
+        double ratio = find_worst_ratio();
+
+        bool go_up = false;
+
+        while (ratio > (1 + eps)) {
+            if (go_up)
+                std::tie(dist, i, j) = quasi_sorted_edges[edge_idx_low++];
+            else
+                std::tie(dist, i, j) = quasi_sorted_edges[edge_idx_high--];
+//            std::cout << "quasi_shaker: dist = " << dist << ", go up = " << go_up << ", edge_idx_low = " << edge_idx_low << ", edge_idx_high = " << edge_idx_high << std::endl;
+            go_up = !go_up;
+            get_distance(i, j);
+            ratio = find_worst_ratio();
+        }
+    }
+
+    void construct_blind_random_ratio_eps_spanner(bool connect_first, bool lower_bound_first, double eps)
+    {
+        int i, j;
+        while (true) {
+            find_random_bad_ratio(i, j, connect_first, lower_bound_first, eps);
+            if (find_worst_ratio() <= 1.0 + eps)
+                break;
+            get_distance(i, j);
+        }
+    }
+
+    void update_bounds_from_approximate_distances(const double approximation_factor)
+    {
+
+        std::random_device rd;
+        std::mt19937 gen(rd());
+        std::uniform_real_distribution<double> dis(1.0, approximation_factor);
+
+
+#pragma omp parallel
+        {
+#pragma omp for schedule(dynamic)
+            for (int i = 0; i < m_num_points; ++i) {
+                for (int j = i + 1; j < m_num_points; ++j) {
+                    auto& info_ij = m_matrix[i][j];
+                    auto& info_ji = m_matrix[j][i];
+                    double approx_value = dis(gen) * info_ij.distance;
+                    info_ij.upper_bound = approx_value;
+                    info_ij.lower_bound = (1.0 / approximation_factor) * approx_value;
+                    info_ji.upper_bound = approx_value;
+                    info_ji.lower_bound = (1.0 / approximation_factor) * approx_value;
+                }
+            }
+        }
+
+//        for (int i = 0; i < m_num_points; ++i) {
+//            for (int j = i + 1; j < m_num_points; ++j) {
+//                update_bounds_using_distance(i, j);
+//            }
+//        }
     }
 
     struct Value_with_index {
