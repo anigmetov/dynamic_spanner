@@ -59,6 +59,8 @@ public:
     double m_min_dist;
     double m_max_dist;
     std::mt19937 m_twister;
+    double m_epsilon { 0.0 };
+    std::string m_strategy;
 
 public:
 
@@ -454,6 +456,15 @@ public:
 
     }
 
+    std::string get_statistics() const
+    {
+        double n_pairs = m_num_points * (m_num_points - 1) / 2;
+        double distances_computed = get_number_of_computed_distances();
+        double sparseness_1 = distances_computed / n_pairs;
+        double sparseness_2 = distances_computed / m_num_points;
+        return fmt::format("{};{};{};{};{};{}", m_strategy, m_epsilon, m_num_points, distances_computed, sparseness_1, sparseness_2);
+    }
+
     bool find_random_bad_ratio(int& i, int& j, bool connect_first, bool lower_bound_first, double epsilon)
     {
         std::vector<std::pair<size_t, size_t>> candidates;
@@ -552,6 +563,8 @@ public:
 
     void construct_blind_greedy_eps_spanner(double eps)
     {
+        m_epsilon = eps;
+        m_strategy = "blind-greedy";
         size_t i, j;
         double ratio;
 
@@ -565,29 +578,38 @@ public:
 
     void construct_blind_random_eps_spanner(double eps)
     {
+        m_epsilon = eps;
+        m_strategy = "blind-random";
+
         size_t i, j;
         double ratio;
 
         ratio = find_worst_ratio();
 
-        std::vector<Value_with_index> vec;
+        std::vector<std::pair<size_t, size_t>> vec;
 
         for (size_t i = 0; i < m_num_points; i++) {
             for (size_t j = i + 1; j < m_num_points; j++) {
-                vec.push_back(Value_with_index(m_matrix[i][j].distance, i, j));
+                vec.emplace_back(i, j);
             }
         }
 
         std::random_shuffle(vec.begin(), vec.end());
+        auto vec_iter = vec.begin();
 
         while (ratio > (1 + eps)) {
+            std::tie(i, j) = *vec_iter++;
             get_distance(i, j);
+            std::cout << "adding i = " << i << ", j = " << j << std::endl;
             ratio = find_worst_ratio();
         }
     }
 
     void construct_blind_quasi_sorted_greedy_eps_spanner(double eps)
     {
+        m_epsilon = eps;
+        m_strategy = "blind-quasi-sorted-greedy";
+
         update_bounds_from_approximate_distances(2.0);
         auto quasi_sorted_edges = weakly_sorted_edges();
         int i, j;
@@ -604,6 +626,9 @@ public:
 
     void construct_blind_quasi_sorted_shaker_eps_spanner(double eps)
     {
+        m_epsilon = eps;
+        m_strategy = "blind-quasi-sorted-shaker";
+
         update_bounds_from_approximate_distances(2.0);
         auto quasi_sorted_edges = weakly_sorted_edges();
         int i, j;
@@ -628,6 +653,16 @@ public:
 
     void construct_blind_random_ratio_eps_spanner(bool connect_first, bool lower_bound_first, double eps)
     {
+        m_epsilon = eps;
+        if (connect_first and lower_bound_first)
+            m_strategy = "blind-random-bad-ratio-connect-first-lower-bound-first";
+        else if (connect_first)
+            m_strategy = "blind-random-bad-ratio-connect-first";
+        else if (lower_bound_first)
+            m_strategy = "blind-random-bad-ratio-lower-bound-first";
+        else
+            m_strategy = "blind-random-bad-ratio";
+
         int i, j;
         while (true) {
             find_random_bad_ratio(i, j, connect_first, lower_bound_first, eps);
@@ -689,6 +724,8 @@ public:
 
     void construct_greedy_eps_spanner(double eps)
     {
+        m_epsilon = eps;
+        m_strategy = "greedy-non-blind";
 
         std::vector<Value_with_index> vec;
 

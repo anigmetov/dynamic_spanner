@@ -22,6 +22,22 @@ def get_exponential_points(n_points, dim):
     return np.power(2.0, res)
 
 
+def get_clustered_points(n_points, dim, n_clusters = -1):
+    if n_clusters == -1:
+        n_clusters = max(5, int(n_points / 50))
+    assert(n_points % n_clusters == 0)
+    points_per_cluster = int(n_points / n_clusters)
+    a = get_uniform_points(n_clusters, dim, 10000.0)
+    cluster_centres = np.repeat(a, points_per_cluster, axis = 0)
+    # print("********************************************************************************")
+    # print(a)
+    # print("********************************************************************************")
+    # print(cluster_centres)
+    # print("********************************************************************************")
+    diffs = np.random.normal(scale = 10.0, size = (n_points, dim))
+    return diffs + cluster_centres
+
+
 def distance_matrix(points):
     n_points = len(points)
     result = np.zeros((n_points, n_points))

@@ -184,8 +184,9 @@ MatrixR get_distance_matrix(const arma::mat& points)
 int main(int argc, char** argv)
 {
     auto console = spd::stdout_color_mt("console");
+    auto exp_logger = spd::basic_logger_st("experiment_logger", "experiment_log-blind-greedy.txt");
     console->set_level(spd::level::info);
-
+    exp_logger->set_pattern("%v");
 
 #if 0
     if (argc < 4) {
@@ -313,68 +314,66 @@ int main(int argc, char** argv)
 
 #else
 
-
+//    {
+//        DynamicSpannerR greedy_spanner(dist_matrix);
+//        greedy_spanner.construct_greedy_eps_spanner(eps);
+//        console->info("{};{}", dist_name, greedy_spanner.get_statistics());
+//        exp_logger->info("{};{}", dist_name, greedy_spanner.get_statistics());
+//    }
+//
+//    {
+//        DynamicSpannerR quasi_greedy_spanner(dist_matrix);
+//        quasi_greedy_spanner.construct_blind_quasi_sorted_greedy_eps_spanner(eps);
+//        console->info("{};{}", dist_name, quasi_greedy_spanner.get_statistics());
+//        exp_logger->info("{};{}", dist_name, quasi_greedy_spanner.get_statistics());
+//    }
+//
+//    {
+//        DynamicSpannerR quasi_shaker_spanner(dist_matrix);
+//        quasi_shaker_spanner.construct_blind_quasi_sorted_shaker_eps_spanner(eps);
+//        exp_logger->info("{};{}", dist_name, quasi_shaker_spanner.get_statistics());
+//    }
+//
+//    {
+//        DynamicSpannerR blind_random_spanner_1_1(dist_matrix);
+//        blind_random_spanner_1_1.construct_blind_random_ratio_eps_spanner(true, true, eps);
+//        console->info("{};{}", dist_name, blind_random_spanner_1_1.get_statistics());
+//        exp_logger->info("{};{}", dist_name, blind_random_spanner_1_1.get_statistics());
+//    }
+//
+//    {
+//        DynamicSpannerR blind_random_spanner_0_0(dist_matrix);
+//        blind_random_spanner_0_0.construct_blind_random_ratio_eps_spanner(false, false, eps);
+//        console->info("{};{}", dist_name, blind_random_spanner_0_0.get_statistics());
+//        exp_logger->info("{};{}", dist_name, blind_random_spanner_0_0.get_statistics());
+//    }
+//
+//    {
+//        DynamicSpannerR blind_random_spanner_1_0(dist_matrix);
+//        blind_random_spanner_1_0.construct_blind_random_ratio_eps_spanner(true, false, eps);
+//        console->info("{};{}", dist_name, blind_random_spanner_1_0.get_statistics());
+//        exp_logger->info("{};{}", dist_name, blind_random_spanner_1_0.get_statistics());
+//    }
+//
+//    {
+//        DynamicSpannerR blind_random_spanner_0_1(dist_matrix);
+//        blind_random_spanner_0_1.construct_blind_random_ratio_eps_spanner(false, true, eps);
+//        console->info("{};{}", dist_name, blind_random_spanner_0_1.get_statistics());
+//        exp_logger->info("{};{}", dist_name, blind_random_spanner_0_1.get_statistics());
+//    }
+//
     {
-        DynamicSpannerR greedy_spanner(dist_matrix);
-        greedy_spanner.construct_greedy_eps_spanner(eps);
-        console->info("Greedy-non-blind;{};{};{};{}", greedy_spanner.get_fraction_of_requested_distances(), greedy_spanner.get_fraction_of_computed_distances(),
-                greedy_spanner.get_number_of_requested_distances(), greedy_spanner.get_number_of_computed_distances());
-
+        DynamicSpannerR blind_greedy_spanner(dist_matrix);
+        blind_greedy_spanner.construct_blind_greedy_eps_spanner(eps);
+        console->info("{};{}", dist_name, blind_greedy_spanner.get_statistics());
+        exp_logger->info("{};{}", dist_name, blind_greedy_spanner.get_statistics());
     }
 
     {
-        DynamicSpannerR quasi_greedy_spanner(dist_matrix);
-        quasi_greedy_spanner.construct_blind_quasi_sorted_greedy_eps_spanner(eps);
-        console->info("Quasi-sorted-blind-greedy;{};{};{};{}", quasi_greedy_spanner.get_fraction_of_requested_distances(),
-                quasi_greedy_spanner.get_fraction_of_computed_distances(),
-                quasi_greedy_spanner.get_number_of_requested_distances(),
-                quasi_greedy_spanner.get_number_of_computed_distances());
-
-    }
-
-    {
-        DynamicSpannerR quasi_shaker_spanner(dist_matrix);
-        quasi_shaker_spanner.construct_blind_quasi_sorted_shaker_eps_spanner(eps);
-        console->info("Quasi-sorted-blind-shaker;{};{};{};{}", quasi_shaker_spanner.get_fraction_of_requested_distances(),
-                quasi_shaker_spanner.get_fraction_of_computed_distances(),
-                quasi_shaker_spanner.get_number_of_requested_distances(),
-                quasi_shaker_spanner.get_number_of_computed_distances());
-    }
-
-    {
-        DynamicSpannerR blind_random_spanner_1_1(dist_matrix);
-        blind_random_spanner_1_1.construct_blind_random_ratio_eps_spanner(true, true, eps);
-        console->info("Blind-random-ratio-connect-first-lower-bound-first;{};{};{};{}", blind_random_spanner_1_1.get_fraction_of_requested_distances(),
-                blind_random_spanner_1_1.get_fraction_of_computed_distances(),
-                blind_random_spanner_1_1.get_number_of_requested_distances(),
-                blind_random_spanner_1_1.get_number_of_computed_distances());
-    }
-
-    {
-        DynamicSpannerR blind_random_spanner_0_0(dist_matrix);
-        blind_random_spanner_0_0.construct_blind_random_ratio_eps_spanner(false, false, eps);
-        console->info("Blind-random-ratio;{};{};{};{}", blind_random_spanner_0_0.get_fraction_of_requested_distances(),
-                blind_random_spanner_0_0.get_fraction_of_computed_distances(),
-                blind_random_spanner_0_0.get_number_of_requested_distances(),
-                blind_random_spanner_0_0.get_number_of_computed_distances());
-    }
-
-    {
-        DynamicSpannerR blind_random_spanner_1_0(dist_matrix);
-        blind_random_spanner_1_0.construct_blind_random_ratio_eps_spanner(true, false, eps);
-        console->info("Blind-random-ratio-connect-first;{};{};{};{}", blind_random_spanner_1_0.get_fraction_of_requested_distances(),
-                blind_random_spanner_1_0.get_fraction_of_computed_distances(),
-                blind_random_spanner_1_0.get_number_of_requested_distances(),
-                blind_random_spanner_1_0.get_number_of_computed_distances());
-    }
-
-    {
-        DynamicSpannerR blind_random_spanner_0_1(dist_matrix);
-        blind_random_spanner_0_1.construct_blind_random_ratio_eps_spanner(false, true, eps);
-        console->info("Blind-random-ratio-lower-bound-first;{};{};{};{}", blind_random_spanner_0_1.get_fraction_of_requested_distances(),
-                blind_random_spanner_0_1.get_fraction_of_computed_distances(),
-                blind_random_spanner_0_1.get_number_of_requested_distances(),
-                blind_random_spanner_0_1.get_number_of_computed_distances());
+        DynamicSpannerR blind_random_spanner(dist_matrix);
+        blind_random_spanner.construct_blind_random_eps_spanner(eps);
+        console->info("{};{}", dist_name, blind_random_spanner.get_statistics());
+        exp_logger->info("{};{}", dist_name, blind_random_spanner.get_statistics());
     }
 
 //    for (size_t i = 0; i < queries.size(); i++) {
