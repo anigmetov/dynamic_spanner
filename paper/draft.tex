@@ -342,26 +342,27 @@ We refer to the former option as \textsc{BlindQuasiSortedGreedy} and to the latt
 
 
  \paragraph{Maintaining Lower and Upper Bounds}
- More specifically,
- we maintain an $n\times n$ matrix $M$ whose entries
-are intervals $M_{ij}=[a_{ij},b_{ij}]$, meaning that the distance
-between $p_i$ and $p_j$ lies in that interval. 
-We initialize $M_{ij}=[0,\infty]$ for all $i\neq j$
-and $M_{ij}=[0,0]$ for $i=j$.  Assume that $\dist(p_i,p_j)=v\in\R$ has been computed.
-First, we reset $M_{i,j}$ and $M_{j,i}$ to $[v,v]$. 
-To update the upper bound of some entry $M_{k,\ell}$,
+
+ In this subsection we explain the update procedure that we use. Suppose that
+ $a_{k,l}$ and $b_{k,l}$ are valid lower and upper bounds, so that
+\[
+     \forall 1 \leq k < l \leq n \quad a_{k,l} \leq \dist(p_k, p_l) \leq b_{k,l}.
+\]
+Assume that $\dist(p_i,p_j)=v\in\R$ has been computed.
+First, we reset $a_{i,j}$ and $b_{j,i}$ to $v$. 
+To update the upper bound of some entry $b_{k,\ell}$,
 we observe that the shortest path from $p_k$ to $p_\ell$ might now
 go through the new edge. Hence, we update
-%
-\[b_{k,\ell}\gets \min_{i,j}\{b_{k,\ell},b_{k,i}+v+b_{j,\ell},b_{k,j}+v+b_{i,\ell}\}\]
-%
+\[
+    b_{k,\ell}\gets \min_{i,j}\{b_{k,\ell},b_{k,i}+v+b_{j,\ell},b_{k,j}+v+b_{i,\ell}\}
+\]
 Repeating this for all $k,\ell$ yields the updated upper bounds in $O(n^2)$
 time per entry.
 
 For the lower bound, we observe that for any $1\leq k,\ell\leq n$,
-%
-\[v-b_{k,i}-b_{\ell,j}\]
-%
+\[
+    v-b_{k,i}-b_{\ell,j}
+\]
 is a lower bound for $\dist(p_k,p_\ell)$. Indeed, this follows from
 the triangle inequality
 %
@@ -371,11 +372,40 @@ and $\dist(p_k,p_\ell)$. An analogue bound holds with $i$ and $j$ swapped. Hence
 %
 \[a_{k,\ell}\gets \max\{a_{k,\ell},v-b_{k,i}-b_{\ell,j},v-b_{k,j}-b_{\ell,i}\}\]
 %
-for all $k,\ell$ and obtain the updated $M$ in $O(n^4)$ time.
+for all $k,\ell$.
+
+Note that after we added the edge $(p_i, p_j)$, the ratio of the upper and lower bound
+for this pair becomes 1, so a blind spanner algorithm always terminates (of course,
+we assume that the procedure \textsc{GetEdgeToAdd} picks an edge only once).
 
 
 \paragraph{Experimental Results}
+At the moment we cannot provide any theoretical guarantees for the heuristics that we propose to compute blind spanners,
+and it can happen that it will yield the complete graph as a spanner.
+We run extensive experiments on the points sampled from the low-dimensional Euclidean space to investigate
+experimentally the performance of these heuristics. Clearly, this has no practical meaning for $\R^d$, but
+this space is well-suited for controlled experiments.
 
+
+
+We look at points that are sampled uniformly at random from a cube, points that are sampled
+from a standard normal distribution, points that are clustered (we sample cluster centers uniformly at random
+and then we sample roughly the same number of points which are normally distributed around each of the cluster
+centers), and at points that are obtained from the uniform sample by exponentiating the coordinates:
+$(e^{\xi_1}, \dots, e^{\xi_d})$, where $\xi_i$ are i.i.d. with uniform distribution.
+Our findings are summarized in the plots \ref{fig:spanner_plots}.
+
+
+Our experiments show that the \textsc{BlindGreedy} algorithm performs rather well, but also \textsc{BlindRandom}
+algorithm reduces the amount of computed distances substantially, especially if we enforce having non-zero lower bounds
+first. The disappointing fact is that quasi-sorted variants produce spanners which are close to the complete graph
+(\textsc{BlindQuasiSortedGreedy} is much worse, requiring all the edges). It would seem plausible that, if we have
+access to approximate value of the distance, we could exploit this in the spanner construction, but we could not
+find a working heuristics.
+
+It does not seem that any of the blind variants provides a spanner that is asymptotically comparable
+with the greedy spanner. Regression analysis shows that in the datasets examined the best \textsc{BlindGreedy}
+variant produces spanners which are asymptotically $O(??)$.
 
 \section{Approximate Nearest Neighbor}
 
@@ -413,7 +443,7 @@ The precise radii of these balls are given in the following lemma.
 \end{proof}
 
 
-We can hope to avoid computation of $O(n)$ distances, if we assume low doubling dimension
+We may hope to avoid computation of $O(n)$ distances, if we assume low doubling dimension
 and solve approximate neighbor problem. The necessity of the first assumption is easily justified: if all $d(p_i, p_j)$
 and $d(p_i, q)$ are approximately the same, at each iteration of our algorithm we will be able to discard only one point.
 The necessity of the second requirement can be seen from the figure \ref{fig:bad_exact_nn_example},
