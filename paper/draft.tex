@@ -411,7 +411,12 @@ variant produces spanners which are asymptotically $O(??)$.
 
 In this section we consider the standard problem of finding an approximate nearest neighbor: given
 $n$ points $P = \Set{p_1, \dots, p_n}$, a query point $q$ and a real number $\eps > 0$,
-find $p_i$ such that $\dist(p_i, q) \leq (1 + \eps) \min_{k} \dist(q, p_k)$. We assume for simplicity
+find $p_i$ such that $\dist(p_i, q) \leq (1 + \eps) \min_{k} \dist(q, p_k)$. This notation will be fixed throughout this 
+section, and we shall also use the shorthand notation
+\[
+    r_i := \dist(p_i, q).
+\]
+We assume for simplicity
 that all exact pairwise distances $\dist(p_i, p_j)$ are already computed. Our goal is to reduce the number
 of computed distances $d(p_i, q)$.
 
@@ -429,6 +434,8 @@ may also allow us to discard more than one point, as figure \ref{fig:discarded_b
 this figure points inside the shaded smaller ball cannot be a better candidate,
 and the same is true for the points in the shaded area outside of the larger ball.
 The precise radii of these balls are given in the following lemma.
+
+
 
 \begin{lemma}
     Let $p_i, p_j \in P$ be such that $\dist(p_j, q) \geq \frac{\dist(p_i, q)}{1 + \eps}$,
@@ -450,6 +457,7 @@ The necessity of the second requirement can be seen from the figure \ref{fig:bad
 where a set of points in the plane is in general position, and yet, regardless of the order we choose them,
 at each iteration of our algorithm we are able to discard only one point. This example does not work in the
 approximate formulation.
+
 
 
 \begin{algorithmic}
@@ -479,12 +487,35 @@ approximate formulation.
     algorithm \ref{alg:ann_blind} computes $O(\log n)$ distances $\dist(p_i, q)$ in expectation.
 \end{theorem}
 
-In order to prove this theorem, we can think of the algorithm as 
 
-
+The proof is based on the following lemma.
 \begin{lemma}
+    There exists a constant $C$ that depends only on $\eps$ and the doubling dimension
+    such that after computing at most $C$ distances $\dist(p_k, q)$
+    either the algorithm verifies that the current candidate $p_i$ is a correct answer and terminates
+    or the algorithm finds another candidate $p_j$ such that $r_j < r_i$.
 \end{lemma}
+\begin{proof}
+    First, all points that are not contained in the ball $B(p_i, 2r_i)$
+    are discarded without computing the distance to them.
+    Now we have to examine all points $p_k$ inside this ball. 
+    There are three possibilities for $r_k$:
+    \begin{enumerate}
+        \item $r_i < r_1 / (1 + \eps)$. This outcome refutes the statement $p_1$ is an approximate
+            nearest neighbor and we can stop verification.
+    
+    Second, after we computed the distance $\dist(p_i, q)$
+    and checked that it is greater than $r_1 / (1 + \eps)$, we can discard all points inside
+    the ball $B(p_1, r_i - r_1 / (1+ \eps))$
+\end{proof}
 
+
+
+
+
+
+First we consider a simplified version of the problem, where the candidate for being an approximate nearest neighbor
+is given, and we only have to verify this. Without loss of generality, assume that the candidate is $p_1$.
 
 \begin{lemma}
 Consider the following random procedure: we start with $n$ numbers $[n] = \{\,1,\dots, n\,\}$ and 
