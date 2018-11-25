@@ -369,12 +369,12 @@ int main(int argc, char** argv)
         exp_logger->info("{};{}", dist_name, blind_greedy_spanner.get_statistics());
     }
 
-    {
-        DynamicSpannerR blind_random_spanner(dist_matrix);
-        blind_random_spanner.construct_blind_random_eps_spanner(eps);
-        console->info("{};{}", dist_name, blind_random_spanner.get_statistics());
-        exp_logger->info("{};{}", dist_name, blind_random_spanner.get_statistics());
-    }
+    //{
+    //    DynamicSpannerR blind_random_spanner(dist_matrix);
+    //    blind_random_spanner.construct_blind_random_eps_spanner(eps);
+    //    console->info("{};{}", dist_name, blind_random_spanner.get_statistics());
+    //    exp_logger->info("{};{}", dist_name, blind_random_spanner.get_statistics());
+    //}
 
 //    for (size_t i = 0; i < queries.size(); i++) {
 //        std::vector<double>& query = queries[i];
