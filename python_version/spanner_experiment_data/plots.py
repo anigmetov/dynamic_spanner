@@ -77,10 +77,10 @@ if __name__ == "__main__":
     # ycols = ["edges_to_points_ratio_nbg", "edges_to_points_ratio_bg", "edges_to_points_ratio_rbr_lbf",
     #          "edges_to_points_ratio_qs", "edges_to_points_ratio_qg"]
 
-    # ycols = ["edges_to_points_ratio_nbg", "edges_to_points_ratio_bg", "edges_to_points_ratio_rbr_lbf" ]
     ycols = ["Edges (non-blind greedy)", "Edges (blind greedy)", "Edges (blind random bad ratio, force lower bound)", "Edges (blind random bad ratio)"]
+    ycols = ["Edges to points ratio (non-blind greedy)", "Edges to points ratio (blind greedy)", "Edges to points ratio (blind random bad ratio, force lower bound)", "Edges to points ratio (blind random bad ratio)"]
     # # ycols = ["sparseness_random", "sparseness_greedy", "sparseness_blind_greedy"]
-    ds_to_plot = ds_all_dims.loc[(2, "normal", 0.1)]
+    ds_to_plot = ds_all_dims.loc[(2, "exp", 0.1)]
     ds_to_plot.reset_index(inplace=True)
     ds_to_plot.drop(columns="input_file", inplace=True)
     ds_to_plot = ds_to_plot.set_index(["Points"])
