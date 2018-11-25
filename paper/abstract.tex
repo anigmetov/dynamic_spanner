@@ -1,0 +1,166 @@
+\documentclass[a4paper,USenglish]{socg-lipics-v2018}
+\usepackage{amsthm}
+\usepackage{amsmath}
+\usepackage{mathbbol}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage{algorithm}
+\usepackage{url}
+%\usepackage{floatflt}
+%\usepackage{mathptmx}
+\usepackage{epsfig}
+\usepackage{wrapfig}
+\usepackage{color}
+
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+\usepackage{comment}
+\usepackage{braket}
+
+% \usepackage{ccaption}
+
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\Q}{\mathbb{Q}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Z}{\mathbb{Z}}
+\renewcommand{\S}{\mathbb{S}}
+\newcommand{\dappr}{\tilde{d}}
+%\newcommand{\Wlog}{W.l.o.g.\ }
+%\newcommand{\wlog}{w.l.o.g.\ }
+\newcommand{\eps}{\epsilon}
+\newcommand{\orient}{O}
+\newcommand{\cpro}{\Pi}
+\newcommand{\fib}{\mathrm{Fib}}
+
+\newcommand{\parent}{\mathrm{par}}
+\newcommand{\point}{p}
+\newcommand{\level}{\ell}
+\newcommand{\diam}{\mathrm{diam}}
+\newcommand{\pointset}{P}
+\newcommand{\distspace}{\mathcal{M}}
+\newcommand{\dist}{\delta}
+\newcommand{\adist}{\gamma}
+\newcommand{\complexity}{C_{\dist}}
+\newcommand{\doublingdimension}{\Delta}
+
+%\newcommand{\remark}[1]{\textbf{[#1]}}
+
+%\newtheorem{theorem}{Theorem}
+%\newdef{definition}{Definition}
+%\newtheorem{lemma}[theorem]{Lemma}
+%\newtheorem{corollary}[theorem]{Corollary}
+
+\newcommand{\myparagraph}[1]{\textbf{#1.}}
+
+%\newtheorem{theorem}{Theorem}
+%\newtheorem{lemma}[theorem]{Lemma}
+%\newtheorem{proposition}[theorem]{Proposition}
+%\newtheorem{corollary}[theorem]{Corollary}
+%\newtheorem{definition}[theorem]{Definition}
+%\newtheorem{remark}[theorem]{Remark}
+%\newtheorem{note}[theorem]{Note}
+
+%\numberwithin{equation}{section}
+%\numberwithin{figure}{section}
+
+%\def\marrow{\marginpar[\hfill$\longrightarrow$]{$\longleftarrow$}}
+%\def\michael#1{\textcolor{red}{\textsc{Michael says: }{\marrow\sf #1}}}
+
+\title{Geometric Filters for Metric Spaces}
+\author{Michael Kerber}{TU Graz}{kerber@tugraz.at}{}{}
+\author{Arnur Nigmetov}{TU Graz}{nigmetov@tugraz.at}{}{}
+
+\begin{document}
+\maketitle
+
+\section{Abstract}
+Often the complexity bounds for algorithms in metric spaces
+assume that the metric can be computed in constant time and
+subsume this constant in $O()$ notation. 
+Motivated by examples of metrics from Topological Data Analysis,
+in this paper we consider
+the case of metric spaces where each distance computation
+is an expensive operation.
+We consider two classical problems: computing a spanner and finding approximate
+nearest neighbor in the setting when the number of input points $n$
+is small enough to consider operations with polynomial complexity in $n$ (even of
+relatively high degree) as something cheap compared to the computation of an individual distance,
+and aim to reduce the number of computed distances.
+An example of such a situation is having about a hundred of persistence
+diagrams, each containing hundreds of thousands of points.
+
+
+
+\remark{start of the short version}
+
+We propose simple algorithms  for each of the two problems,
+and for the approximate nearest neighbor we are able to 
+prove theoretically that the algorithm
+reduces the number of computed distances to $O(\log n)$,
+if we assume doubling metric space.
+We also provide experimental evidence supporting this bound.
+
+
+For spanners we can only provide experimental results for
+different heuristics that we tried; but the results look
+convincing in the sense that on many different random point
+sets we are able to compute the spanner 
+avoiding computation of all $n \choose 2$ pairwise distances.
+
+
+The main idea of our approach to both problems is to use
+the triangle inequality to extract as much information as possible
+from the distances that we have computed so far, and
+it turns out that in case of low doubling dimension
+this idea really works, sparing us from the computation
+of many distances we would have needed, if we
+chose some of the existing algorithms. To the best of our knowledge,
+this is the first paper in which this setting is considered,
+and we believe that these results are just first
+steps in this direction, which is theoretically
+appealing as well as practically important.
+
+
+
+\remark{end of the short version, start of the long version}
+
+
+The main idea of our approach to the both problems is to maintain
+lower and upper bounds
+for each of the distances we might need to compute
+and use these bounds whenever possible instead
+of the true distance. For example, when the algorithm
+needs to decide whether the distance between two given points
+is less than some $t$, and the upper bound for this distance is
+less than $t$ or the lower bound is larger than $t$,
+we avoid computing the actual distance;
+otherwise we are forced to compute it, but then
+we use it to update our bounds for all other distances (the
+only tool that we can use here is, of course, the triangle inequality).
+For spanners we propose what we call the \textit{blind} approach,
+where we add an edge to the spanner for each of the distances we computed 
+(hence the name: the
+algorithm has no access to exact distance between two points before it decides to connect them
+with an edge), and we continue adding edges until the lower and upper bounds
+for all pairs of points become sufficiently close to each other.
+We experimentally demonstrate that in case of low dimension
+some of the heuristics we tried help to significantly reduce the number of
+computed distances.
+
+
+For nearest neighbor problem we want to minimize the number
+of computed distances to the query point. Here we are able to theoretically prove that, 
+if we assume doubling property,
+it is possible to find the approximate nearest neighbor computing
+only $O(\log n)$ distances to the query point.
+We also provide experimental evidence showing that this approach
+reduces the number of distance computations in practice.
+
+
+As far as we know, the setting that we consider is new, and the results in this paper
+are just the first steps in this direction, which, we believe, has large
+theoretical potential and is of great practical importance.
+
+\end{document}
+
