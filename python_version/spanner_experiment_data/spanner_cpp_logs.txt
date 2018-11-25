@@ -1,4 +1,4 @@
-dim;point_gen_method;input_file;spanner_method;epsilon;n_points;n_edges;sparseness;edges_to_points_ratio
+Dim;point_gen_method;input_file;spanner_method;epsilon;Points;Edges;Sparseness;Edges to points ratio
 2;clustered;dist_matrix_points_2_100_clustered.txt;greedy-non-blind;0.1;100;285;0.0575758;2.85
 2;clustered;dist_matrix_points_2_100_clustered.txt;blind-quasi-sorted-greedy;0.1;100;950;0.191919;9.5
 2;clustered;dist_matrix_points_2_100_clustered.txt;blind-quasi-sorted-shaker;0.1;100;1892;0.382222;18.92
