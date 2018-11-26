@@ -550,57 +550,55 @@ at each iteration of our algorithm we are able to discard only one point. This e
 approximate formulation.
 
 \begin{algorithmic}
-\Function{DiscardPoints}{$L, p_i, r_i, \eps$}
+\Procedure{Discard\_1}{$L, p_i$}
+    \State {$r_i = \dist(q, p_i)$}
     \ForAll { $p_j \in L$}
-       \If { $ \dist(p_i, p_j) < r_j - r_i / ( 1 + \eps) $ }
+       \If {  $ \dist(p_i, p_j) > r_i \left(1 + \frac{1}{ 1 + \eps} \right)$ }
            \State {Remove $p_j$ from $L$}
        \EndIf
-
-       \If {  $ \dist(p_i, p_j) > r_j + r_i / ( 1 + \eps) $ }
-           \State {Remove $p_j$ from $L$}
-       \EndIf
-
     \EndFor
-\EndFunction
+\EndProcedure
+\end{algorithmic}
+
+\begin{algorithmic}
+\Procedure{Discard\_2}{$L, w, c$}
+    \State {$r_w = \dist(q, w)$}
+    \State {$r_c = \dist(q, w)$}
+    \Comment {Distances $r_w$ and $r_c$ are cached}
+    \ForAll { $p_j \in L$}
+       \If { $ \dist(w, p_j) < r_w - r_c / ( 1 + \eps) $ }
+           \State {Remove $p_j$ from $L$}
+           \Comment {In particular, the worse candidate $w$ will be removed here}
+       \EndIf
+       \If {  $ \dist(w, p_j) > r_w + r_c / ( 1 + \eps) $ }
+           \State {Remove $p_j$ from $L$}
+       \EndIf
+    \EndFor
+\EndProcedure
 \end{algorithmic}
 
 
-
 \begin{algorithmic}
+\label{alg:ann_blind}
 \Function{ApproximateNearestNeighbor}{$P, q, \eps$}
-    \State {Initialize list $L$ with a random permutation of $P$}
-    \While {$L$ is not empty}
-        \State {Set current candidate $p_i$ to be the first element of $L$}
-        \State {Compute $r_i = \dist(q, p_i)$}
-        \State \Call{DiscardPoints}{$L, p_i, r_i, \eps$}
+    \State {Initialize array $L$ with a random permutation of $P$}
+    \State {$ c \gets \mbox{the first element of }L$}
+    \State {Compute $r_i = \dist(q, p_i)$}
+    \While {$|L| > 1$}
+        \State \Call{Discard\_1}{$L, c$}
         \ForAll {$p_j \in L $}
             \State {Compute $r_j = \dist(p_j, q)$}
-            \State \Call{DiscardPoints}{$L, p_j, r_j$}
+            \Comment {Set the worse candidate $w$ to be either $p_i$ or $p_j$}
+            \If {$r_j < r_i$ }
+                \State {$ c \gets p_j $}
+                \State {$ w \gets p_i $}
+            \Else
+                \State {$ w \gets p_i $}
+            \EndIf
+            \State \Call{Discard\_2}{$L, w, c$}
         \EndFor
     \EndWhile
-\EndFunction
-\end{algorithmic}
-
-
-
-
-\begin{algorithmic}
-\Function{ApproximateNearestNeighbor}{$P, q, \eps$}
-\For {$i \in \{\,1, \dots, |P|\,\}$}
-\State {$a_i \gets 0$}
-\State {$b_i \gets \infty$}
-\EndFor
-%\State {$i_0 \gets \argmin u $}
-\State {$B  \gets \{\, i \mid l_i < u[i_0]\,\}$}
-\If {$B = \emptyset$}
-    \State {\Return {$p_{i_0}$}}
-\Else
-    \State{$j \gets \mbox{ random element of } C$}
-    \State{$u_j \gets d(p_j, q)$}
-    \State{$l[j] \gets d(p_j, q)$}
-    \State{Mark distance from $q$ to $p_j$ as computed}
-    \State{\Call{UpdateBounds}{$l, u, d(p_j, q), j$}}
-\EndIf
+    \State \Return {the unique element left in $L$}
 \EndFunction
 \end{algorithmic}
 
