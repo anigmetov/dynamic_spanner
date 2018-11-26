@@ -1,0 +1,1 @@
+Dimension;Epsilon;Npoints;point_gen_method;query_method;MinFraction;MaxFraction;AvgFraction;MinNumberOfDistances;MaxNumberOfDistances;AvgNumberOfDistances
