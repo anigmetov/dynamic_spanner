@@ -512,7 +512,8 @@ Our goal is to reduce the number of computed distances $\dist(p_i, q)$. We shall
 that all $\dist(p_i, q)$ are distinct (we can always break ties lexicographically).
 
 
-The algorithm that we analyze can be roughly described as follows. Pick a random point $p_i$,
+The algorithm that we analyze can be roughly described as follows. 
+Pick a random point $p_i$,
 compute $\dist(p_i, q)$ and use this distance combined with pairwise distances $\dist(p_i, p_j)$
 to update lower bounds for other distances $\dist(p_j, q)$.
 If we see that the lower bound for $\dist(p_j, q)$ is larger than $\dist(p_i, q) / (1+\eps)$, then 
@@ -584,13 +585,14 @@ approximate formulation.
     \State {Initialize array $L$ with a random permutation of $P$}
     \State {$ c \gets \mbox{the first element of }L$}
     \State {Compute $r_i = \dist(q, p_i)$}
+    \State \Call{Discard\_1}{$L, c$}
     \While {$|L| > 1$}
-        \State \Call{Discard\_1}{$L, c$}
         \ForAll {$p_j \in L $}
             \State {Compute $r_j = \dist(p_j, q)$}
             \Comment {Set the worse candidate $w$ to be either $p_i$ or $p_j$}
             \If {$r_j < r_i$ }
                 \State {$ c \gets p_j $}
+                \State \Call{Discard\_1}{$L, c$}
                 \State {$ w \gets p_i $}
             \Else
                 \State {$ w \gets p_i $}
@@ -652,83 +654,106 @@ of the backwards analysis.
 
 
 
-% First we consider a simplified version of the problem, where the candidate for being an approximate nearest neighbor
-% is given, and we only have to verify this. Without loss of generality, assume that the candidate is $p_1$.
-
-\begin{lemma}
-Consider the following random procedure: we start with $n$ numbers $[n] = \{\,1,\dots, n\,\}$ and 
-choose $\xi_1$ uniformly at random from $[n]$. If $\xi_1 = n$, then we stop,
-otherwise we remove $\xi_1$ and all numbers preceding it and from $\{\,\xi_1, \dots, n\,\}$
-we choose $\xi_2$. If $\xi_2 = n$, we stop, if $\xi_2 < n$, we repeat the process removing all numbers not greater than $\xi_2$ and
-drawing $\xi_3$ from the remaining numbers uniformly at random. The expected number of steps of this procedure
-is $O(\log n)$.
-\end{lemma}
-\begin{proof}
-We can rephrase the procedure as a Markov chain with set of states $[n]$ and transition matrix
-\begin{equation}
-    P = \begin{pmatrix}
-         0      & \frac{1}{n-1} & \frac{1}{n-1} & \dots  & \frac{1}{n-1} & \frac{1}{n-1} \\
-         0      &  0            & \frac{1}{n-2} & \dots  & \frac{1}{n-2} & \frac{1}{n-2} \\
-         0      &  0            & 0             & \dots  & \frac{1}{n-3} & \frac{1}{n-3} \\
-         \vdots &  \vdots       & \vdots        & \ddots & \vdots        & \vdots \\
-         0      &  0            & 0             & \dots  & \frac{1}{2} & \frac{1}{2} \\
-         0      &  0            & 0             & \dots  & 0           & 1           \\
-        \end{pmatrix};
-\end{equation}
-the chain starts from state $1$.
-Note that there is one absorbing state $n$, and all other states are transient, and the matrix is already in the canonical
-form, meaning that all transient states precede all absorbing states. 
-We denote the square submatrix formed by the first $n-1$
-rows and $n-1$ columns by $Q$, it is the submatrix corresponding to all transient states. It is known
-(\cite{absorbing_markov_chain}) that the matrix $I-Q$ is invertible, let $N$ be its inverse,
-\begin{equation}
-N = (I- Q)^{-1} = 
-\begin{pmatrix}
-         1      & -\frac{1}{n-1} & -\frac{1}{n-1} & \dots  & -\frac{1}{n-1}  \\
-         0      &  1             & -\frac{1}{n-2} & \dots  & -\frac{1}{n-2}  \\
-         0      &  0             & 1             & \dots  & -\frac{1}{n-3}   \\
-         \vdots &  \vdots       & \vdots        & \ddots & \vdots            \\
-         0      &  0            & 0             & \dots  & -\frac{1}{2}      \\
-         0      &  0            & 0             & \dots  & 0           & 1   \\
-        \end{pmatrix}^{-1}
-\end{equation}
-Let $t_i$ denote the expected time
-until absorption, if chain starts from a transient state $i = 1, \dots, n-1$; 
-vector of $t_i$'s is given by the formula
-\[
-\begin{pmatrix}
-      t_1 \\
-      t_2 \\
-      \dots \\
-      t_{n-1} \\
-      \end{pmatrix}
-= N \begin{pmatrix}
-      1 \\
-      1 \\
-      \dots \\
-      1 \\
-      \end{pmatrix}.
-\]
-The expected number of steps that we are interested in is $t_1$, so we need to calculate the matrix $N$
-and prove that the sum of the elements in its first row is $O(\log n)$.
-One can easily check that
-\[
-N  =  \begin{pmatrix}
-      1 & \frac{1}{n-1} & \frac{1}{n-2} & \frac{1}{n-3} & \dots  & \frac{1}{3} & \frac{1}{2} \\
-      0 &             1 & \frac{1}{n-2} & \frac{1}{n-3} & \dots  & \frac{1}{3} & \frac{1}{2} \\
-      0 &             0 &            1  & \frac{1}{n-3} & \dots  & \frac{1}{3} & \frac{1}{2} \\
- \vdots &        \vdots &  \vdots       & \vdots        & \ddots & \frac{1}{3} & \frac{1}{2} \\
-      0 &             0 &            0  &            0  &  \dots &            1 & \frac{1}{2} \\
-      0 &             0 &            0  &            0  &  \dots &            0 &           1 \\
-      \end{pmatrix},
-\]
-thus $t_1 = 1 + \frac{1}{n-1} + \frac{1}{n-2} + \dots + \frac{1}{2} = O(\log n)$.
-\end{proof}
+%\begin{lemma}
+%Consider the following random procedure: we start with $n$ numbers $[n] = \{\,1,\dots, n\,\}$ and 
+%choose $\xi_1$ uniformly at random from $[n]$. If $\xi_1 = n$, then we stop,
+%otherwise we remove $\xi_1$ and all numbers preceding it and from $\{\,\xi_1, \dots, n\,\}$
+%we choose $\xi_2$. If $\xi_2 = n$, we stop, if $\xi_2 < n$, we repeat the process removing all numbers not greater than $\xi_2$ and
+%drawing $\xi_3$ from the remaining numbers uniformly at random. The expected number of steps of this procedure
+%is $O(\log n)$.
+%\end{lemma}
+%\begin{proof}
+%We can rephrase the procedure as a Markov chain with set of states $[n]$ and transition matrix
+%\begin{equation}
+%    P = \begin{pmatrix}
+%         0      & \frac{1}{n-1} & \frac{1}{n-1} & \dots  & \frac{1}{n-1} & \frac{1}{n-1} \\
+%         0      &  0            & \frac{1}{n-2} & \dots  & \frac{1}{n-2} & \frac{1}{n-2} \\
+%         0      &  0            & 0             & \dots  & \frac{1}{n-3} & \frac{1}{n-3} \\
+%         \vdots &  \vdots       & \vdots        & \ddots & \vdots        & \vdots \\
+%         0      &  0            & 0             & \dots  & \frac{1}{2} & \frac{1}{2} \\
+%         0      &  0            & 0             & \dots  & 0           & 1           \\
+%        \end{pmatrix};
+%\end{equation}
+%the chain starts from state $1$.
+%Note that there is one absorbing state $n$, and all other states are transient, and the matrix is already in the canonical
+%form, meaning that all transient states precede all absorbing states. 
+%We denote the square submatrix formed by the first $n-1$
+%rows and $n-1$ columns by $Q$, it is the submatrix corresponding to all transient states. It is known
+%(\cite{absorbing_markov_chain}) that the matrix $I-Q$ is invertible, let $N$ be its inverse,
+%\begin{equation}
+%N = (I- Q)^{-1} = 
+%\begin{pmatrix}
+%         1      & -\frac{1}{n-1} & -\frac{1}{n-1} & \dots  & -\frac{1}{n-1}  \\
+%         0      &  1             & -\frac{1}{n-2} & \dots  & -\frac{1}{n-2}  \\
+%         0      &  0             & 1             & \dots  & -\frac{1}{n-3}   \\
+%         \vdots &  \vdots       & \vdots        & \ddots & \vdots            \\
+%         0      &  0            & 0             & \dots  & -\frac{1}{2}      \\
+%         0      &  0            & 0             & \dots  & 0           & 1   \\
+%        \end{pmatrix}^{-1}
+%\end{equation}
+%Let $t_i$ denote the expected time
+%until absorption, if chain starts from a transient state $i = 1, \dots, n-1$; 
+%vector of $t_i$'s is given by the formula
+%\[
+%\begin{pmatrix}
+%      t_1 \\
+%      t_2 \\
+%      \dots \\
+%      t_{n-1} \\
+%      \end{pmatrix}
+%= N \begin{pmatrix}
+%      1 \\
+%      1 \\
+%      \dots \\
+%      1 \\
+%      \end{pmatrix}.
+%\]
+%The expected number of steps that we are interested in is $t_1$, so we need to calculate the matrix $N$
+%and prove that the sum of the elements in its first row is $O(\log n)$.
+%One can easily check that
+%\[
+%N  =  \begin{pmatrix}
+%      1 & \frac{1}{n-1} & \frac{1}{n-2} & \frac{1}{n-3} & \dots  & \frac{1}{3} & \frac{1}{2} \\
+%      0 &             1 & \frac{1}{n-2} & \frac{1}{n-3} & \dots  & \frac{1}{3} & \frac{1}{2} \\
+%      0 &             0 &            1  & \frac{1}{n-3} & \dots  & \frac{1}{3} & \frac{1}{2} \\
+% \vdots &        \vdots &  \vdots       & \vdots        & \ddots & \frac{1}{3} & \frac{1}{2} \\
+%      0 &             0 &            0  &            0  &  \dots &            1 & \frac{1}{2} \\
+%      0 &             0 &            0  &            0  &  \dots &            0 &           1 \\
+%      \end{pmatrix},
+%\]
+%thus $t_1 = 1 + \frac{1}{n-1} + \frac{1}{n-2} + \dots + \frac{1}{2} = O(\log n)$.
+%\end{proof}
 
 \paragraph{Experimental Results}
-We use the same 
+
+In order to experimentally evaluate the performance of our algorithm,
+we generate random point sets and random query points, and for each query point
+run the algorithm 10 times. The average number of distances to the query point
+that were actually computed is the measure that we are interested in.
+
+\begin{figure}[ht]
+    \label{fig:ann_const_ratio}
+    \includegraphics[width=0.7\textwidth]{log_dependency_constant_ratio.png}
+    \caption{Ratio $\log(\mbox{computed distances}) / n$ for ANN algorithm. Data is for uniformly distributed
+    points.}
+\end{figure}
 
 
+We used the following methods of generating random points:
+\begin{enumerate}
+    \item Uniform. Points are sampled uniformly at random from the unit cube in $\R^d$.
+    \item Normal. Points are sampled from the standard normal distribution.
+\end{enumerate}
+Query points were sampled from the uniform distribution on the cube $[-10, 10]^d$
+and from the normal distribution centered at the origin with scale 100,
+thus we get query points that are "inside" the point set and also "outside".
+We sample data in dimensions up to 20 and for $\eps \in \Set{0.001, 0.005, 0.01, 0.05, 0.1}$,
+the maximal number of points is $30,000$.
+In high dimensions the algorithm does not perform as well for very small epsilon,
+but for $\eps = 0.01$ even in dimension 20 just about 10 percent of the distances
+are computed for 7,000 points (while for 1,000 points more than 0.3 of the distances must be computed).
+We note, however, that the constants in asymptotics are very different for different combinations
+of distributions of query points and points in the point set.
 
 %The algorithm can be informally described as follows. Pick a random candidate $p_i$ and try to verify that
 %it is an approximate nearest neighbor by scanning all other points. Pick the next random point $p_j$
