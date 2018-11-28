@@ -14,7 +14,7 @@
 \usepackage{color}
 
 \usepackage{algorithm}
-\usepackage{algpseudocode}
+\usepackage[noend]{algpseudocode}
 \usepackage{comment}
 \usepackage{braket}
 
@@ -546,35 +546,49 @@ that all exact pairwise distances $\dist(p_i, p_j)$ are already computed.
 Our goal is to reduce the number of computed distances $\dist(p_i, q)$. We shall also assume w.l.o.g.
 that all $\dist(p_i, q)$ are distinct (we can always break ties lexicographically).
 
+\begin{algorithmic}
+\label{alg:ann_blind}
+\Procedure{UpdateBounds}{$p_i, r_i$}
+    \For{$k = i + 1, \dots, n$}
+        \State {$a_k \gets \max(a_k, |\dist(p_i, p_k) - r_i|)$}
+    \EndFor
+\EndProcedure
 
-The algorithm that we analyze can be roughly described as follows. 
-Pick a random point $p_i$,
-compute $\dist(p_i, q)$ and use this distance combined with pairwise distances $\dist(p_i, p_j)$
-to update lower bounds for other distances $\dist(p_j, q)$.
-If we see that the lower bound for $\dist(p_j, q)$ is larger than $\dist(p_i, q) / (1+\eps)$, then 
-we can discard the point $p_j$. If all points were discarded, we found an approximate nearest neighbor;
-otherwise pick a random point $p_j$ from the remaining ones and compute $\dist(p_j, q)$.
-There are two possibilities: if $\dist(p_j, q) \leq \dist(p_i, q) / (1+\eps)$,
-then we choose $p_j$ as the current candidate for an approximate nearest neighbor,
-otherwise we keep $p_i$ in this role. In any case, the new computed distance
-may also allow us to discard more than one point, as figure \ref{fig:discarded_balls} shows. In
-this figure points inside the shaded smaller ball cannot be a better candidate,
-and the same is true for the points in the shaded area outside of the larger ball.
-The precise radii of these balls are given in the following lemma.
+\Function{ApproximateNearestNeighbor}{$P, q, \eps$}
+    \State {$[p_1, \dots, p_n] \gets \mbox{random permutation of }P$}
+    \State { $a_i \gets 0$}
+    \Comment {$a_i$ is lower bound for $\dist(p_i, q)$}
+    \State {$ c \gets p_1, \quad v \gets \dist(p_1, q)$}
+    \Comment {$c$ keeps the current candidate}
+    \State \Call {UpdateBounds}{$p_1, v$}
+    \For{$i = 2\dots n$}
+        \If {$a_i \geq \frac{v}{1+\eps}$}
+            \State {\textbf{continue}}
+        \Else
+            \State {Compute $r_i = \dist(p_i, q)$}
+            \State \Call{UpdateBounds}{$p_i, r_i$}
+            \If {$r_i < v$}
+                \State {$c \gets p_i,\quad v\gets r_i$}
+            \EndIf
+        \EndIf
+    \EndFor
+    \State \Return {$c, v$}
+\EndFunction
+\end{algorithmic}
 
 
 
-\begin{lemma}
-    Let $p_i, p_j \in P$ be such that $\dist(p_j, q) \geq \frac{\dist(p_i, q)}{1 + \eps}$,
-    and denote $r_i = \dist(p_i, q)$, $r_j = \dist(p_j, q)$.
-    Then for every $x \in B(p_j, r_j - r_i / (1+\eps))$ we have $\dist(x, q) \geq r$
-    and for every $y \notin B(p_j, r_j + r_i / (1+ \eps))$ we have $\dist(y, q) \geq r$,
-    so all points of $P$ inside the smaller ball and all points of $P$ outside the larger ball
-    can be discarded.
-\end{lemma}
-\begin{proof}
-    The triangle inequality.
-\end{proof}
+The algorithm that we analyze can be described as follows. 
+Fix a random permutation of the points of $P$ (to simplify notation,
+we re-index them, so the order is again $p_1, \dots, p_n$). Pick $p_1$
+as the current candidate, denote $v = r_1$ and start traversing the list of $p_i$'s.
+At each element $p_i$ look at the lower bound for $r_i$,
+if it is larger than $v / (1+\eps)$, then we can safely skip $p_i$.
+Otherwise we must compute the distance $r_i$, and we immediately
+ use it to update the lower bounds for all the next points $p_k$'s. 
+If $p_i$ turns out to be a better candidate (we compare $r_ir$ with $v$, not with $v/(1+\eps)$),
+we update the current candidate $c$ and the distance to the query point $v$ accordingly, 
+otherwise $c$ and $v$ remain unchanged.
 
 
 We may hope to avoid computation of $O(n)$ distances, if we assume low doubling dimension
@@ -585,59 +599,60 @@ where a set of points in the plane is in general position, and yet, regardless o
 at each iteration of our algorithm we are able to discard only one point. This example does not work in the
 approximate formulation.
 
-\begin{algorithmic}
-\Procedure{Discard\_1}{$L, p_i$}
-    \State {$r_i = \dist(q, p_i)$}
-    \ForAll { $p_j \in L$}
-       \If {  $ \dist(p_i, p_j) > r_i \left(1 + \frac{1}{ 1 + \eps} \right)$ }
-           \State {Remove $p_j$ from $L$}
-       \EndIf
-    \EndFor
-\EndProcedure
-\end{algorithmic}
 
-\begin{algorithmic}
-\Procedure{Discard\_2}{$L, w, c$}
-    \State {$r_w = \dist(q, w)$}
-    \State {$r_c = \dist(q, w)$}
-    \Comment {Distances $r_w$ and $r_c$ are cached}
-    \ForAll { $p_j \in L$}
-       \If { $ \dist(w, p_j) < r_w - r_c / ( 1 + \eps) $ }
-           \State {Remove $p_j$ from $L$}
-           \Comment {In particular, the worse candidate $w$ will be removed here}
-       \EndIf
-       \If {  $ \dist(w, p_j) > r_w + r_c / ( 1 + \eps) $ }
-           \State {Remove $p_j$ from $L$}
-       \EndIf
-    \EndFor
-\EndProcedure
-\end{algorithmic}
+%\begin{algorithmic}
+%\Procedure{Discard\_1}{$L, p_i$}
+%    \State {$r_i = \dist(q, p_i)$}
+%    \ForAll { $p_j \in L$}
+%       \If {  $ \dist(p_i, p_j) > r_i \left(1 + \frac{1}{ 1 + \eps} \right)$ }
+%           \State {Remove $p_j$ from $L$}
+%       \EndIf
+%    \EndFor
+%\EndProcedure
+%\end{algorithmic}
+
+%\begin{algorithmic}
+%\Procedure{Discard\_2}{$L, w, c$}
+%    \State {$r_w = \dist(q, w)$}
+%    \State {$r_c = \dist(q, w)$}
+%    \Comment {Distances $r_w$ and $r_c$ are cached}
+%    \ForAll { $p_j \in L$}
+%       \If { $ \dist(w, p_j) < r_w - r_c / ( 1 + \eps) $ }
+%           \State {Remove $p_j$ from $L$}
+%           \Comment {In particular, the worse candidate $w$ will be removed here}
+%       \EndIf
+%       \If {  $ \dist(w, p_j) > r_w + r_c / ( 1 + \eps) $ }
+%           \State {Remove $p_j$ from $L$}
+%       \EndIf
+%    \EndFor
+%\EndProcedure
+%\end{algorithmic}
 
 
-\begin{algorithmic}
-\label{alg:ann_blind}
-\Function{ApproximateNearestNeighbor}{$P, q, \eps$}
-    \State {Initialize array $L$ with a random permutation of $P$}
-    \State {$ c \gets \mbox{the first element of }L$}
-    \State {Compute $r_i = \dist(q, p_i)$}
-    \State \Call{Discard\_1}{$L, c$}
-    \While {$|L| > 1$}
-        \ForAll {$p_j \in L $}
-            \State {Compute $r_j = \dist(p_j, q)$}
-            \Comment {Set the worse candidate $w$ to be either $p_i$ or $p_j$}
-            \If {$r_j < r_i$ }
-                \State {$ c \gets p_j $}
-                \State \Call{Discard\_1}{$L, c$}
-                \State {$ w \gets p_i $}
-            \Else
-                \State {$ w \gets p_i $}
-            \EndIf
-            \State \Call{Discard\_2}{$L, w, c$}
-        \EndFor
-    \EndWhile
-    \State \Return {the unique element left in $L$}
-\EndFunction
-\end{algorithmic}
+%\begin{algorithmic}
+%\label{alg:ann_blind}
+%\Function{ApproximateNearestNeighbor}{$P, q, \eps$}
+%    \State {Initialize array $L$ with a random permutation of $P$}
+%    \State {$ c \gets \mbox{the first element of }L$}
+%    \State {Compute $r_i = \dist(q, p_i)$}
+%    \State \Call{Discard\_1}{$L, c$}
+%    \While {$|L| > 1$}
+%        \ForAll {$p_j \in L $}
+%            \State {Compute $r_j = \dist(p_j, q)$}
+%            \Comment {Set the worse candidate $w$ to be either $p_i$ or $p_j$}
+%            \If {$r_j < r_i$ }
+%                \State {$ c \gets p_j $}
+%                \State \Call{Discard\_1}{$L, c$}
+%                \State {$ w \gets p_i $}
+%            \Else
+%                \State {$ w \gets p_i $}
+%            \EndIf
+%            \State \Call{Discard\_2}{$L, w, c$}
+%        \EndFor
+%    \EndWhile
+%    \State \Return {the unique element left in $L$}
+%\EndFunction
+%\end{algorithmic}
 
 
 
@@ -646,48 +661,108 @@ approximate formulation.
     algorithm \ref{alg:ann_blind} computes $O(\log n)$ distances $\dist(p_i, q)$ in expectation.
 \end{theorem}
 
-
-The proof is based on the following lemma.
-\begin{lemma}
-    There exists a constant $C$ that depends only on $\eps$ and the doubling dimension
-    such that after computing at most $C$ distances $\dist(p_k, q)$
-    either the algorithm verifies that the current candidate $p_i$ is a correct answer and terminates
-    or the algorithm finds another candidate $p_j$ such that $r_j < r_i$.
-\end{lemma}
 \begin{proof}
-    First, all points that are not contained in the ball $B(p_i, 2r_i)$
-    are discarded without computing the distance to them.
-    Now we have to examine all points $p_j$ inside this ball. 
-    Suppose that we cannot discard the current point $p_j$ based
-    on the lower bound for $r_j$, then we must compute the distance $r_j$.
-    There are two possibilities: either $r_j \leq r_i$ or $r_j > r_i$.
-    The latter case means that we discard the point $p_j$,
-    but we also discard all points of $P$ that are contained in some ball around it.
-    The triangle inequality tells us that we can take the ball of radius $r_j - r_i / (1 + \eps)$,
-    but in this proof it is sufficient to consider the ball of radius $r_i \eps / (1 + \eps)$.
-    In the figure this radius corresponds to the width of the annulus surrounding $q$,
-    and it is  geometrically clear that this ball is indeed smaller than the one we could have discarded.
-    The advantage of choosing this small radius is that, if we divide it by $2r_i$, we 
-    get the expression $\eps / (2(1 + \eps))$, that depends only on $\eps$.
-    By lemma \ref{lem:packing_lemma_dd} we know that there is an upper bound $T$ for the number of points
-    $p_i$ inside the ball $B(p_i, 2r)$ that are at the distance at least $r_i / 2 ( 1 + \eps)$
-    from each other, and the constant $T$ depends only on $\eps$ and the doubling dimension.
-    This means that even in the worst case after we have computed $T$ distances, we have discarded all
-    points of $P$ that lie outside of the ball $B(q, r_i)$, because all other points that lie in $B(p_i, 2r_i) \setminus B(q, r_i)$ 
-    do not require distance computation. Indeed, each of these points lies in
-    one of the balls $B(p_j, r_i \eps / (1 + \eps)$ for whose center we computed the distance already,
-    and is therefore discarded, Now, either we have exhausted the set $P$, and in this
-    case we terminate with an approximate nearest neighbor, or the next available $p_j$ that requires
-    distance computation necessarily lies in $B(q, r_i)$, thus we found a closer neighbor. This means that $C = T+1$.
-    Note that the algorithm still computes an approximate nearest neighbor, not the exact one, 
-    because some of the points that are inside the annulus can be discarded, 
-    if there is a point from $P$ close to them but outside of the annulus. 
+Let $i_1,...,i_k$ denote the indices of the minima in the sequence $r_1, \dots, r_n$
+    (recall that this is a random sequence). Then $k=O(log n)$,
+    by the standard backwards analysis argument.
+
+
+    Consider two consecutive minima  $s:=i_j$ and $t:=i_{j+1}$. We claim that in the sequence
+$p_s,...,p_{t-1}$
+only a constant number of distances are computed, irrespective of its length.
+
+To see that, let $c_1,...,c_n$ be the candidates after the $i$-th step of
+the for loop of the algorithm. We have no guarantee that $c_s=p_s$, because $p_s$ it is possible
+    that $p_s$ was discarded without computing $r_s$ (see the picture). However, we know that
+$d(c_s,q)<=(1+eps) r_s$.
+
+Indeed, suppose that $c_s \neq p_s$ and $r_s < d(c_s,q)/(1+eps)$. In this
+    case $p_s$ cannot be discarded 
+by its lower bound, and hence the distance to $p_s$ would
+have been queried, but this distance is a minimum among $r_1, \dots, r_s$,
+    and then we must reset $c_s$ to be $p_s$, a contradiction.
+
+It follows that any point in the sequence $p_s,...,p_{t-1}$ for which a
+distance is queried must lie in the ball around $c_s$ of radius at most $2(1+eps)r_s$.
+
+Moreover, we know that for any index $j=s,\dots, t-1$ it holds
+$d(c_j,q)>=r_s$.
+
+Indeed, assume the opposite. $c_j$ is equal to $p_k$ for some $k<t$. If $k<s$,
+that is, the candidate came from before, than $p_s$ would not be in the
+minimum sequence. If $s<k<t$, then it follows that at least one of the
+elements in $p_{s+1},\dots,p_k$ is in the minimum sequence, contradicting
+the assumption that $p_s$ and $p_t$ are consecutive minima.
+
+Hence, it follows that whenever a distance is queried, we can exclude a
+ball of radius $\eps r_s$ around the query point. All queried points must
+hence have pairwise distance of at least $ \eps r_s / 2$. Hence, the number of
+queried points is by the packing lemma bounded by some constant that depends only on $\eps$ and the dimension. 
 \end{proof}
 
-Now the theorem follows from the lemma by standard argument
-of the backwards analysis.
+
+%\begin{proof}
+%    We start with the lemma of purely combinatorial (or probabilistic) nature.
+%\begin{lemma}
+%    Let $z$ be a random permutation of $n$ distinct real numbers,
+%    $z = X_{1}, \dots, X_{n}$, and denote $x_t = \min \Set{X_1, \dots, X_t}$.
+%    The expected number of positions $t$ where the sequence $X_t$ changes is $O(n)$.
+%\end{lemma}
+%    \begin{proof}
+%        The proof is easily obtained with the standard backwards analysis technique and can be found in the appendix.
+%        %Define random variable $Y_i$ to be 1, if $X_{i-1} = X_{i}$, and 0 otherwise.
+%        %We must estimate $Y = \sum_{i = 2}^n Y_i$, and 
+%        %\[
+%        %    E[Y] = \sum_{i = 2}^n E[Y_i] = \sum_{i = 2}^n P(Y_i = 1).
+%        %\]
+%        %It remains to observe than $P(Y_i) = 1 / (n - i)$, so the expectation
+%        %of $Y$ is the sum of the 
+%    \end{proof}
 
 
+
+%\begin{lemma}
+%    There exists a constant $C$ that depends only on $\eps$ and the doubling dimension
+%    such that after computing at most $C$ distances $\dist(p_k, q)$
+%    either the algorithm verifies that the current candidate $p_i$ is a correct answer and terminates
+%    or the algorithm finds another candidate $p_j$ such that $r_j < r_i$.
+%\end{lemma}
+%\begin{proof}
+%    First, all points that are not contained in the ball $B(p_i, 2r_i)$
+%    are discarded without computing the distance to them.
+%    Now we have to examine all points $p_j$ inside this ball. 
+%    Suppose that we cannot discard the current point $p_j$ based
+%    on the lower bound for $r_j$, then we must compute the distance $r_j$.
+%    There are two possibilities: either $r_j \leq r_i$ or $r_j > r_i$.
+%    The latter case means that we discard the point $p_j$,
+%    but we also discard all points of $P$ that are contained in some ball around it.
+%    The triangle inequality tells us that we can take the ball of radius $r_j - r_i / (1 + \eps)$,
+%    but in this proof it is sufficient to consider the ball of radius $r_i \eps / (1 + \eps)$.
+%    In the figure this radius corresponds to the width of the annulus surrounding $q$,
+%    and it is  geometrically clear that this ball is indeed smaller than the one we could have discarded.
+%    The advantage of choosing this small radius is that, if we divide it by $2r_i$, we 
+%    get the expression $\eps / (2(1 + \eps))$, that depends only on $\eps$.
+%    By lemma \ref{lem:packing_lemma_dd} we know that there is an upper bound $T$ for the number of points
+%    $p_i$ inside the ball $B(p_i, 2r)$ that are at the distance at least $r_i / 2 ( 1 + \eps)$
+%    from each other, and the constant $T$ depends only on $\eps$ and the doubling dimension.
+%    This means that even in the worst case after we have computed $T$ distances, we have discarded all
+%    points of $P$ that lie outside of the ball $B(q, r_i)$, because all other points that lie in $B(p_i, 2r_i) \setminus B(q, r_i)$ 
+%    do not require distance computation. Indeed, each of these points lies in
+%    one of the balls $B(p_j, r_i \eps / (1 + \eps)$ for whose center we computed the distance already,
+%    and is therefore discarded, Now, either we have exhausted the set $P$, and in this
+%    case we terminate with an approximate nearest neighbor, or the next available $p_j$ that requires
+%    distance computation necessarily lies in $B(q, r_i)$, thus we found a closer neighbor. This means that $C = T+1$.
+%    Note that the algorithm still computes an approximate nearest neighbor, not the exact one, 
+%    because some of the points that are inside the annulus can be discarded, 
+%    if there is a point from $P$ close to them but outside of the annulus. 
+%\end{proof}
+
+
+
+%Now the theorem follows from the lemma by standard argument
+%of the backwards analysis.
+
+%\end{proof}
 
 %\begin{lemma}
 %Consider the following random procedure: we start with $n$ numbers $[n] = \{\,1,\dots, n\,\}$ and 
