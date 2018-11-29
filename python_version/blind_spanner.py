@@ -233,14 +233,14 @@ def distance_matrix(points):
         for j in range(n_points):
             if i <= j:
                 continue
-            result[i][j] = result[j][i] = euclidean_distance(points[i, :], points[j, :])
+            result[i][j] = result[j][i] = get_lp_distance(points[i, :], points[j, :])
     return result
 
 
 def run_experiment(dim, n_points, epsilon, points_generator, ps_gen_args):
     points = points_generator(n_points, dim, *ps_gen_args)
     result = []
-    gs = BlindSpanner(points, inf_dist, dist_function=euclidean_distance, dist_matrix=None)
+    gs = BlindSpanner(points, inf_dist, dist_function=get_lp_distance, dist_matrix=None)
     gs.build_random(epsilon)
     n_gs_edges = gs.number_of_edges()
     result.append(ExperimentResult(dim, n_points, epsilon, points_generator.__name__, "blind_random", n_gs_edges))
@@ -251,7 +251,7 @@ def run_experiment(dim, n_points, epsilon, points_generator, ps_gen_args):
 def run_experiment_quasi_greedy(dim, n_points, epsilon, points_generator, ps_gen_args):
     points = points_generator(n_points, dim, *ps_gen_args)
     result = []
-    gs = BlindSpanner(points, inf_dist, dist_function=euclidean_distance, dist_matrix=None)
+    gs = BlindSpanner(points, inf_dist, dist_function=get_lp_distance, dist_matrix=None)
     gs.build_quasi_sorted_greedy(epsilon)
     n_gs_edges = gs.number_of_edges()
     result.append(ExperimentResult(dim, n_points, epsilon, points_generator.__name__, "blind_quasi_sorted_greedy", n_gs_edges))
@@ -268,7 +268,7 @@ def run_experiment_quasi_greedy(dim, n_points, epsilon, points_generator, ps_gen
 def run_experiment_quasi_shaker(dim, n_points, epsilon, points_generator, ps_gen_args):
     points = points_generator(n_points, dim, *ps_gen_args)
     result = []
-    gs = BlindSpanner(points, inf_dist, dist_function=euclidean_distance, dist_matrix=None)
+    gs = BlindSpanner(points, inf_dist, dist_function=get_lp_distance, dist_matrix=None)
     gs.build_quasi_sorted_shaker(epsilon)
     n_gs_edges = gs.number_of_edges()
     result.append(ExperimentResult(dim, n_points, epsilon, points_generator.__name__, "blind_quasi_sorted_shaker", n_gs_edges))

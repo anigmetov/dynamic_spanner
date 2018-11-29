@@ -184,9 +184,7 @@ MatrixR get_distance_matrix(const arma::mat& points)
 int main(int argc, char** argv)
 {
     auto console = spd::stdout_color_mt("console");
-    auto exp_logger = spd::basic_logger_st("experiment_logger", "experiment_log-blind-greedy.txt");
     console->set_level(spd::level::info);
-    exp_logger->set_pattern("%v");
 
 #if 0
     if (argc < 4) {
@@ -222,7 +220,7 @@ int main(int argc, char** argv)
 
     if (argc < 3) {
         std::cout << "Usage: " << argv[0]
-                  << " input_name epsilon"
+                  << " input_name epsilon [logname]"
                   << std::endl;
         return 0;
     }
@@ -232,6 +230,11 @@ int main(int argc, char** argv)
 
     double eps = atof(argv[arg_idx++]);
     console->info("Reading from file {}, epsilon = {}", argv[1], argv[2]);
+
+    std::string log_name  = (argc > 3) ? argv[arg_idx++] : "experiment_log.txt";
+    console->info("log_name = {}, epsilon = {}", log_name, eps);
+    auto exp_logger = spd::basic_logger_st("experiment_logger", log_name);
+    exp_logger->set_pattern("%v");
 
     read_distance_matrix(dist_matrix, max_dist, min_dist, dist_name);
 
@@ -314,59 +317,66 @@ int main(int argc, char** argv)
 
 #else
 
-//    {
-//        DynamicSpannerR greedy_spanner(dist_matrix);
-//        greedy_spanner.construct_greedy_eps_spanner(eps);
-//        console->info("{};{}", dist_name, greedy_spanner.get_statistics());
-//        exp_logger->info("{};{}", dist_name, greedy_spanner.get_statistics());
-//    }
-//
-//    {
-//        DynamicSpannerR quasi_greedy_spanner(dist_matrix);
-//        quasi_greedy_spanner.construct_blind_quasi_sorted_greedy_eps_spanner(eps);
-//        console->info("{};{}", dist_name, quasi_greedy_spanner.get_statistics());
-//        exp_logger->info("{};{}", dist_name, quasi_greedy_spanner.get_statistics());
-//    }
-//
-//    {
-//        DynamicSpannerR quasi_shaker_spanner(dist_matrix);
-//        quasi_shaker_spanner.construct_blind_quasi_sorted_shaker_eps_spanner(eps);
-//        exp_logger->info("{};{}", dist_name, quasi_shaker_spanner.get_statistics());
-//    }
-//
-//    {
-//        DynamicSpannerR blind_random_spanner_1_1(dist_matrix);
-//        blind_random_spanner_1_1.construct_blind_random_ratio_eps_spanner(true, true, eps);
-//        console->info("{};{}", dist_name, blind_random_spanner_1_1.get_statistics());
-//        exp_logger->info("{};{}", dist_name, blind_random_spanner_1_1.get_statistics());
-//    }
-//
-//    {
-//        DynamicSpannerR blind_random_spanner_0_0(dist_matrix);
-//        blind_random_spanner_0_0.construct_blind_random_ratio_eps_spanner(false, false, eps);
-//        console->info("{};{}", dist_name, blind_random_spanner_0_0.get_statistics());
-//        exp_logger->info("{};{}", dist_name, blind_random_spanner_0_0.get_statistics());
-//    }
-//
-//    {
-//        DynamicSpannerR blind_random_spanner_1_0(dist_matrix);
-//        blind_random_spanner_1_0.construct_blind_random_ratio_eps_spanner(true, false, eps);
-//        console->info("{};{}", dist_name, blind_random_spanner_1_0.get_statistics());
-//        exp_logger->info("{};{}", dist_name, blind_random_spanner_1_0.get_statistics());
-//    }
-//
-//    {
-//        DynamicSpannerR blind_random_spanner_0_1(dist_matrix);
-//        blind_random_spanner_0_1.construct_blind_random_ratio_eps_spanner(false, true, eps);
-//        console->info("{};{}", dist_name, blind_random_spanner_0_1.get_statistics());
-//        exp_logger->info("{};{}", dist_name, blind_random_spanner_0_1.get_statistics());
-//    }
-//
+    {
+        DynamicSpannerR greedy_spanner(dist_matrix);
+        greedy_spanner.construct_greedy_eps_spanner(eps);
+        console->info("{};{}", dist_name, greedy_spanner.get_statistics());
+        exp_logger->info("{};{}", dist_name, greedy_spanner.get_statistics());
+        console->flush();
+        exp_logger->flush();
+    }
+
+    //{
+    //    DynamicSpannerR quasi_greedy_spanner(dist_matrix);
+    //    quasi_greedy_spanner.construct_blind_quasi_sorted_greedy_eps_spanner(eps);
+    //    console->info("{};{}", dist_name, quasi_greedy_spanner.get_statistics());
+    //    exp_logger->info("{};{}", dist_name, quasi_greedy_spanner.get_statistics());
+    //}
+
+    //{
+    //    DynamicSpannerR quasi_shaker_spanner(dist_matrix);
+    //    quasi_shaker_spanner.construct_blind_quasi_sorted_shaker_eps_spanner(eps);
+    //    exp_logger->info("{};{}", dist_name, quasi_shaker_spanner.get_statistics());
+    //}
+
+    //{
+    //    DynamicSpannerR blind_random_spanner_1_1(dist_matrix);
+    //    blind_random_spanner_1_1.construct_blind_random_ratio_eps_spanner(true, true, eps);
+    //    console->info("{};{}", dist_name, blind_random_spanner_1_1.get_statistics());
+    //    exp_logger->info("{};{}", dist_name, blind_random_spanner_1_1.get_statistics());
+    //    console->flush();
+    //    exp_logger->flush();
+    //}
+
+    //{
+    //    DynamicSpannerR blind_random_spanner_0_0(dist_matrix);
+    //    blind_random_spanner_0_0.construct_blind_random_ratio_eps_spanner(false, false, eps);
+    //    console->info("{};{}", dist_name, blind_random_spanner_0_0.get_statistics());
+    //    exp_logger->info("{};{}", dist_name, blind_random_spanner_0_0.get_statistics());
+    //    console->flush();
+    //    exp_logger->flush();
+    //}
+
+    //{
+    //    DynamicSpannerR blind_random_spanner_1_0(dist_matrix);
+    //    blind_random_spanner_1_0.construct_blind_random_ratio_eps_spanner(true, false, eps);
+    //    console->info("{};{}", dist_name, blind_random_spanner_1_0.get_statistics());
+    //    exp_logger->info("{};{}", dist_name, blind_random_spanner_1_0.get_statistics());
+    //}
+
+    //{
+    //    DynamicSpannerR blind_random_spanner_0_1(dist_matrix);
+    //    blind_random_spanner_0_1.construct_blind_random_ratio_eps_spanner(false, true, eps);
+    //    console->info("{};{}", dist_name, blind_random_spanner_0_1.get_statistics());
+    //    exp_logger->info("{};{}", dist_name, blind_random_spanner_0_1.get_statistics());
+    //}
+
     {
         DynamicSpannerR blind_greedy_spanner(dist_matrix);
         blind_greedy_spanner.construct_blind_greedy_eps_spanner(eps);
         console->info("{};{}", dist_name, blind_greedy_spanner.get_statistics());
         exp_logger->info("{};{}", dist_name, blind_greedy_spanner.get_statistics());
+        exp_logger->flush();
     }
 
     //{
@@ -374,6 +384,7 @@ int main(int argc, char** argv)
     //    blind_random_spanner.construct_blind_random_eps_spanner(eps);
     //    console->info("{};{}", dist_name, blind_random_spanner.get_statistics());
     //    exp_logger->info("{};{}", dist_name, blind_random_spanner.get_statistics());
+        // exp_logger->flush();
     //}
 
 //    for (size_t i = 0; i < queries.size(); i++) {

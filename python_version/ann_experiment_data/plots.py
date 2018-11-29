@@ -1,53 +1,116 @@
+#!/usr/bin/env python3
+
+import numpy as np
 import pandas as pd
 import sys
 import matplotlib.pyplot as plt
 
-
 if __name__ == "__main__":
-    # ds = pd.read_csv("ann_results.txt", header=0, sep=';', dtype = { 'Epsilon' : object })
-    ds = pd.read_csv("ann_results.txt", header=0, sep=';', dtype = { 'Epsilon' : object })
-    index_cols = ['Dimension', 'Epsilon',  'point_gen_method', 'query_method', 'Npoints']
+    if True:
+        ds = pd.read_csv("averaged_ann_data.csv", header=0, sep=';', dtype={'epsilon': object})
+        # ds.drop(columns=["epsilon", "point_gen_method", "query_method"], inplace=True)
+        index_cols = ['dim']
+        ds.set_index(index_cols, inplace=True)
 
-    ds.drop(columns=['MinFraction', 'MaxFraction', 'MinNumberOfDistances', 'MaxNumberOfDistances'], inplace=True)
+        ds_to_plot2 = ds.loc[(2)]
+        ds_to_plot5 = ds.loc[(5)]
+        ds_to_plot10 = ds.loc[(10)]
+        # ds_to_plot20 = ds.loc[(20)]
+
+        ds_to_plot2.set_index(["Points"], inplace=True)
+        ds_to_plot5.set_index(["Points"], inplace=True)
+        ds_to_plot10.set_index(["Points"], inplace=True)
+
+
+        ds_to_plot2.rename(index=str, columns={"Computed distances": "Computed distances (dim 2)"}, inplace=True)
+        ds_to_plot5.rename(index=str, columns={"Computed distances": "Computed distances (dim 5)"}, inplace=True)
+        ds_to_plot10.rename(index=str, columns={"Computed distances": "Computed distances (dim 10)"}, inplace=True)
+        # ds_to_plot20.set_index(["Points"], inplace=True)
+
+        ds_all_dims = ds_to_plot2.join(ds_to_plot5)
+        ds_all_dims = ds_all_dims.join(ds_to_plot10)
+        # ds_all_dims = ds_all_dims.join(ds_to_plot20, rsuffix=" (dim 20)")
+
+        print(ds_all_dims.index.values)
+        ds_all_dims.plot(use_index = True)
+
+        plt.show()
+        sys.exit(0)
+
+    if False:
+        ds = pd.read_csv("averaged_ann_data.csv", header=0, sep=';', dtype={'epsilon': object})
+
+        # index_cols = ['dim', 'epsilon',  'point_gen_method', 'query_method']
+        # ds.set_index(index_cols, inplace=True)
+        # ds_to_plot2 = ds.loc[(2, '0.01', 'get_uniform_points', 'query_1')]
+        # ds_to_plot10 = ds.loc[(10, '0.01', 'get_uniform_points', 'query_1')]
+        # ds_to_plot20 = ds.loc[(20, '0.01', 'get_uniform_points', 'query_1')]
+
+        index_cols = ['dim']
+        ds.drop(["epsilon", "point_gen_method", "query_method"], inplace=True)
+        ds.set_index(index_cols, inplace=True)
+
+        ds_to_plot2 = ds.loc[(2)]
+        ds_to_plot10 = ds.loc[(10)]
+        ds_to_plot20 = ds.loc[(20)]
+
+        ds_to_plot2.set_index(["npoints"], inplace=True)
+
+        x = ds_to_plot2.n_points
+        y = ds_to_plot2.dist_num
+
+        y = y / np.log(x)
+        # x = np.log(x)
+        print(x)
+        print(y)
+        fit = np.polyfit(x, y, 1)
+        fit_fn = np.poly1d(fit)
+        print(fit_fn(x))
+        plt.xlabel("#points")
+        plt.ylabel("#computed distances / log(#points)")
+        plt.plot(x, y)
+        # plt.plot(x, y, 'ro', x, fit_fn(x), '--k')
+        plt.show()
+        sys.exit(0)
+
+    ds = pd.read_csv("more_ann_results.txt", header=0, sep=';', dtype={'Epsilon': object})
+    # ds = pd.read_csv("ann_results_single.txt", header=0, sep=';', dtype = { 'Epsilon' : object })
+    index_cols = ['Dimension', 'Epsilon', 'point_gen_method', 'query_method', 'Npoints']
+
+    ds.drop(columns=['MinFraction', 'MaxFraction'], inplace=True)
 
     print(ds.describe())
     print("********************************************************************************")
     print(ds.head(20))
     print("********************************************************************************")
     ds.set_index(index_cols, inplace=True)
-    # sys.exit(0)
 
-
-    # ds_non_blind_greedy.drop(columns=['spanner_method'], inplace=True)
-    # ds_blind_greedy.drop(columns=['spanner_method'], inplace=True)
-    # ds_blind_random.drop(columns=['spanner_method'], inplace=True)
-    # ds_quasi_greedy.drop(columns=['spanner_method'], inplace=True)
-    # ds_quasi_shaker.drop(columns=['spanner_method'], inplace=True)
-    # ds_blind_random_bad_ratio.drop(columns=['spanner_method'], inplace=True)
-    # ds_blind_random_bad_ratio_lbf.drop(columns=['spanner_method'], inplace=True)
-    # ds_blind_random_bad_ratio_cf.drop(columns=['spanner_method'], inplace=True)
-    # ds_blind_random_bad_ratio_cf_lbf.drop(columns=['spanner_method'], inplace=True)
-    #
-    # ds_all_dims = ds_non_blind_greedy.join(ds_blind_greedy, lsuffix=' (non-blind greedy)', rsuffix=' (blind greedy)', how="outer")
-    # ds_all_dims = ds_all_dims.join(ds_blind_random, rsuffix=' (blind random)')
-    # ds_all_dims = ds_all_dims.join(ds_quasi_greedy, rsuffix=' (quasi-sorted greedy').join(ds_quasi_shaker, rsuffix=' (quasi-sorted shaker)')
-    # ds_all_dims = ds_all_dims.join(ds_blind_random_bad_ratio, rsuffix=' (blind random bad ratio)')
-    # ds_all_dims = ds_all_dims.join(ds_blind_random_bad_ratio_lbf, rsuffix=' (blind random bad ratio, force lower bound)')
-    # ds_all_dims = ds_all_dims.join(ds_blind_random_bad_ratio_cf, rsuffix=' (blind random bad ratio, force connectedness)')
-    # ds_all_dims = ds_all_dims.join(ds_blind_random_bad_ratio_cf_lbf, rsuffix=' (blind random bad ratio, force connectedness and lower bound)')
-
-    # ycols = ["sparseness_nbg", "sparseness_bg", "sparseness_rbr_lbf"]
-    # ycols = ["n_edges_nbg", "n_edges_bg", "n_edges_rbr_lbf", "n_edges_qs", "n_edges_qg"]
-    # ycols = ["edges_to_points_ratio_nbg", "edges_to_points_ratio_bg", "edges_to_points_ratio_rbr_lbf",
-    #          "edges_to_points_ratio_qs", "edges_to_points_ratio_qg"]
-
-    # ycols = ["Edges (non-blind greedy)", "Edges (blind greedy)", "Edges (blind random bad ratio, force lower bound)", "Edges (blind random bad ratio)"]
-    # ycols = ["Edges to points ratio (non-blind greedy)", "Edges to points ratio (blind greedy)", "Edges to points ratio (blind random bad ratio, force lower bound)", "Edges to points ratio (blind random bad ratio)"]
-    # # # ycols = ["sparseness_random", "sparseness_greedy", "sparseness_blind_greedy"]
-    ds_to_plot = ds.loc[(2, '0.01', 'normal', 'query_1')]
+    ds_to_plot = ds.loc[(2, '0.01', 'get_uniform_points', 'query_1')]
     ds_to_plot.reset_index(inplace=True)
-    ds_to_plot = ds_to_plot.set_index(["Npoints"])
-    ds_to_plot = ds_to_plot.sort_index(ascending=True)
-    # print(ds_to_plot.index)
-    ds_to_plot.plot()
+    x = ds_to_plot.Npoints
+    y2_01 = ds_to_plot.MaxNumberOfDistances
+
+    ds_to_plot = ds.loc[(4, '0.01', 'get_uniform_points', 'query_1')]
+    ds_to_plot.reset_index(inplace=True)
+    x = ds_to_plot.Npoints
+    y4_01 = ds_to_plot.MaxNumberOfDistances
+
+    ds_to_plot = ds.loc[(6, '0.01', 'get_uniform_points', 'query_1')]
+    ds_to_plot.reset_index(inplace=True)
+    x = ds_to_plot.Npoints
+    y6_01 = ds_to_plot.MaxNumberOfDistances
+
+    # fit = np.polyfit(x, y, 1)
+    # fit_fn = np.poly1d(fit)
+    # plt.plot(x, y, 'x', x, fit_fn(x), '--r')
+
+    plt.plot(x, y2_01, x, y4_01, x, y6_01)
+    plt.xlabel('#points')
+    plt.ylabel('#computed distances log(#points)')
+
+    # ds_to_plot = ds_to_plot.set_index(["Npoints"])
+    # ds_to_plot = ds_to_plot.sort_index(ascending=True)
+    # # print(ds_to_plot.index)
+    # ds_to_plot.plot()
+
     plt.show()

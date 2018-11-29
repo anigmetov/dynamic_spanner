@@ -31,6 +31,16 @@ import matplotlib.pyplot as plt
 
 
 if __name__ == "__main__":
+
+    # ds = pd.read_csv("n_edges_blind_greedy_dimensions.csv", header  = 0, sep = ';')
+    # ds = ds.set_index(["# points"], drop=True)
+    # ds = ds.sort_index(ascending=True)
+    # print(ds.index)
+    # print(ds.head(n=20))
+    # ds.plot()
+    # plt.show()
+    # sys.exit(0)
+
     ds = pd.read_csv("spanner_cpp_logs.txt", header=0, sep=';')
     index_cols = ['Dim', 'point_gen_method', 'epsilon', 'input_file', 'Points']
 
@@ -55,7 +65,22 @@ if __name__ == "__main__":
     # sys.exit(0)
 
     ds_non_blind_greedy.drop(columns=['spanner_method'], inplace=True)
-    ds_blind_greedy.drop(columns=['spanner_method'], inplace=True)
+    ds_blind_greedy.drop(columns=['spanner_met
+        x = ds_to_plot2.n_points
+        y = ds_to_plot2.dist_num
+
+
+        y = y / np.log(x)
+        # x = np.log(x)
+        print(x)
+        print(y)
+        fit = np.polyfit(x, y, 1)
+        fit_fn= np.poly1d(fit)
+        print(fit_fn(x))
+        plt.xlabel("#points")
+        plt.ylabel("#computed distances / log(#points)")
+        plt.plot(x, y)
+        # plt.plot(x, y, 'ro', x, fit_fn(x), '--k')hod'], inplace=True)
     ds_blind_random.drop(columns=['spanner_method'], inplace=True)
     ds_quasi_greedy.drop(columns=['spanner_method'], inplace=True)
     ds_quasi_shaker.drop(columns=['spanner_method'], inplace=True)
@@ -78,9 +103,14 @@ if __name__ == "__main__":
     #          "edges_to_points_ratio_qs", "edges_to_points_ratio_qg"]
 
     ycols = ["Edges (non-blind greedy)", "Edges (blind greedy)", "Edges (blind random bad ratio, force lower bound)", "Edges (blind random bad ratio)"]
-    ycols = ["Edges to points ratio (non-blind greedy)", "Edges to points ratio (blind greedy)", "Edges to points ratio (blind random bad ratio, force lower bound)", "Edges to points ratio (blind random bad ratio)"]
+    ycols = ["Edges (blind random bad ratio, force lower bound)",
+             "Edges (blind random bad ratio)",
+             "Edges (blind random bad ratio, force connectedness)",
+             "Edges (blind random bad ratio, force connectedness and lower bound)"
+             ]
+    # ycols = ["Edges to points ratio (non-blind greedy)", "Edges to points ratio (blind greedy)", "Edges to points ratio (blind random bad ratio, force lower bound)", "Edges to points ratio (blind random bad ratio)"]
     # # ycols = ["sparseness_random", "sparseness_greedy", "sparseness_blind_greedy"]
-    ds_to_plot = ds_all_dims.loc[(2, "exp", 0.1)]
+    ds_to_plot = ds_all_dims.loc[(2, "normal", 0.1)]
     ds_to_plot.reset_index(inplace=True)
     ds_to_plot.drop(columns="input_file", inplace=True)
     ds_to_plot = ds_to_plot.set_index(["Points"])

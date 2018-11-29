@@ -16,10 +16,10 @@ class ExactSpanner:
         # self.dist_matrix = distance_matrix(points)
 
     def get_distance(self, p_a, p_b):
-        return euclidean_distance(p_a, p_b)
+        return get_lp_distance(p_a, p_b)
 
     def upper_bound_by_index(self, i, j):
-        return euclidean_distance(self.points[i], self.points[j])
+        return get_lp_distance(self.points[i], self.points[j])
 
 
 class AnnFinder:

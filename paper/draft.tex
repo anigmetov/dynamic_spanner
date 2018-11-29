@@ -310,20 +310,26 @@ $B(x, R)$ with $2^{md}$ balls of radius at most $r/2$. Since a ball of radius $r
 \end{proof}
 
 
+
 \section{Metric Approximation}
 
-It is known that asymptotically optimal spanner can be constructed by the following greedy algorithm: 
-start with an empty graph on vertices $p_i$,
-sort all edges $\{p_i, p_j\}$ by the length $\dist(p_i, p_j)$ in ascending order and keep adding them to the graph
-until it becomes a $1+\eps$-spanner. 
+In this section $P = \Set{p_1, \dots, p_n}$ is a given set of points in a metric space;
+our goal is to construct a $(1+\eps)$-spanner on $P$. All algorithms that we consider 
+build a spanner by starting with an empty graph on vertices $P$, to which they iteratively
+add edges. We shall denote this graph (at any stage of the algorithm) by $G$.
 
 
- In our setting this is the most expensive approach, because it requires
- computing all pairwise distances first. We propose an alternative approach (or rather a family of algorithms), which we call
+It is known that an asymptotically optimal spanner can be constructed by the following greedy algorithm: 
+sort all edges $\{p_i, p_j\}$ by the length $\dist(p_i, p_j)$ in ascending order and keep adding them to $G$
+until it becomes a $1+\eps$-spanner. This algorithm in its most naive form is expensive in terms of $n$,
+because it requires computing many shortest paths, and it is also the most expensive approach
+in our setting, because it requires
+ computing all pairwise distances first. We propose an alternative algorithm (or rather a family of algorithms), 
+ which we call
  \textit{blind} spanner, meaning that the algorithm that builds a spanner does not have access to $\dist(p_i, p_j)$
- before it decides to add the edge $(p_i, p_j)$.
+ before it decides to add the edge $(p_i, p_j)$ to $G$.
  The algorithm also maintains lower and upper bounds
- for all pairwise distances, which are updated after a new edge is added. and the stopping criterion
+ for all pairwise distances, which are updated after a new edge is added, and the stopping criterion
  is based on these bounds, namely, if $a_{i, j}$ and $b_{i,j}$ denote lower and upper bounds
  for the distance between $p_i$ and $p_j$, respectively, then the algorithm stops, if $b_{i,j} / a_{i, j} \leq 1 + \eps$
  for all $i \neq j$.
@@ -331,27 +337,31 @@ until it becomes a $1+\eps$-spanner.
 \begin{algorithmic}
 \label{alg:blind_spanner}
 \Function{BlindSpanner}{$P, \eps$}
-    \State {$E \gets \emptyset$}
+    \State {$G \gets (P, \emptyset)$}
     \State {$a_{i,j} \gets 0$ for all $1 \leq i,j \leq n$}
     \State {$b_{i,j} \gets \infty$ for all $1 \leq i,j \leq n, i \neq j$}
     \While {$\exists i \neq j : b_{i,j} / a_{i,j} > 1 + \eps$}
-    \State {$(i,j) \gets GetEdgeToAdd$}
-    \State {$v \gets \dist(p_i, pj)$}
-    \State {Add weighted edge $(p_i, p_j, v)$ to $E$}
-    \State {$UpdateBounds(i, j, v)$}
+        \State {$(i,j) \gets$ \Call {GetEdgeToAdd}{}
+        \State {$v \gets \dist(p_i, pj)$}
+        \State {Add weighted edge $(p_i, p_j, v)$ to $G$}
+        \State {$UpdateBounds(i, j, v)$}
     \EndWhile
+    \State \Return {$G$}
 \EndFunction
 \end{algorithmic}
 
 
 In this pseudocode we adopt the convention that a positive number divided by 0 is $\infty$
 and $\infty$ is larger than any real number,
-thus making the predicate in the while loop well-defined.  The procedure $UpdateBounds$ is desribed in the next subsection,
+thus making the predicate in the while loop well-defined.  The procedure $UpdateBounds$ is described in the next subsection,
 now we only mention that it updates all upper and lower bounds based on triangle inequality involving the edge $(p_i, p_j)$,
 and the update is monotonic: no upper bound can increase, no lower bound can decrease, and, after the distance
 between $p_i$ and $p_j$ is calculated, both $a_{i,j}$ and  $b_{i,j}$ are set to be $\dist(p_i, p_j)$.
+Combined with the natural requirement that the function \textsc{GetEdgeToAdd} never
+returns the same edge twice, these properties ensure that the algorithm terminates.
 The most important part of this algorithm is the way of choosing the next edge to be added, and
 there are several possibilities, which give very different results.
+
 
 
 
@@ -402,14 +412,18 @@ We refer to the former option as \textsc{BlindQuasiSortedGreedy} and to the latt
 \]
 Assume that $\dist(p_i,p_j)=v\in\R$ has been computed.
 First, we reset $a_{i,j}$ and $b_{j,i}$ to $v$. 
+Now observe that for a pair $(k, \ell)$ there are three possibilities:
+either the shortest path from $p_k$ to $p_\ell$ in $G$
 To update the upper bound of some entry $b_{k,\ell}$,
 we observe that the shortest path from $p_k$ to $p_\ell$ might now
-go through the new edge. Hence, we update
+go through the new edge. 
+
+Hence, we update
 \[
     b_{k,\ell}\gets \min_{i,j}\{b_{k,\ell},b_{k,i}+v+b_{j,\ell},b_{k,j}+v+b_{i,\ell}\}
 \]
 Repeating this for all $k,\ell$ yields the updated upper bounds in $O(n^2)$
-time per entry.
+time.
 
 For the lower bound, we observe that for any $1\leq k,\ell\leq n$,
 \[
@@ -471,11 +485,6 @@ We tested the algorithm for $\eps \in \Set{0.01, 0.1, 0.2, 0.5}$ on the followin
 \end{enumerate}
 In all experiments the algorithms that we tested compared in the same way,
 so we only present results for the \textbf{uniform} point set in dimension 2.
-%Let $e$ denote the number of edges of a spanner on $n$ vertices;
-%in the plots we visualize the ratios $e / { n \choose 2}$ and $e / n$.
-%We refer to the first ratio as \textit{density} and to the second one
-%as \textit{growth}. Note that 
-
 
 
 The results are summarized in the plot \ref{fig:spanner-sparseness}.
@@ -554,7 +563,7 @@ to update lower bounds for other distances $\dist(p_j, q)$.
 If we see that the lower bound for $\dist(p_j, q)$ is larger than $\dist(p_i, q) / (1+\eps)$, then 
 we can discard the point $p_j$. If all points were discarded, we found an approximate nearest neighbor;
 otherwise pick a random point $p_j$ from the remaining ones and compute $\dist(p_j, q)$.
-There are two possibilities: if $\dist(p_j, q) \leq \dist(p_i, q) / (1+\eps)$,
+There are two possibilities: if $\dist(p_j, q) < \dist(p_i, q) / (1+\eps)$,
 then we choose $p_j$ as the current candidate for an approximate nearest neighbor,
 otherwise we keep $p_i$ in this role. In any case, the new computed distance
 may also allow us to discard more than one point, as figure \ref{fig:discarded_balls} shows. In

@@ -3,8 +3,8 @@
 import sys
 import numpy as np
 
-def euclidean_distance(a, b):
-    return np.linalg.norm(a - b)
+def get_lp_distance(a, b, norm = 2.0):
+    return np.linalg.norm(a - b, ord=norm)
 
 def get_points(n_points, dim):
     return np.random.randn(n_points, dim)
@@ -38,14 +38,29 @@ def get_clustered_points(n_points, dim, n_clusters = -1):
     return diffs + cluster_centres
 
 
-def distance_matrix(points):
+def get_beta_05_05(n_points, dim):
+    return np.random.beta(0.5, 0.5, (n_points, dim))
+
+def get_beta_5_1(n_points, dim):
+    return np.random.beta(5, 1, (n_points, dim))
+
+def get_beta_1_3(n_points, dim):
+    return np.random.beta(1, 3, (n_points, dim))
+
+def get_beta_2_2(n_points, dim):
+    return np.random.beta(2, 2, (n_points, dim))
+
+def get_beta_2_5(n_points, dim):
+    return np.random.beta(2, 5, (n_points, dim))
+
+def distance_matrix(points, norm = 2.0):
     n_points = len(points)
     result = np.zeros((n_points, n_points))
     for i in range(n_points):
         for j in range(n_points):
             if i <= j:
                 continue
-            result[i][j] = result[j][i] = euclidean_distance(points[i, :], points[j, :])
+            result[i][j] = result[j][i] = get_lp_distance(points[i, :], points[j, :], norm)
     return result
 
 
