@@ -28,11 +28,13 @@
 \newcommand{\dappr}{\tilde{d}}
 %\newcommand{\Wlog}{W.l.o.g.\ }
 %\newcommand{\wlog}{w.l.o.g.\ }
-\newcommand{\eps}{\epsilon}
+\newcommand{\eps}{\varepsilon}
 \newcommand{\orient}{O}
 \newcommand{\cpro}{\Pi}
 \newcommand{\fib}{\mathrm{Fib}}
 
+\newcommand{\metricspace}{\mathcal{M}}
+\newcommand{\approxmetric}{\gamma}
 \newcommand{\parent}{\mathrm{par}}
 \newcommand{\point}{p}
 \newcommand{\level}{\ell}
@@ -67,7 +69,7 @@
 %\def\marrow{\marginpar[\hfill$\longrightarrow$]{$\longleftarrow$}}
 %\def\michael#1{\textcolor{red}{\textsc{Michael says: }{\marrow\sf #1}}}
 
-\title{Geometric Filters for Metric Spaces}
+\title{Metric Spaces with Expensive Distances}
 \author{Michael Kerber}{TU Graz}{kerber@tugraz.at}{}{}
 \author{Arnur Nigmetov}{TU Graz}{nigmetov@tugraz.at}{}{}
 \authorrunning{M. Kerber and A. Nigmetov}
@@ -77,82 +79,127 @@
 \begin{document}
 \maketitle
 
+\begin{abstract}
+    
+In algorithms for finite metric spaces, it is common
+to assume that the distance between two points
+can be computed in constant time, and complexity
+bounds are expressed only in terms of the number
+of points of the metric space.
+We introduce a different model where we assume
+that the computation of a single distance is
+an expensive operation and consequently, the goal is
+to minimize the number of such distance queries.
+This model is motivated by metric spaces
+that appear in the context of topological data analysis.
+
+We consider two standard operations on metric spaces,
+namely the construction of an $\epsilon$-spanner
+and the computation of an approximate nearest
+neighbor for a given query point.
+In both cases, we partially explore the metric space
+through distance queries and infer lower and upper bounds
+for yet unexplored distances through triangle inequality.
+For spanners, we evaluate several exploration strategies
+through extensive experimental evaluation.
+For approximate nearest neighbors, we prove that our
+strategy returns an approximate nearest neighbor
+after a logarithmic number of distance queries.
+\end{abstract}
+
 \section{Introduction}
 
-\paragraph{Motivation.}
+\subsection{Motivation.}
 
 In this paper we look at algorithms in metric spaces,
 in which computing a single distance between points can be very costly.
-More specifically,
-we consider the problem of finding an approximate nearest neighbor
-of some point $q$ among the given $n$ points, and the problem of finding a $t$-spanner,
-i.e., a graph that approximates the metric on the given set of points,
-and we not so much interested in reducing the complexity of the algorithm,
-but rather in reducing the number of distances computed.
 The motivating example for us was Topological Data Analysis, where computation
 of bottleneck and Wasserstein distances between two persistence diagrams
 can be done in time polynomial in the number of points of the input diagrams.
 
-We believe that the scenario when the input consists of a relatively small number of points, 
-e.g., of order $10^2-10^3$, but the complexity of computing a distance is rather large,
-is plausible (for the persistence diagrams, the size of 0-dimensional ones can be huge,
-because in dimension 0 there are especially efficient algorithms that can handle much
-larger inputs, so it is possible to produce diagrams with millions of  points in each).
-In such a situation, the natural approach would be to avoid computing the
-distance between two points if we do not need it,
-
-We demonstrate that the number of distance computations can be further
-reduced by a careful re-implementation of the underlying geometric algorithms.
-Our improvement is based on the following simple observation: many geometric
-constructions (such as cover tree and WSPD constructions) require distance
-computations only in the form of the following predicate: 
-``Is $\dist(p_i,p_j)\leq t$'', where $t$ is a real value.
-We show that using the information of the already computed distances and
-the triangle inequality, we can answer the above predicate in many cases
-without computing the actual distance.
-
-We describe our idea with an example. In Figure~\ref{fig:1st_example},
-we see a weighted graph on $P$ whose edges are the distances that have
-been computed so far; note that $\dist(p_1,p_2)$ is unknown. 
-The shortest path from $p_1$ to $p_2$ has length $9$, which clearly
-constitutes an upper bound on the distance by triangle inequality.
-However, we can also infer that $\dist(p_1,p_2)\geq 3$:
-otherwise, the path from $p_3$ to $p_4$ via $p_1$ and $p_2$
-would be shorter than the edge $(p_3,p_4)$, again contradicting
-triangle inequality.
-Hence, the question whether $\dist(p_1,p_2)\leq t$ can be answered positively
-for $t>=9$ and negatively for $t<3$. Only if $t\in[3,9)$, the actual
-distance computation is necessary. This approach is reminiscent to the usage
-of \emph{numerical filters} in geometric computing in the CGAL library,
-where geometric predicates in exact number types are first evaluated using 
-certified floating-point arithmetic, and exact computation is only
-invoked if the numerical evaluation did not arrive at a decisive result
-(e.g.~\cite{bbp-interval,kerber-phd}).
-
 
 
 Given a set $\pointset:=\{p_1,\ldots,p_n\}$ of $n$ points
-in a metric space $(\distspace,\dist)$, 
+in a metric space $(\metricspace,\dist)$, 
 consider the following standard operations:
 
 \begin{description}
-\item[Nearest Neighbor] Given a point $q\in\distspace$,
+\item[Nearest Neighbor] Given a point $q\in\metricspace$,
 find $p_i\in\pointset$ such that, for all $j=1,\ldots,n$,
 \[d(q,p_i)\leq d(q,p_j)\]
 
-\item[Metric approximation] Given $\eps>0$, compute a metric $\adist$
+\item[Metric approximation] Given $\eps>0$, compute a metric $\approxmetric$
 such that for all $1\leq i,j\leq n$,
 %
-\[\dist(p_i,p_j)\leq \adist(p_i,p_j) \leq (1+\eps) \dist(p_i,p_j).\]
+\[\dist(p_i,p_j)\leq\approxmetric(p_i,p_j)\leq (1+\eps)\dist(p_i,p_j).\]
 
-By ``computing'' $\adist$, we mean to compute a $n\times n$-matrix $E$ 
-such that $E_{ij}=\adist(p_i,p_j)$.
+By ``computing'' $\approxmetric$, we mean to compute a $n\times n$-matrix $E$ 
+such that $E_{ij}=\approxmetric(p_i,p_j)$.
 \end{description}
 
-Assume that an algorithm is given to compute $\dist(\cdot,\cdot)$
-for any two points in $\distspace$ in worst-case complexity $\complexity$.
-Then trivially, the above problems can be solved (exactly) in
-$O(n\complexity)$ and $O(n^2\complexity)$ time, respectively.
+
+
+
+% We believe that the scenario when the input consists of a relatively small number of points, 
+% e.g., of order $10^2-10^3$, but the complexity of computing a distance is rather large,
+% is plausible (for the persistence diagrams, the size of 0-dimensional ones can be huge,
+% because in dimension 0 there are especially efficient algorithms that can handle much
+% larger inputs, so it is possible to produce diagrams with millions of  points in each).
+% In such a situation, the natural approach would be to avoid computing the
+% distance between two points if we do not need it,
+
+% We demonstrate that the number of distance computations can be further
+% reduced by a careful re-implementation of the underlying geometric algorithms.
+% Our improvement is based on the following simple observation: many geometric
+% constructions (such as cover tree and WSPD constructions) require distance
+% computations only in the form of the following predicate: 
+% ``Is $\dist(p_i,p_j)\leq t$'', where $t$ is a real value.
+% We show that using the information of the already computed distances and
+% the triangle inequality, we can answer the above predicate in many cases
+% without computing the actual distance.
+
+% We describe our idea with an example. In Figure~\ref{fig:1st_example},
+% we see a weighted graph on $P$ whose edges are the distances that have
+% been computed so far; note that $\dist(p_1,p_2)$ is unknown. 
+% The shortest path from $p_1$ to $p_2$ has length $9$, which clearly
+% constitutes an upper bound on the distance by triangle inequality.https://v2.overleaf.com/project/5bf6fa26032afa24d94383a5
+% However, we can also infer that $\dist(p_1,p_2)\geq 3$:
+% otherwise, the path from $p_3$ to $p_4$ via $p_1$ and $p_2$
+% would be shorter than the edge $(p_3,p_4)$, again contradicting
+% triangle inequality.
+% Hence, the question whether $\dist(p_1,p_2)\leq t$ can be answered positively
+% for $t>=9$ and negatively for $t<3$. Only if $t\in[3,9)$, the actual
+% distance computation is necessary. This approach is reminiscent to the usage
+% of \emph{numerical filters} in geometric computing in the CGAL library,
+% where geometric predicates in exact number types are first evaluated using 
+% certified floating-point arithmetic, and exact computation is only
+% invoked if the numerical evaluation did not arrive at a decisive result
+% (e.g.~\cite{bbp-interval,kerber-phd}).
+
+
+
+% Given a set $\pointset:=\{p_1,\ldots,p_n\}$ of $n$ points
+% in a metric space $(\distspace,\dist)$, 
+% consider the following standard operations:
+
+% \begin{description}
+% \item[Nearest Neighbor] Given a point $q\in\distspace$,
+% find $p_i\in\pointset$ such that, for all $j=1,\ldots,n$,
+% \[d(q,p_i)\leq d(q,p_j)\]
+
+% \item[Metric approximation] Given $\eps>0$, compute a metric $\adist$
+% such that for all $1\leq i,j\leq n$,
+% %
+% \[\dist(p_i,p_j)\leq \adist(p_i,p_j) \leq (1+\eps) \dist(p_i,p_j).\]
+
+% By ``computing'' $\adist$, we mean to compute a $n\times n$-matrix $E$ 
+% such that $E_{ij}=\adist(p_i,p_j)$.
+% \end{description}
+
+% Assume that an algorithm is given to compute $\dist(\cdot,\cdot)$
+% for any two points in $\distspace$ in worst-case complexity $\complexity$.
+% Then trivially, the above problems can be solved (exactly) in
+% $O(n\complexity)$ and $O(n^2\complexity)$ time, respectively.
 % For low-dimensional\footnote{we will make this notion precise
 % later in the text} metric spaces, we can improve these bounds:
 % Using cover trees~\cite{cover-trees}, we can preprocess the point set
@@ -199,71 +246,72 @@ in algorithms for metric spaces?
 % we only compute $O(n\log n)$ distances instead of $O(n^2)$.
 
 
-\paragraph{Contribution.}
-
+\subsection{Contribution.}
+We consider the two well-known problems: finding a $1 + \eps$-spanner
+and finding an approximate nearest neighbor.
 %
-We demonstrate that the number of distance computations can be further
-reduced by a careful re-implementation of the underlying geometric algorithms.
-Our improvement is based on the following simple observation: many geometric
-constructions (such as cover tree and WSPD constructions) require distance
-computations only in the form of the following predicate: 
-``Is $\dist(p_i,p_j)\leq t$'', where $t$ is a real value.
-We show that using the information of the already computed distances and
-the triangle inequality, we can answer the above predicate in many cases
-without computing the actual distance.
+% We demonstrate that the number of distance computations can be further
+% reduced by a careful re-implementation of the underlying geometric algorithms.
+% Our improvement is based on the following simple observation: many geometric
+% constructions (such as cover tree and WSPD constructions) require distance
+% computations only in the form of the following predicate: 
+% ``Is $\dist(p_i,p_j)\leq t$'', where $t$ is a real value.
+% We show that using the information of the already computed distances and
+% the triangle inequality, we can answer the above predicate in many cases
+% without computing the actual distance.
 
-We describe our idea with an example. In Figure~\ref{fig:1st_example},
-we see a weighted graph on $P$ whose edges are the distances that have
-been computed so far; note that $\dist(p_1,p_2)$ is unknown. 
-The shortest path from $p_1$ to $p_2$ has length $9$, which clearly
-constitutes an upper bound on the distance by triangle inequality.
-However, we can also infer that $\dist(p_1,p_2)\geq 3$:
-otherwise, the path from $p_3$ to $p_4$ via $p_1$ and $p_2$
-would be shorter than the edge $(p_3,p_4)$, again contradicting
-triangle inequality.
-Hence, the question whether $\dist(p_1,p_2)\leq t$ can be answered positively
-for $t>=9$ and negatively for $t<3$. Only if $t\in[3,9)$, the actual
-distance computation is necessary. This approach is reminiscent to the usage
-of \emph{numerical filters} in geometric computing in the CGAL library,
-where geometric predicates in exact number types are first evaluated using 
-certified floating-point arithmetic, and exact computation is only
-invoked if the numerical evaluation did not arrive at a decisive result
-(e.g.~\cite{bbp-interval,kerber-phd}).
+% We describe our idea with an example. In Figure~\ref{fig:1st_example},
+% we see a weighted graph on $P$ whose edges are the distances that have
+% been computed so far; note that $\dist(p_1,p_2)$ is unknown. 
+% The shortest path from $p_1$ to $p_2$ has length $9$, which clearly
+% constitutes an upper bound on the distance by triangle inequality.
+% However, we can also infer that $\dist(p_1,p_2)\geq 3$:
+% otherwise, the path from $p_3$ to $p_4$ via $p_1$ and $p_2$
+% would be shorter than the edge $(p_3,p_4)$, again contradicting
+% triangle inequality.
+% Hence, the question whether $\dist(p_1,p_2)\leq t$ can be answered positively
+% for $t>=9$ and negatively for $t<3$. Only if $t\in[3,9)$, the actual
+% distance computation is necessary. This approach is reminiscent to the usage
+% of \emph{numerical filters} in geometric computing in the CGAL library,
+% where geometric predicates in exact number types are first evaluated using 
+% certified floating-point arithmetic, and exact computation is only
+% invoked if the numerical evaluation did not arrive at a decisive result
+% (e.g.~\cite{bbp-interval,kerber-phd}).
 
-\begin{figure}[h]
+% \begin{figure}[h]
 
-\centering
-\includegraphics[width=6cm]{intro_example.eps}
-\caption{An example of a partially revealed metric.}
-\label{fig:1st_example}
-\end{figure}
+% \centering
+% \includegraphics[width=6cm]{intro_example.eps}
+% \caption{An example of a partially revealed metric.}
+% \label{fig:1st_example}
+% \end{figure}
 
-In our implementation, we maintain the best lower and upper bounds of all
-pairwise distances in an $n\times n$ matrix of intervals. We show how to
-update this matrix in $O(n^4)$ time when a new edge is added.
-%We point out once more that a quadratic update time only pays off
-%if distance computations are expensive, say $\complexity=\Omega(n^2)$.
+% In our implementation, we maintain the best lower and upper bounds of all
+% pairwise distances in an $n\times n$ matrix of intervals. We show how to
+% update this matrix in $O(n^2)$ time when a new edge is added.
+% %We point out once more that a quadratic update time only pays off
+% %if distance computations are expensive, say $\complexity=\Omega(n^2)$.
 
-We perform an extensive experimental evaluation of our idea.
-We mostly concentrate on point clouds in Euclidean space~--
-of course, the approach does not yield any performance benefits in that
-situation because distance computations are cheap; however, the Euclidean
-case provides a simple setup for experiments.
-We investigate how the dimensionality, the clustering density, 
-the approximation quality, and noise 
-in the point cloud affect the number of distance computations.
-Our result show that $\ldots$
+% We perform an extensive experimental evaluation of our idea.
+% We mostly concentrate on point clouds in Euclidean space~--
+% of course, the approach does not yield any performance benefits in that
+% situation because distance computations are cheap; however, the Euclidean
+% case provides a simple setup for experiments.
+% We investigate how the dimensionality, the clustering density, 
+% the approximation quality, and noise 
+% in the point cloud affect the number of distance computations.
+% Our result show that $\ldots$
 
-We also provide some experimental results for the case of persistence diagrams
-which motivated this line of research. We point out that the space of
-persistence diagrams fails to be ``low-dimensional''. To be precise,
-its doubling dimension is $\infty$, and a finite set of $n$ diagram
-can have the worst-case doublng dimension $\log n$. This worst-case
-behavior is also the expected one if the diagrams are chosen randomly
-(in a sense made precise in Section~\ref{sec:metric_spaces_top_summaries}). 
-However, we demonstrate that
-for natural collections of persistence diagrams, a substantial fraction
-of distance computations can be avoided. In detail, $\ldots$
+% We also provide some experimental results for the case of persistence diagrams
+% which motivated this line of research. We point out that the space of
+% persistence diagrams fails to be ``low-dimensional''. To be precise,
+% its doubling dimension is $\infty$, and a finite set of $n$ diagram
+% can have the worst-case doublng dimension $\log n$. This worst-case
+% behavior is also the expected one if the diagrams are chosen randomly
+% (in a sense made precise in Section~\ref{sec:metric_spaces_top_summaries}). 
+% However, we demonstrate that
+% for natural collections of persistence diagrams, a substantial fraction
+% of distance computations can be avoided. In detail, $\ldots$
 
 %We also have derived two minor technical results necessary for 
 %our implementation. First of all, since our underlying distance computation
@@ -278,6 +326,13 @@ of distance computations can be avoided. In detail, $\ldots$
 
 
 \section{Notation and Preliminary Notions}
+Let $(X, \dist)$ be a finite metric space with $n$. Let $G$ be a graph with set of vertices $X$,
+its edges have natural weighting $w(x,y) = \dist(x, y)$ which induces the graph metric $\dist_G$ on $X$.
+Graph $X$ is called a $1 + \eps$-spanner of $P$, if $\dist_G$ is a good approximation of $\dist$:
+$\dist(x,y) \leq \dist_G(x, y) \leq (1+\eps) \dist(x, y)$. Obviously, $G$ must have $\Omega(n)$ edges,
+and we consider $G$ optimal, if it has $O(n)$ edges (for each edge of $G$ we must compute the corresponding
+distance, if we want to use the spanner instead of the original metric, which dictates this
+choice of optimality measure). 
 
 
 
@@ -294,74 +349,78 @@ is always doubling and has the doubling dimension $O(d)$ (but not necessarily $d
 In this paper we consider some fixed metric space $(X, \dist)$, and, to get interesting
 results we must assume doubling property.
 
-We shall need the following lemma.
+We shall need the following lemma, which is just a reformulation of the well-known
+packing lemma for doubling spaces (see \cite{smid_2009}, Sect. 2.2).
 
 \begin{lemma}
-\label{lem:packing_lemma_dd}
-Let $(X,\dist)$ be a metric space of doubling dimension $d$, and let $P$ be a subset of a ball $B(x,R)$ in $X$ such that the distance between any two distinct points of $P$ is at least $r$.
-Then $P$ is finite and cardinality of $P$ satisfies the inequality $|P| < 2^{md}$, where $m = 1 + \lceil \log (R/r) \rceil $. 
-\end{lemma}
+\label{lem:packing_lemma}
+ Let $(X,\dist)$ be a metric space of doubling dimension $d$, and let $P$ be a subset of a ball 
+ $B(x,R)$ in $X$ such that the distance between any two distinct points of $P$ is at least $r$.
+ Then $P$ is finite and its cardinality is bounded by some $C$ that depends only on $d$
+ and the ratio $r/R$.
+% Then $P$ is finite and cardinality of $P$ satisfies the inequality $|P| < 2^{md}$, where $m = 1 + \lceil \log (R/r) \rceil $. 
 
+% Let $(X,\dist)$ be a metric space of doubling dimension $d$, and let $P$ be a subset of a ball $B(x,R)$ in $X$ such that the distance between any two distinct points of $P$ is at least $r$.
+% Then $P$ is finite and cardinality of $P$ satisfies the inequality $|P| < 2^{md}$, where $m = 1 + \lceil \log (R/r) \rceil $. 
+\end{lemma}
 \begin{proof}
 We can cover $B(x,R)$ with $2^d$ ball of radius $R/2$, each of these balls we can cover with $2^d$
-balls of radius $R/4$, etc. Repeating this process $\lceil \log \frac{R}{r/2} \rceil = m $ times, 
+balls of radius $R/4$, etc. Repeating this process $m := \lceil \log \frac{R}{r/2} \rceil$ times, 
 we cover
-$B(x, R)$ with $2^{md}$ balls of radius at most $r/2$. Since a ball of radius $r/2$ can contain at most one point from $P$, the claim follows.
+$B(x, R)$ with $2^{md}$ balls of radius at most $r/2$. Since a ball of radius $r/2$ can
+contain at most one point from $P$, the claim follows.
 \end{proof}
-
-
+If the doubling dimension of $(X, \dist)$ is larger than $d$, then
+there exists a ball of radius $R$ such that there are at least $2^d$ points with pairwise distance at least $R$. On the other hand,
+the maximal distance between any two of these points is at most $2R$, and we have a lot of points with approximately the same distance
+between them. If we want a high-quality spanner on these points, then we can expect that its size will be quadratic, not linear;
+so the space of high doubling dimension cannot have optimal spanners. Thus the question of approximating
+the non-doubling metric without computing many distances cannot be solved positively, and we should
+restrict our attention to the case of doubling spaces.
 
 \section{Metric Approximation}
 
-In this section $P = \Set{p_1, \dots, p_n}$ is a given set of points in a metric space;
-our goal is to construct a $(1+\eps)$-spanner on $P$. All algorithms that we consider 
-build a spanner by starting with an empty graph on vertices $P$, to which they iteratively
-add edges. We shall denote this graph (at any stage of the algorithm) by $G$.
+It is known that optimal spanner can be constructed by the following greedy algorithm: 
+start with an empty graph on vertices $p_i$,
+sort all edges $\{p_i, p_j\}$ by the length $\dist(p_i, p_j)$ in ascending order and keep adding them to the graph
+until it becomes a $1+\eps$-spanner. 
 
 
-It is known that an asymptotically optimal spanner can be constructed by the following greedy algorithm: 
-sort all edges $\{p_i, p_j\}$ by the length $\dist(p_i, p_j)$ in ascending order and keep adding them to $G$
-until it becomes a $1+\eps$-spanner. This algorithm in its most naive form is expensive in terms of $n$,
-because it requires computing many shortest paths, and it is also the most expensive approach
-in our setting, because it requires
- computing all pairwise distances first. We propose an alternative algorithm (or rather a family of algorithms), 
- which we call
+ In our setting this is the most expensive approach, because it requires
+ computing all pairwise distances first. We propose an alternative approach (or rather a family of algorithms), which we call
  \textit{blind} spanner, meaning that the algorithm that builds a spanner does not have access to $\dist(p_i, p_j)$
- before it decides to add the edge $(p_i, p_j)$ to $G$.
+ before it decides to add the edge $(p_i, p_j)$.
  The algorithm also maintains lower and upper bounds
- for all pairwise distances, which are updated after a new edge is added, and the stopping criterion
- is based on these bounds, namely, if $a_{i, j}$ and $b_{i,j}$ denote lower and upper bounds
- for the distance between $p_i$ and $p_j$, respectively, then the algorithm stops, if $b_{i,j} / a_{i, j} \leq 1 + \eps$
+ for all pairwise distances, which are updated after a new edge is added.
+ These bounds are used in the stopping criterion, namely, if $a_{i, j}$ and $b_{i,j}$ denote lower and upper bounds
+ for the distance between $p_i$ and $p_j$, respectively, 
+ then the algorithm stops, if $b_{i,j} / a_{i, j} \leq 1 + \eps$
  for all $i \neq j$.
 
 \begin{algorithmic}
 \label{alg:blind_spanner}
 \Function{BlindSpanner}{$P, \eps$}
-    \State {$G \gets (P, \emptyset)$}
+    \State {$E \gets \emptyset$}
     \State {$a_{i,j} \gets 0$ for all $1 \leq i,j \leq n$}
     \State {$b_{i,j} \gets \infty$ for all $1 \leq i,j \leq n, i \neq j$}
     \While {$\exists i \neq j : b_{i,j} / a_{i,j} > 1 + \eps$}
-        \State {$(i,j) \gets$ \Call {GetEdgeToAdd}{}
-        \State {$v \gets \dist(p_i, pj)$}
-        \State {Add weighted edge $(p_i, p_j, v)$ to $G$}
-        \State {$UpdateBounds(i, j, v)$}
+    \State {$(i,j) \gets $} \Call{GetEdgeToAdd}{}
+    \State {$v \gets \dist(p_i, pj)$}
+    \State {Add weighted edge $(p_i, p_j, v)$ to $E$}
+    \State \Call{UpdateBounds}{$i, j, v$}
     \EndWhile
-    \State \Return {$G$}
 \EndFunction
 \end{algorithmic}
 
 
 In this pseudocode we adopt the convention that a positive number divided by 0 is $\infty$
 and $\infty$ is larger than any real number,
-thus making the predicate in the while loop well-defined.  The procedure $UpdateBounds$ is described in the next subsection,
+thus making the predicate in the while loop well-defined.  The procedure \textsc{UpdateBounds} is described in the next subsection,
 now we only mention that it updates all upper and lower bounds based on triangle inequality involving the edge $(p_i, p_j)$,
 and the update is monotonic: no upper bound can increase, no lower bound can decrease, and, after the distance
 between $p_i$ and $p_j$ is calculated, both $a_{i,j}$ and  $b_{i,j}$ are set to be $\dist(p_i, p_j)$.
-Combined with the natural requirement that the function \textsc{GetEdgeToAdd} never
-returns the same edge twice, these properties ensure that the algorithm terminates.
 The most important part of this algorithm is the way of choosing the next edge to be added, and
 there are several possibilities, which give very different results.
-
 
 
 
@@ -403,7 +462,7 @@ in a path connecting $p_i$ and $p_j$ in $G$ is longer than the sum of the length
 We refer to the former option as \textsc{BlindQuasiSortedGreedy} and to the latter one as \textsc{BlindQuasiSortedShaker}.
 
 
- \paragraph{Maintaining Lower and Upper Bounds}
+ \subsection{Maintaining Lower and Upper Bounds}
 
  In this subsection we explain the update procedure that we use. Suppose that
  $a_{k,l}$ and $b_{k,l}$ are valid lower and upper bounds, so that
@@ -412,18 +471,14 @@ We refer to the former option as \textsc{BlindQuasiSortedGreedy} and to the latt
 \]
 Assume that $\dist(p_i,p_j)=v\in\R$ has been computed.
 First, we reset $a_{i,j}$ and $b_{j,i}$ to $v$. 
-Now observe that for a pair $(k, \ell)$ there are three possibilities:
-either the shortest path from $p_k$ to $p_\ell$ in $G$
 To update the upper bound of some entry $b_{k,\ell}$,
 we observe that the shortest path from $p_k$ to $p_\ell$ might now
-go through the new edge. 
-
-Hence, we update
+go through the new edge. Hence, we update
 \[
     b_{k,\ell}\gets \min_{i,j}\{b_{k,\ell},b_{k,i}+v+b_{j,\ell},b_{k,j}+v+b_{i,\ell}\}
 \]
 Repeating this for all $k,\ell$ yields the updated upper bounds in $O(n^2)$
-time.
+time per entry.
 
 For the lower bound, we observe that for any $1\leq k,\ell\leq n$,
 \[
@@ -445,30 +500,32 @@ for this pair becomes 1, so a blind spanner algorithm always terminates (of cour
 we assume that the procedure \textsc{GetEdgeToAdd} picks an edge only once).
 
 
-\paragraph{Experimental Results}
+\subsection{Experimental Results}
 At the moment we cannot provide any theoretical guarantees for the heuristics that we propose to compute blind spanners,
 and it can happen that it will yield the complete graph as a spanner.
-We run extensive experiments on the points sampled from the low-dimensional Euclidean space to investigate
+We run experiments on the points sampled from the low-dimensional Euclidean space to investigate
 experimentally the performance of these heuristics. Clearly, this has no practical meaning for $\R^d$, but
 this space is well-suited for controlled experiments.
 
 \begin{figure}[ht]
     \label{fig:spanner-sparseness}
-    \includegraphics[width=0.7\textwidth]{edges_to_points_ratio_dim_2_normal_points.png}
+    \includegraphics[width=0.7\textwidth]{pics/edges_to_points_ratio_dim_2_normal_points.png}
     \caption{Number of edges in blind spanners generated by different variants of the blind
     algorithm. Greedy non-blind algorithm is included for comparison. The plot is for normally distributed points
     in dimension 2, $\eps = 0.1$.}
 \end{figure}
 
-
-
 \begin{figure}[ht]
     \label{fig:blind-greedy-only}
-    \includegraphics[width=0.7\textwidth]{blind-greedy-dims.png}
+    \includegraphics[width=0.7\textwidth]{pics/blind-greedy-dims.png}
     \caption{}
 \end{figure}
 
-
+\begin{figure}[ht]
+    \label{fig:blind-rbr-variants}
+    \includegraphics[width=0.7\textwidth]{pics/random-bad-ratio-comparison.png}
+    \caption{Comparison of the four variants of \textsc{BlindRandomBadRatio} algorithm.}
+\end{figure}
 
 We tested the algorithm for $\eps \in \Set{0.01, 0.1, 0.2, 0.5}$ on the following sets of points in dimensions $d = 2,3,4,5$:
 \begin{enumerate}
@@ -486,11 +543,10 @@ We tested the algorithm for $\eps \in \Set{0.01, 0.1, 0.2, 0.5}$ on the followin
 In all experiments the algorithms that we tested compared in the same way,
 so we only present results for the \textbf{uniform} point set in dimension 2.
 
-
-The results are summarized in the plot \ref{fig:spanner-sparseness}.
-The first plot shows the number of edges of the spanner.
+The plot \ref{fig:spanner-sparseness}.
+shows the number of edges of the spanner.
 We can see that, even though none of the blind spanners can produce
-spanners of the same quality (i.e., sparseness) as the standard greedy algorithm,
+spanners of the same quality (i.e., sparse) as the standard greedy algorithm,
 \textsc{BlindGreedy} and all variants of \textsc{BlindRandom}
 perform significantly better than both variants of \textsc{BlindQuasiSorted}.
 it is important to remember that for all blind spanners the number of edges
@@ -502,10 +558,27 @@ for which this ratio stays practically constant, confirming the linear growth.
 None of the blind algorithms seems to have this property, but among them
 the blind greedy spanner is the best one. If we assume that the number of edges
 is proportional to $n^\alpha$, then we can try to estimate $\alpha$ by 
-linear regression.  We give in the table \ref{tbl:regr_coeff_spanner}
-the maximal exponents $\alpha$ for each of the algorithms,
-and it is worth mentioning that even for the quasi-sorted shaker variant 
-the exponent seems to be bounded away from 2.
+linear regression (after taking $\log$).  We give in the table \ref{tbl:regr_coeff_spanner}
+the estimated exponents $\alpha$ for \textsc{BlindGreedy} and standard
+greedy algorithms. Note that even for the greedy algorithm these estimated
+exponents can be significantly larger than 1,
+which is explained by the fact that the number of points
+on which we computed is not large enough to clearly see
+the linear dependency.
+
+
+\begin{table}[]
+\label{tbl:regr_coeff_spanner}
+\begin{tabular}{|l|l|l|}
+\hline
+dimension & \textbf{Greedy (non-blind)} & \textbf{Blind greedy} \\ \hline
+2         &         1.08                &  1.12                 \\ \hline
+3         &         1.24                &  1.41                \\ \hline
+4         &         1.42                &  1.77                 \\ \hline
+\end{tabular}
+\caption{Estimated exponents in the $|E|= C |V|^\alpha$ dependency of the number of edges
+on the number of points. The data is for $\eps = 0.1$ and for uniform points.}
+\end{table}
 
 
 As for different variants of the \textsc{BlindRandomBadRatio} algorithm,
@@ -513,7 +586,7 @@ we note that their performance is almost the same, and the algorithm works
 significantly better than \textsc{QuasiSorted} variants, but obviously
 worse than the blind greedy variant. There is a consistent, though small,
 difference between the variants that do not force lower bounds first and
-the other two variants of the BlindRandomBadRatio.
+the other two variants of the \textsc{BlindRandomBadRatio} (see \ref{fig:blind-rbr-variants}).
 
 
 We also look at higher dimensions, but the situation there is more
@@ -524,22 +597,19 @@ for the uniformly distributed point sets the blind greedy variant
 produces almost a complete graph up to 700 points.  
 
 
+The plot \ref{fig:spanner-eps-dependence}
+compares the \textsc{BlindGreedy} and \textsc{BlindRandomRatioForceLowerBound} algorithms
+on \textbf{uniform} point sets for different choices of $\eps$.
+
 Summing up, we can conclude from the experiments that 
  the \textsc{BlindGreedy} algorithm performs rather well, but also \textsc{BlindRandom}
 algorithm reduces the amount of computed distances substantially, especially if we enforce having non-zero lower bounds
-first. The disappointing fact is that quasi-sorted variants produce spanners which are much closer to the complete graph
+first. The data that we observed can serve as weak evidence
+of the conjecture: the blind greedy algorithm computes
+a spanner with $O(n)$ edges. The disappointing fact is that quasi-sorted variants produce spanners which are much closer to the complete graph
 (\textsc{BlindQuasiSortedGreedy} is much worse, requiring all the edges). It would seem plausible that, if we have
 access to approximate value of the distance, we could exploit this in the spanner construction, but we could not
 find a working heuristics.
-
-
-%We look at points that are sampled uniformly at random from a cube, points that are sampled
-%from a standard normal distribution, points that are clustered (we sample cluster centers uniformly at random
-%and then we sample roughly the same number of points which are normally distributed around each of the cluster
-%centers), and at points that are obtained from the uniform sample by exponentiating the coordinates:
-%$(e^{\xi_1}, \dots, e^{\xi_d})$, where $\xi_i$ are i.i.d. with uniform distribution.
-%Our findings are summarized in the plots \ref{fig:spanner_plots}.
-
 
 \section{Approximate Nearest Neighbor}
 
@@ -553,7 +623,7 @@ section, and we shall also use the shorthand notation
 We assume for simplicity
 that all exact pairwise distances $\dist(p_i, p_j)$ are already computed.
 Our goal is to reduce the number of computed distances $\dist(p_i, q)$. We shall also assume w.l.o.g.
-that all $\dist(p_i, q)$ are distinct (we can always break ties lexicographically).
+that all $\dist(p_i, q)$ are distinct.
 
 \begin{algorithmic}
 \label{alg:ann_blind}
@@ -563,20 +633,27 @@ that all $\dist(p_i, q)$ are distinct (we can always break ties lexicographicall
     \EndFor
 \EndProcedure
 
-The algorithm that we analyze can be roughly described as follows. 
-Pick a random point $p_i$,
-compute $\dist(p_i, q)$ and use this distance combined with pairwise distances $\dist(p_i, p_j)$
-to update lower bounds for other distances $\dist(p_j, q)$.
-If we see that the lower bound for $\dist(p_j, q)$ is larger than $\dist(p_i, q) / (1+\eps)$, then 
-we can discard the point $p_j$. If all points were discarded, we found an approximate nearest neighbor;
-otherwise pick a random point $p_j$ from the remaining ones and compute $\dist(p_j, q)$.
-There are two possibilities: if $\dist(p_j, q) < \dist(p_i, q) / (1+\eps)$,
-then we choose $p_j$ as the current candidate for an approximate nearest neighbor,
-otherwise we keep $p_i$ in this role. In any case, the new computed distance
-may also allow us to discard more than one point, as figure \ref{fig:discarded_balls} shows. In
-this figure points inside the shaded smaller ball cannot be a better candidate,
-and the same is true for the points in the shaded area outside of the larger ball.
-The precise radii of these balls are given in the following lemma.
+\Function{ApproximateNearestNeighbor}{$P, q, \eps$}
+    \State {$[p_1, \dots, p_n] \gets \mbox{random permutation of }P$}
+    \State { $a_i \gets 0$}
+    \Comment {$a_i$ is lower bound for $\dist(p_i, q)$}
+    \State {$ c \gets p_1, \quad v \gets \dist(p_1, q)$}
+    \Comment {$c$ keeps the current candidate}
+    \State \Call {UpdateBounds}{$p_1, v$}
+    \For{$i = 2\dots n$}
+        \If {$a_i \geq \frac{v}{1+\eps}$}
+            \State {\textbf{continue}}
+        \Else
+            \State {Compute $r_i = \dist(p_i, q)$}
+            \State \Call{UpdateBounds}{$p_i, r_i$}
+            \If {$r_i < v$}
+                \State {$c \gets p_i,\quad v\gets r_i$}
+            \EndIf
+        \EndIf
+    \EndFor
+    \State \Return {$c, v$}
+\EndFunction
+\end{algorithmic}
 
 
 The algorithm that we analyze can be described as follows. 
@@ -584,123 +661,88 @@ Fix a random permutation of the points of $P$ (to simplify notation,
 we re-index them, so the order is again $p_1, \dots, p_n$). Pick $p_1$
 as the current candidate, denote $v = r_1$ and start traversing the list of $p_i$'s.
 At each element $p_i$ look at the lower bound for $r_i$,
-if it is larger than $v / (1+\eps)$, then we can safely skip $p_i$.
+if it is larger than $v / (1+\eps)$, then we can safely discard $p_i$.
 Otherwise we must compute the distance $r_i$, and we immediately
  use it to update the lower bounds for all the next points $p_k$'s. 
-If $p_i$ turns out to be a better candidate (we compare $r_ir$ with $v$, not with $v/(1+\eps)$),
+If, after computing $r_i$, we see that $p_i$ is a better candidate (we compare $r_ir$ with $v$, not with $v/(1+\eps)$),
 we update the current candidate $c$ and the distance to the query point $v$ accordingly, 
 otherwise $c$ and $v$ remain unchanged.
-
-
-We may hope to avoid computation of $O(n)$ distances, if we assume low doubling dimension
-and solve approximate neighbor problem. The necessity of the first assumption is easily justified: if all $d(p_i, p_j)$
-and $d(p_i, q)$ are approximately the same, at each iteration of our algorithm we will be able to discard only one point.
-The necessity of the second requirement can be seen from the figure \ref{fig:bad_exact_nn_example},
-where a set of points in the plane is in general position, and yet, regardless of the order we choose them,
-at each iteration of our algorithm we are able to discard only one point. This example does not work in the
-approximate formulation.
-
-
-%\begin{algorithmic}
-%\Procedure{Discard\_1}{$L, p_i$}
-%    \State {$r_i = \dist(q, p_i)$}
-%    \ForAll { $p_j \in L$}
-%       \If {  $ \dist(p_i, p_j) > r_i \left(1 + \frac{1}{ 1 + \eps} \right)$ }
-%           \State {Remove $p_j$ from $L$}
-%       \EndIf
-%    \EndFor
-%\EndProcedure
-%\end{algorithmic}
-
-%\begin{algorithmic}
-%\Procedure{Discard\_2}{$L, w, c$}
-%    \State {$r_w = \dist(q, w)$}
-%    \State {$r_c = \dist(q, w)$}
-%    \Comment {Distances $r_w$ and $r_c$ are cached}
-%    \ForAll { $p_j \in L$}
-%       \If { $ \dist(w, p_j) < r_w - r_c / ( 1 + \eps) $ }
-%           \State {Remove $p_j$ from $L$}
-%           \Comment {In particular, the worse candidate $w$ will be removed here}
-%       \EndIf
-%       \If {  $ \dist(w, p_j) > r_w + r_c / ( 1 + \eps) $ }
-%           \State {Remove $p_j$ from $L$}
-%       \EndIf
-%    \EndFor
-%\EndProcedure
-%\end{algorithmic}
-
-
-%\begin{algorithmic}
-%\label{alg:ann_blind}
-%\Function{ApproximateNearestNeighbor}{$P, q, \eps$}
-%    \State {Initialize array $L$ with a random permutation of $P$}
-%    \State {$ c \gets \mbox{the first element of }L$}
-%    \State {Compute $r_i = \dist(q, p_i)$}
-%    \State \Call{Discard\_1}{$L, c$}
-%    \While {$|L| > 1$}
-%        \ForAll {$p_j \in L $}
-%            \State {Compute $r_j = \dist(p_j, q)$}
-%            \Comment {Set the worse candidate $w$ to be either $p_i$ or $p_j$}
-%            \If {$r_j < r_i$ }
-%                \State {$ c \gets p_j $}
-%                \State \Call{Discard\_1}{$L, c$}
-%                \State {$ w \gets p_i $}
-%            \Else
-%                \State {$ w \gets p_i $}
-%            \EndIf
-%            \State \Call{Discard\_2}{$L, w, c$}
-%        \EndFor
-%    \EndWhile
-%    \State \Return {the unique element left in $L$}
-%\EndFunction
-%\end{algorithmic}
-
-
 
 \begin{theorem}
     If $(X, \dist)$ is a doubling space, then, for any fixed $\eps > 0$ the
     algorithm \ref{alg:ann_blind} computes $O(\log n)$ distances $\dist(p_i, q)$ in expectation.
 \end{theorem}
 
+Before we start the proof, let us make some remarks. First, we want
+to rephrase what discarding a point means. 
+Let $v$ be the distance from the current candidate $c$ to $q$;
+suppose that we have computed $r_i = \dist(p_i, q)$ which is larger than $v$,
+and want to use it to estimate $r_j = \dist(p_j, q)$ for some other $p_j$. If we assume 
+that $\dist(p_i, p_j) < r_i - v/(1+\eps)$,
+and substitute this in the triangle inequality $\dist(p_j, q) \geq \dist(p_i, q) - \dist(p_i, p_j)$, then we obtain $\dist(p_j, q) \geq v / (1 + \eps)$. Thus, if $p_i$ fails to be closer to $q$ than the current candidate, then all points in the ball of radius $r_i - v / (1 + \eps)$,
+even those who are closer to $q$ than $c$, can be discarded, because we are looking for an approximate nearest neighbor. Figure \ref{fig:ann_discard_circles} illustrates this. Note that with the triangle inequality we can also discard points that are too far from $p_i$, that is the shaded exterior of the bigger balls in the figure.
+
+
+Secondly,
+we could modify the algorithm to search for the exact neighbor, just by setting $\eps = 0$. In this case, however, 
+the figure \ref{fig:bad_exact_nn_example},
+shows a set of points in the plane for which, regardless of the order we choose them,
+at each iteration of our algorithm we are able to discard only one point (the shaded balls do not contain any other point from the point set), 
+therefore we may not hope to avoid computation of $O(n)$ distances, if we
+are trying to solve the exact nearest neighbor problem.
+The necessity of the doubling property assumption is also easily justified: if all $d(p_i, p_j)$
+and $d(p_i, q)$ are approximately the same, at each iteration of our algorithm we will be able to discard only one point.
+
+
 \begin{proof}
-Let $i_1,...,i_k$ denote the indices of the minima in the sequence $r_1, \dots, r_n$
-    (recall that this is a random sequence). Then $k=O(log n)$,
-    by the standard backwards analysis argument.
+Let $i_k$ be the {$k$-th} position where the sequence  $m_i := \min \Set{m_1, \dots, m_i}$
+changes, so that
+\[
+m_1 = m_2 = \dots = m_{i_1 - 1} > m_{i_1} = m_{i_1 + 1} = \dots = m_{i_2 - 1} > m_{i_2} = \dots. 
+\]
+In other words, if we traversed the list $p_1, \dots, p_n$ and used the bruteforce algorithm
+for exact nearest neighbor, then $i_k$ would the indices where the current candidate
+changes, because we found a point that is closer to $q$ than all the previously seen points.
+We shall refer to $i_k$ as the \textit{change position}.
+Standard backwards analysis argument (e.g., \cite{dubch}, Sect. 4.4) shows that $k=O(log n)$.
 
-
-    Consider two consecutive minima  $s:=i_j$ and $t:=i_{j+1}$. We claim that in the sequence
+    Consider two consecutive change positions $s:=i_j$ and $t:=i_{j+1}$. We claim that in the sequence
 $p_s,...,p_{t-1}$
-only a constant number of distances are computed, irrespective of its length.
+only a constant number of distances are computed by our algorithm, irrespective of its length. This claim immediately implies the theorem.
 
-To see that, let $c_1,...,c_n$ be the candidates after the $i$-th step of
+To see that it true, let $c_1,...,c_n$ be the candidates after the $i$-th step of
 the for loop of the algorithm. We have no guarantee that $c_s=p_s$, because $p_s$ it is possible
     that $p_s$ was discarded without computing $r_s$ (see the picture). However, we know that
-$d(c_s,q)<=(1+eps) r_s$.
-
-Indeed, suppose that $c_s \neq p_s$ and $r_s < d(c_s,q)/(1+eps)$. In this
+$d(c_s,q)<=(1+ \eps) r_s$.
+Indeed, suppose that $c_s \neq p_s$ and $r_s < d(c_s,q)/(1+\eps)$. In this
     case $p_s$ cannot be discarded 
 by its lower bound, and hence the distance to $p_s$ would
 have been queried, but this distance is a minimum among $r_1, \dots, r_s$,
     and then we must reset $c_s$ to be $p_s$, a contradiction.
 
 It follows that any point in the sequence $p_s,...,p_{t-1}$ for which a
-distance is queried must lie in the ball around $c_s$ of radius at most $2(1+eps)r_s$.
+distance is queried must lie in the ball around $c_s$ of radius at most $2(1+\eps)r_s$.
 
 Moreover, we know that for any index $j=s,\dots, t-1$ it holds
 $d(c_j,q)>=r_s$.
 
 Indeed, assume the opposite. $c_j$ is equal to $p_k$ for some $k<t$. If $k<s$,
 that is, the candidate came from before, than $p_s$ would not be in the
-minimum sequence. If $s<k<t$, then it follows that at least one of the
-elements in $p_{s+1},\dots,p_k$ is in the minimum sequence, contradicting
-the assumption that $p_s$ and $p_t$ are consecutive minima.
+change position. If $s<k<t$, then at least one of the
+elements in $p_{s+1},\dots,p_k$ is a change position, contradicting
+the assumption that $p_s$ and $p_t$ were chosen to be consecutive change positions.
 
 Hence, it follows that whenever a distance is queried, we can exclude a
 ball of radius $\eps r_s$ around the query point. All queried points must
-hence have pairwise distance of at least $ \eps r_s / 2$. Hence, the number of
-queried points is by the packing lemma bounded by some constant that depends only on $\eps$ and the dimension. 
+hence have pairwise distance of at least $ \eps r_s / 2$. 
+Now we can apply the packing lemma \ref{lem:packing_lemma} to bound the number of
+queried points by some constant that depends only on $\eps$ and the dimension. Indeed,
+they all are contained in a ball of radius $R = 2(1+\eps)r_s$, and, if we divide this by $\eps r_s$, the ratio depends only on $\eps$.
 \end{proof}
 
+
+We should note that the constant factor that is obtained in this proof can be very pessimistic,
+because in practice the algorithm can discard much more points.
 
 %\begin{proof}
 %    We start with the lemma of purely combinatorial (or probabilistic) nature.
@@ -765,125 +807,64 @@ queried points is by the packing lemma bounded by some constant that depends onl
 
 %\end{proof}
 
-%\begin{lemma}
-%Consider the following random procedure: we start with $n$ numbers $[n] = \{\,1,\dots, n\,\}$ and 
-%choose $\xi_1$ uniformly at random from $[n]$. If $\xi_1 = n$, then we stop,
-%otherwise we remove $\xi_1$ and all numbers preceding it and from $\{\,\xi_1, \dots, n\,\}$
-%we choose $\xi_2$. If $\xi_2 = n$, we stop, if $\xi_2 < n$, we repeat the process removing all numbers not greater than $\xi_2$ and
-%drawing $\xi_3$ from the remaining numbers uniformly at random. The expected number of steps of this procedure
-%is $O(\log n)$.
-%\end{lemma}
-%\begin{proof}
-%We can rephrase the procedure as a Markov chain with set of states $[n]$ and transition matrix
-%\begin{equation}
-%    P = \begin{pmatrix}
-%         0      & \frac{1}{n-1} & \frac{1}{n-1} & \dots  & \frac{1}{n-1} & \frac{1}{n-1} \\
-%         0      &  0            & \frac{1}{n-2} & \dots  & \frac{1}{n-2} & \frac{1}{n-2} \\
-%         0      &  0            & 0             & \dots  & \frac{1}{n-3} & \frac{1}{n-3} \\
-%         \vdots &  \vdots       & \vdots        & \ddots & \vdots        & \vdots \\
-%         0      &  0            & 0             & \dots  & \frac{1}{2} & \frac{1}{2} \\
-%         0      &  0            & 0             & \dots  & 0           & 1           \\
-%        \end{pmatrix};
-%\end{equation}
-%the chain starts from state $1$.
-%Note that there is one absorbing state $n$, and all other states are transient, and the matrix is already in the canonical
-%form, meaning that all transient states precede all absorbing states. 
-%We denote the square submatrix formed by the first $n-1$
-%rows and $n-1$ columns by $Q$, it is the submatrix corresponding to all transient states. It is known
-%(\cite{absorbing_markov_chain}) that the matrix $I-Q$ is invertible, let $N$ be its inverse,
-%\begin{equation}
-%N = (I- Q)^{-1} = 
-%\begin{pmatrix}
-%         1      & -\frac{1}{n-1} & -\frac{1}{n-1} & \dots  & -\frac{1}{n-1}  \\
-%         0      &  1             & -\frac{1}{n-2} & \dots  & -\frac{1}{n-2}  \\
-%         0      &  0             & 1             & \dots  & -\frac{1}{n-3}   \\
-%         \vdots &  \vdots       & \vdots        & \ddots & \vdots            \\
-%         0      &  0            & 0             & \dots  & -\frac{1}{2}      \\
-%         0      &  0            & 0             & \dots  & 0           & 1   \\
-%        \end{pmatrix}^{-1}
-%\end{equation}
-%Let $t_i$ denote the expected time
-%until absorption, if chain starts from a transient state $i = 1, \dots, n-1$; 
-%vector of $t_i$'s is given by the formula
-%\[
-%\begin{pmatrix}
-%      t_1 \\
-%      t_2 \\
-%      \dots \\
-%      t_{n-1} \\
-%      \end{pmatrix}
-%= N \begin{pmatrix}
-%      1 \\
-%      1 \\
-%      \dots \\
-%      1 \\
-%      \end{pmatrix}.
-%\]
-%The expected number of steps that we are interested in is $t_1$, so we need to calculate the matrix $N$
-%and prove that the sum of the elements in its first row is $O(\log n)$.
-%One can easily check that
-%\[
-%N  =  \begin{pmatrix}
-%      1 & \frac{1}{n-1} & \frac{1}{n-2} & \frac{1}{n-3} & \dots  & \frac{1}{3} & \frac{1}{2} \\
-%      0 &             1 & \frac{1}{n-2} & \frac{1}{n-3} & \dots  & \frac{1}{3} & \frac{1}{2} \\
-%      0 &             0 &            1  & \frac{1}{n-3} & \dots  & \frac{1}{3} & \frac{1}{2} \\
-% \vdots &        \vdots &  \vdots       & \vdots        & \ddots & \frac{1}{3} & \frac{1}{2} \\
-%      0 &             0 &            0  &            0  &  \dots &            1 & \frac{1}{2} \\
-%      0 &             0 &            0  &            0  &  \dots &            0 &           1 \\
-%      \end{pmatrix},
-%\]
-%thus $t_1 = 1 + \frac{1}{n-1} + \frac{1}{n-2} + \dots + \frac{1}{2} = O(\log n)$.
-%\end{proof}
 
-\paragraph{Experimental Results}
+\subsection{Experimental Results}
 
 In order to experimentally evaluate the performance of our algorithm,
 we generate random point sets and random query points, and for each query point
 run the algorithm 10 times. The average number of distances to the query point
 that were actually computed is the measure that we are interested in.
+We average the results over 10 different instances of the point
+set and query point in order to see the trend clearer; thus
+each point on the plots in this section is the result of averaging of 100 runs
+of the code (10 instances, 10 random permutations per instance).
 
 \begin{figure}[ht]
     \label{fig:ann_const_ratio}
-    \includegraphics[width=0.7\textwidth]{log_dependency_constant_ratio.png}
+    \includegraphics[width=0.7\textwidth]{pics/log_dependency_constant_ratio.png}
     \caption{Ratio $\log(\mbox{computed distances}) / n$ for ANN algorithm. Data is for uniformly distributed
     points.}
+\end{figure}
+
+\begin{figure}[ht]
+    \label{fig:ann_dimension_dependency}
+    \includegraphics[width=0.7\textwidth]{pics/ann_computed_distances_dimension_dep.png}
+    \caption{Number of computed distances for different dimensions. Points are chosen uniformly, $\eps = 0.01$.}
 \end{figure}
 
 
 We used the following methods of generating random points:
 \begin{enumerate}
     \item Uniform. Points are sampled uniformly at random from the unit cube in $\R^d$.
-    \item Normal. Points are sampled from the standard normal distribution.
+    \item Normal. Points are sampled from the normal distribution.
 \end{enumerate}
 Query points were sampled from the uniform distribution on the cube $[-10, 10]^d$
 and from the normal distribution centered at the origin with scale 100,
 thus we get query points that are "inside" the point set and also "outside".
 We sample data in dimensions up to 20 and for $\eps \in \Set{0.001, 0.005, 0.01, 0.05, 0.1}$,
 the maximal number of points is $30,000$.
-In high dimensions the algorithm does not perform as well for very small epsilon,
-but for $\eps = 0.01$ even in dimension 20 just about 10 percent of the distances
-are computed for 7,000 points (while for 1,000 points more than 0.3 of the distances must be computed).
-We note, however, that the constants in asymptotics are very different for different combinations
-of distributions of query points and points in the point set.
 
-%The algorithm can be informally described as follows. Pick a random candidate $p_i$ and try to verify that
-%it is an approximate nearest neighbor by scanning all other points. Pick the next random point $p_j$
-%and assume that $\dist(p_j, q) \geq \frac{\dist(p_i, q)}{1 + \eps}$. This allows us to discard not just the point
-%$p_j$, but also the points that are very close to $p_j$ and very far from $p_j$ using triangle inequality.
-%Indeed, consider the ball of radius $ \dist(p_j, q) - \frac{ \dist(p_i, q) }{ 1+\eps} $ centered at $p_j$.
-%The triangle inequality implies that all points in this ball are at the distance at least $\frac{ \dist(p_i, q) }{ 1+\eps}$
-%from $q$. Now consider the ball of radius $\dist(p_j, q) + 2 \frac{\dist(p_i, q)}{1+ \eps}$ centered at $p_j$. 
-%Every point outside of this ball is a
+In order to empirically verify the upper bound $O(\log n)$,
+we plot the number of computed distances divided
+by the logarithm of the number of points in figure \ref{fig:ann_const_ratio} (for $d = 2$).
+We see that this ratio, though fluctuating a lot, remains in the interval $[1,4]$. This not just confirms
+the theoretical upper bound, but also shows that the algorithm in the low-dimensional case
+really computes only a very small number of distances to the query point.
+As expected, in high dimensions the algorithm does not perform as well.
+In figure \ref{fig:ann_dimension_dependency} we plot the average number of computed distances
+for $d = 2, 5, 10$. While for $d = 2$ the growth is hardly noticeable, for $d = 10$
+the sublinearity of the growth becomes clear only when the number of points is relatively large,
+approaching 30000.
 
-
-%The algorithm that we analyze is based on the following simple observation.
-%Suppose that we want to to prove that a candidate for the approximate nearest neighbor is $p_1$,
-
-
-
-
-%The goal is to compute
-%as few $\dist(q, p_k)$ as possible.
+% We also looked at the dependency on the density. Note that our algorithm is not invariant under scaling: if we multiply the metric
+% by $\lambda$, we should also change $\eps$ to $\lambda \eps$, if we want
+% the same behavior. Therefore we could \textit{a priori} expect some
+% changes even if we change the parameters of the uniform distribution
+% without changing epsilon. However,
+% when we tested the algorithm on uniform data sampled from $[-a,a]^d$
+% for $a \in \Set{1, 10, 100, 1000, 10000}$ and on normal data
+% sampled from normal distribution with scales from the same set,
+% we did not observe any significant difference.
 
 
 %\section{Geometric concepts}
@@ -948,7 +929,7 @@ of distributions of query points and points in the point set.
 
 %Suppose that the pair $(a_1, b_1)$ with $a_1 \in A$, $b_1 \in B$ was processed and the edge $(a, b)$
 %was added to the spanner. Then from claim 1 we know that we already have a $t$-spanner on $A$ and $B$.
-%Consider another pair $(a_2, b_2)$. Let $G$ be the weighted graph we have immediately after the edge $(a_1, b_1)$ has been added
+%Consider another pair $(a_2, b_2)$. Let $G$ be the weighted graph we have immediately after the edge $(a_1, b_1)$ has been addedhttps://v2.overleaf.com/project/5bf6fa26032afa24d94383a5
 %to the spanner. By claim 1
 %$d_G(a_2, a_1) \leq td(a_2, a_1)$ and $d_G(b_1, b_2) \leq t d(b_1, b_2)$.
 %By properties of WSPD, $d_G(a_1, b_1) = d(a_1, b_1) \leq (1 + \frac{2}{s})d(a_2, b_2)$
@@ -967,12 +948,36 @@ of distributions of query points and points in the point set.
 %Solving for $s$ the inequality $1 + \frac{2t + 2}{s} < t$ gives $s > \frac{2t+2}{t-1}$.
 
 
-\section{Conclusion}
+\section{Conclusion and Future Work}
 \label{sec:conclusion}
+We presented experimental evidence showing that in low
+doubling dimension we can avoid many distance computations,
+if we try to get as much information as possible from the triangle inequality
+applied to the previously computed distance. The \textsc{BlindGreedy} spanner
+performs especially well, being able to produce  sparse spanners even for small values of  $\eps$.
+For the approximate nearest neighbor algorithm we proved a logarithmic upper bound,
+and, even though the constant in the proof was very large, we demonstrated
+experimentally that this does not show in practice.
+
+The next step on the theoretical side could be proving some upper bound
+for blind spanners; it is also interesting to look at other metric space
+algorithms and data structures in the setting of expensive distance computation.
+On the more applied side, the further development of this approach would
+be to find finite spaces of low dimension in practically
+important cases, like spaces of persistence diagrams or images endowed with Wasserstein (a.k.a. Earth Movers)
+metric. We know that low-dimensional subspaces of functions do not necessarily produce
+low-dimensional spaces of persistence diagrams, but there may be some conditions
+which guarantee that dimension does not increase too much.
+% An easy example: consider a fixed function $f$ to which we apply
+% a finite-dimensional family of perturbations, $f(x) + g(x; \lambda_1, \dots, \lambda_n)$;
+% for instance, each $\lambda_i$ is associated with some $x_i$ and adds a Gaussian noise
+% scaled by $\lambda$.
+% If the perturbations are very small, then they will produce some small wiggles on the function,
+% and then the optimal matcih
+
 
 \bibliography{bib}
 \bibliographystyle{plain}
 
 
 \end{document}
-
