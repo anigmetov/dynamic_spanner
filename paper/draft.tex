@@ -46,8 +46,6 @@
 \newcommand{\complexity}{C_{\dist}}
 \newcommand{\doublingdimension}{\Delta}
 
-\newcommand{\myparagraph}[1]{\textbf{#1.}}
-
 %\newcommand{\remark}[1]{\textbf{[#1]}}
 
 %\newtheorem{theorem}{Theorem}
@@ -86,7 +84,6 @@
 \maketitle
 
 \begin{abstract}
-    
 In algorithms for finite metric spaces, it is common
 to assume that the distance between two points
 can be computed in constant time, and complexity
@@ -129,11 +126,12 @@ such that for any $u,v\in\pointset$, the shortest path distance between $u$ and 
 is at most $(1+\eps)\dist(u,v)$.
 \end{description}
 
+
 The performance of algorithms for these problems depends on the number of points,
 the dimension of the metric space, and the cost $\complexity$ of computing a distance in the metric space.
 It is a common assumption to assume $\complexity$ to be a constant; 
 There are good reasons for that: the most common case of a metric space
-is $\metricspace=\R^d$ with $d$ some constant, in which case $\metric$ can be evaluated in $O(d)=O(1)$ time.
+is $\metricspace=\R^d$ with $d$ some constant, in which case $\complexity$ can be evaluated in $O(d)=O(1)$ time.
 Even if $d$ is considered non-constant,
 it can always be assumed that $d\leq n$, hence $\complexity$ is at most $O(n)$.
 Another typical assumption is that all pairwise distances are part of the input
@@ -186,7 +184,8 @@ Our algorithms are based on the following simple idea: since distance computatio
 and should be avoided, we try to obtain maximal information out of the distances that have been computed
 so far. 
 This information consists of lower and upper bounds for unknown distances, obtained from known distances
-by triangle inequality (see Figure~\ref{fig:1st_example}).
+by triangle inequality (see Figure~\ref{fig:1st_example}). We remark that updating these bounds involves $\Omega(n^2)$ arithmetic
+operations whenever a new distance has been computed, turing the method useless in the standard computational model.
 
 \begin{figure}[h]
 \centering
@@ -194,249 +193,35 @@ by triangle inequality (see Figure~\ref{fig:1st_example}).
 \caption{The compute distances are shown as edges in a graph. Note that the exact distance
 of $p_1$ and $p_2$ is unknown. The shortest path from $p_1$ to $p_2$ has length $9$, which clearly
 constitutes an upper bound on the distance by triangle inequality.
-However, we can also infer that $\metric(p_1,p_2)\geq 3$:
+However, we can also infer that $\dist(p_1,p_2)\geq 3$:
 otherwise, the path from $p_3$ to $p_4$ via $p_1$ and $p_2$
 would be shorter than the edge $(p_3,p_4)$, again contradicting
 triangle inequality.}
 \label{fig:1st_example}
 \end{figure}
 
-we see a weighted graph on $P$ whose edges are the distances that have
-been computed so far; note that $\metric(p_1,p_2)$ is unknown. 
-The shortest path from $p_1$ to $p_2$ has length $9$, which clearly
-constitutes an upper bound on the distance by triangle inequality.
-However, we can also infer that $\metric(p_1,p_2)\geq 3$:
-otherwise, the path from $p_3$ to $p_4$ via $p_1$ and $p_2$
-would be shorter than the edge $(p_3,p_4)$, again contradicting
-triangle inequality.
-Hence, the question whether $\metric(p_1,p_2)\leq t$ can be answered positively
-for $t>=9$ and negatively for $t<3$. Only if $t\in[3,9)$
-We describe our idea with an example. In Figure~\ref{fig:1st_example},
-we see a situation on $P$ whose edges are the distances that have
-been computed so far; note that $\metric(p_1,p_2)$ is unknown. 
-The shortest path from $p_1$ to $p_2$ has length $9$, which clearly
-constitutes an upper bound on the distance by triangle inequality.
-However, we can also infer that $\metric(p_1,p_2)\geq 3$:
-otherwise, the path from $p_3$ to $p_4$ via $p_1$ and $p_2$
-would be shorter than the edge $(p_3,p_4)$, again contradicting
-triangle inequality.
-Hence, the question whether $\metric(p_1,p_2)\leq t$ can be answered positively
-for $t>=9$ and negatively for $t<3$. Only if $t\in[3,9)$
+We propose several heuristics of how to explore the metric space to obtain accurate lower and upper bounds
+with a small number of distance computation. Once the ratio of upper and lower bound is at most $(1+\eps)$
+for each point pair, the set of all computed distances forms the spanner.
+The experimentally most succesful exploration strategy that we found is to
+repeatedly query the distance of a pair with the worst ratio of upper and lower bound.
+We call the obtained spanner the \emph{blind greedy spanner}, as opposed to the well-known
+\emph{greedy spanner} that precomputes all pairwise distances and only maintains upper bounds.\michael{Cite}
+Remarkably, we were not able to improve the quality when knowing initial $2$-approximations of all point pairs.
+\michael{Acutally, is that true? We could run BlindGreedy on the 2-approximations instead of on $[0,\infty]$,
+that might save something}
+We also compare with a spanner construction based on WSPDs. Our simple algorithms tend to give much smaller
+spanners on the tested example. Nevertheless, we leave the question open whether our construction
+yields a spanner of asymptotically linear size.
 
+For approximate nearest neighbor, we devise a simple randomized incremental algorithm and show that
+the number of distance queries to find an approximate nearest neighbor is $O(\log n)$ in expectation.
+Our proof is based on the well-known observation that the nearest neighbor changes $O(\log n)$ times
+in expectation when traversing the sequence of points, combined with a packing argument certifying that
+only a constant number of distances needs to be computed in-between two minima.
+We also experimentally evaluate our approach and observe that the approach follows 
+roughly the theoretical prediction.
 
-
-In this paper we look at algorithms in metric spaces,
-in which computing a single distance between points can be very costly.
-The motivating example for us was Topological Data Analysis, where computation
-of bottleneck and Wasserstein distances between two persistence diagrams
-can be done in time polynomial in the number of points of the input diagrams.
-
-
-
-Given a set $\pointset:=\{p_1,\ldots,p_n\}$ of $n$ points
-in a metric space $(\metricspace,\dist)$, 
-consider the following standard operations:
-
-\begin{description}
-\item[Nearest Neighbor] Given a point $q\in\metricspace$,
-find $p_i\in\pointset$ such that, for all $j=1,\ldots,n$,
-\[d(q,p_i)\leq d(q,p_j)\]
-
-\item[Metric approximation] Given $\eps>0$, compute a metric $\approxmetric$
-such that for all $1\leq i,j\leq n$,
-%
-\[\dist(p_i,p_j)\leq\approxmetric(p_i,p_j)\leq (1+\eps)\dist(p_i,p_j).\]
-
-By ``computing'' $\approxmetric$, we mean to compute a $n\times n$-matrix $E$ 
-such that $E_{ij}=\approxmetric(p_i,p_j)$.
-\end{description}
-
-
-
-
-% We believe that the scenario when the input consists of a relatively small number of points, 
-% e.g., of order $10^2-10^3$, but the complexity of computing a distance is rather large,
-% is plausible (for the persistence diagrams, the size of 0-dimensional ones can be huge,
-% because in dimension 0 there are especially efficient algorithms that can handle much
-% larger inputs, so it is possible to produce diagrams with millions of  points in each).
-% In such a situation, the natural approach would be to avoid computing the
-% distance between two points if we do not need it,
-
-% We demonstrate that the number of distance computations can be further
-% reduced by a careful re-implementation of the underlying geometric algorithms.
-% Our improvement is based on the following simple observation: many geometric
-% constructions (such as cover tree and WSPD constructions) require distance
-% computations only in the form of the following predicate: 
-% ``Is $\dist(p_i,p_j)\leq t$'', where $t$ is a real value.
-% We show that using the information of the already computed distances and
-% the triangle inequality, we can answer the above predicate in many cases
-% without computing the actual distance.
-
-% We describe our idea with an example. In Figure~\ref{fig:1st_example},
-% we see a weighted graph on $P$ whose edges are the distances that have
-% been computed so far; note that $\dist(p_1,p_2)$ is unknown. 
-% The shortest path from $p_1$ to $p_2$ has length $9$, which clearly
-% constitutes an upper bound on the distance by triangle inequality.https://v2.overleaf.com/project/5bf6fa26032afa24d94383a5
-% However, we can also infer that $\dist(p_1,p_2)\geq 3$:
-% otherwise, the path from $p_3$ to $p_4$ via $p_1$ and $p_2$
-% would be shorter than the edge $(p_3,p_4)$, again contradicting
-% triangle inequality.
-% Hence, the question whether $\dist(p_1,p_2)\leq t$ can be answered positively
-% for $t>=9$ and negatively for $t<3$. Only if $t\in[3,9)$, the actual
-% distance computation is necessary. This approach is reminiscent to the usage
-% of \emph{numerical filters} in geometric computing in the CGAL library,
-% where geometric predicates in exact number types are first evaluated using 
-% certified floating-point arithmetic, and exact computation is only
-% invoked if the numerical evaluation did not arrive at a decisive result
-% (e.g.~\cite{bbp-interval,kerber-phd}).
-
-
-
-% Given a set $\pointset:=\{p_1,\ldots,p_n\}$ of $n$ points
-% in a metric space $(\distspace,\dist)$, 
-% consider the following standard operations:
-
-% \begin{description}
-% \item[Nearest Neighbor] Given a point $q\in\distspace$,
-% find $p_i\in\pointset$ such that, for all $j=1,\ldots,n$,
-% \[d(q,p_i)\leq d(q,p_j)\]
-
-% \item[Metric approximation] Given $\eps>0$, compute a metric $\adist$
-% such that for all $1\leq i,j\leq n$,
-% %
-% \[\dist(p_i,p_j)\leq \adist(p_i,p_j) \leq (1+\eps) \dist(p_i,p_j).\]
-
-% By ``computing'' $\adist$, we mean to compute a $n\times n$-matrix $E$ 
-% such that $E_{ij}=\adist(p_i,p_j)$.
-% \end{description}
-
-% Assume that an algorithm is given to compute $\dist(\cdot,\cdot)$
-% for any two points in $\distspace$ in worst-case complexity $\complexity$.
-% Then trivially, the above problems can be solved (exactly) in
-% $O(n\complexity)$ and $O(n^2\complexity)$ time, respectively.
-% For low-dimensional\footnote{we will make this notion precise
-% later in the text} metric spaces, we can improve these bounds:
-% Using cover trees~\cite{cover-trees}, we can preprocess the point set
-% in $O(\complexity n\log n)$ time to answer nearest neighbor queries
-% in $O(\complexity \log n)$ time. Combining cover trees with well-separated
-% pair decompositions (WSPD), we obtain an $\eps$-spanner for the graph
-% induced by $\dist$ in $O(\complexity n\log n)$ time and
-% of linear size (assuming, for simplicity, that $\eps$ is a constant).
-% Out of this spanner,
-% we can construct an approximate metric
-% with an all-pair shortest path computation,
-% resulting in a total running time of
-% \[O(\complexity n\log n+ n^2\log n)\]
-% using Johnson's algorithm~\cite{johnson}.
-
-In the aforementioned techniques, $\complexity$ is usually considered
-as a constant-time operation and hence ignored in the analysis.
-There are good reasons for that: the most common case of a metric space
-is $\distspace=\R^d$ with $d$ some constant, in which case $\dist$ can be evaluated in $O(d)=O(1)$ time.
-Even if $d$ is considered non-constant,
-it can always be assumed that $d\leq n$, hence $\complexity$ is at most $O(n)$.
-Another typical assumption is that all pairwise distances are part of the input
-in which case $\complexity$ is $O(1)$.
-
-However, we argue that in some situations, distance computations
-in $\distspace$ can be costly and $\complexity$ might be incomparable
-with $n$. Our motivating examples come from topological summaries
-such as persistence diagrams or Reeb graphs, which are of interest
-in the field of topological data analysis. A persistence diagram
-is a point set in $\R^2$, and the distance between two diagrams
-is determined by a min-cost matching between the point sets.
-If the diagrams have $N$ points, computing this matching requires
-polynomial time in $N$, and $N$ might well be larger than $n$, the number
-of diagrams considered. For the case of Reeb graphs, the situation is even
-worse: while several metrics on Reeb graphs have been proposed,
-not even an constant-factor approximation algorithm is known that runs
-in polynomial time in the size of the graphs.
-
-In the light of the above examples, we pose the question: 
-how can we practically reduce the number of distance computations 
-in algorithms for metric spaces?
-% Note that for low-dimensional spaces, the aforementioned techniques
-% already provide a partial solution: for approximating the metric, for instance,
-% we only compute $O(n\log n)$ distances instead of $O(n^2)$.
-
-
-\subsection{Contribution.}
-We consider the two well-known problems: finding a $1 + \eps$-spanner
-and finding an approximate nearest neighbor.
-%
-% We demonstrate that the number of distance computations can be further
-% reduced by a careful re-implementation of the underlying geometric algorithms.
-% Our improvement is based on the following simple observation: many geometric
-% constructions (such as cover tree and WSPD constructions) require distance
-% computations only in the form of the following predicate: 
-% ``Is $\dist(p_i,p_j)\leq t$'', where $t$ is a real value.
-% We show that using the information of the already computed distances and
-% the triangle inequality, we can answer the above predicate in many cases
-% without computing the actual distance.
-
-% We describe our idea with an example. In Figure~\ref{fig:1st_example},
-% we see a weighted graph on $P$ whose edges are the distances that have
-% been computed so far; note that $\dist(p_1,p_2)$ is unknown. 
-% The shortest path from $p_1$ to $p_2$ has length $9$, which clearly
-% constitutes an upper bound on the distance by triangle inequality.
-% However, we can also infer that $\dist(p_1,p_2)\geq 3$:
-% otherwise, the path from $p_3$ to $p_4$ via $p_1$ and $p_2$
-% would be shorter than the edge $(p_3,p_4)$, again contradicting
-% triangle inequality.
-% Hence, the question whether $\dist(p_1,p_2)\leq t$ can be answered positively
-% for $t>=9$ and negatively for $t<3$. Only if $t\in[3,9)$, the actual
-% distance computation is necessary. This approach is reminiscent to the usage
-% of \emph{numerical filters} in geometric computing in the CGAL library,
-% where geometric predicates in exact number types are first evaluated using 
-% certified floating-point arithmetic, and exact computation is only
-% invoked if the numerical evaluation did not arrive at a decisive result
-% (e.g.~\cite{bbp-interval,kerber-phd}).
-
-% \begin{figure}[h]
-
-% \centering
-% \includegraphics[width=6cm]{intro_example.eps}
-% \caption{An example of a partially revealed metric.}
-% \label{fig:1st_example}
-% \end{figure}
-
-% In our implementation, we maintain the best lower and upper bounds of all
-% pairwise distances in an $n\times n$ matrix of intervals. We show how to
-% update this matrix in $O(n^2)$ time when a new edge is added.
-% %We point out once more that a quadratic update time only pays off
-% %if distance computations are expensive, say $\complexity=\Omega(n^2)$.
-
-% We perform an extensive experimental evaluation of our idea.
-% We mostly concentrate on point clouds in Euclidean space~--
-% of course, the approach does not yield any performance benefits in that
-% situation because distance computations are cheap; however, the Euclidean
-% case provides a simple setup for experiments.
-% We investigate how the dimensionality, the clustering density, 
-% the approximation quality, and noise 
-% in the point cloud affect the number of distance computations.
-% Our result show that $\ldots$
-
-% We also provide some experimental results for the case of persistence diagrams
-% which motivated this line of research. We point out that the space of
-% persistence diagrams fails to be ``low-dimensional''. To be precise,
-% its doubling dimension is $\infty$, and a finite set of $n$ diagram
-% can have the worst-case doublng dimension $\log n$. This worst-case
-% behavior is also the expected one if the diagrams are chosen randomly
-% (in a sense made precise in Section~\ref{sec:metric_spaces_top_summaries}). 
-% However, we demonstrate that
-% for natural collections of persistence diagrams, a substantial fraction
-% of distance computations can be avoided. In detail, $\ldots$
-
-%We also have derived two minor technical results necessary for 
-%our implementation. First of all, since our underlying distance computation
-%algorithm for persistence diagrams only returns approximate answers,
-%we had to adapt all algorithms to cope with approximate distances.
-%Moreover, we show how a WSPDs can be constructed
-%out of cover trees (we only found 
-%the theoretically more efficient version of
-%net trees used in the literature, but net trees are more difficult to implement
-%efficiently). Both results can be obtained using standard methods, 
-%but seem to be not present in prior work.
 
 
 \section{Notation and Preliminary Notions}
