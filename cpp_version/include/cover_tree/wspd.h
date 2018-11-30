@@ -62,6 +62,7 @@ namespace wasser_spanner {
         bool is_valid() const;
         size_t size() const;
         void make_spanner();
+        void make_spanner1();
         double get_spanner_distance(VertexDescriptor i, VertexDescriptor j);
         double get_max_relative_error();
     };

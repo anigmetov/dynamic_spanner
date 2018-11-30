@@ -24,6 +24,8 @@ namespace spd = spdlog;
 
 using namespace wasser_spanner;
 
+
+
 int get_num_points(const std::string& fname, const char delimiter = ' ')
 {
     std::ifstream matr_file(fname);
@@ -48,6 +50,55 @@ int get_num_points(const std::string& fname, const char delimiter = ' ')
 
     matr_file.close();
     return result;
+}
+
+int get_dimension(std::string fname, const char delim = ' ')
+{
+    return get_num_points(fname, delim);
+}
+
+bool read_points_file(MatrixR& distance_matrix, double& max_distance, double& min_distance, std::string fname)
+{
+    std::ifstream points_file(fname);
+    if (not points_file.good()) {
+        std::cerr << "Cannot read matrix from file " << fname << std::endl;
+        return false;
+    }
+
+    std::vector<std::vector<double>> points;
+    int dim = get_dimension(fname);
+
+    std::string s;
+    while(std::getline(points_file, s)) {
+        points.emplace_back();
+        std::stringstream ss(s);
+        double a;
+        for (int i = 0; i < dim; ++i) {
+            ss >> a;
+            points.back().push_back(a);
+        }
+    }
+
+    int n_points = points.size();
+    min_distance = std::numeric_limits<double>::max();
+    max_distance = -1.0;
+
+    distance_matrix = MatrixR(n_points, std::vector<double>(n_points, 0.0));
+
+    for (size_t i = 0; i < n_points; ++i) {
+        for (size_t j = 0; j < i; ++j) {
+            double d = 0.0;
+            for (int k = 0; k < dim; ++k) {
+                d += (points[i][k] - points[j][k]) * (points[i][k] - points[j][k]);
+            }
+            distance_matrix[i][j] = distance_matrix[j][i] = sqrt(d);
+
+            max_distance = std::max(distance_matrix[i][j], max_distance);
+            if (i != j) {
+                min_distance = std::min(distance_matrix[i][j], min_distance);
+            }
+        }
+    }
 }
 
 bool read_distance_matrix(MatrixR& distance_matrix, double& max_distance, double& min_distance, const std::string& fname)
@@ -218,9 +269,9 @@ int main(int argc, char** argv)
     double max_dist = -1.0;
     double min_dist = std::numeric_limits<double>::max();
 
-    if (argc < 3) {
+    if (argc < 4) {
         std::cout << "Usage: " << argv[0]
-                  << " input_name epsilon [logname]"
+                  << " input_name epsilon is_point [logname]"
                   << std::endl;
         return 0;
     }
@@ -231,64 +282,76 @@ int main(int argc, char** argv)
     double eps = atof(argv[arg_idx++]);
     console->info("Reading from file {}, epsilon = {}", argv[1], argv[2]);
 
-    std::string log_name  = (argc > 3) ? argv[arg_idx++] : "experiment_log.txt";
+
+    std::string is_input_dm = argv[arg_idx++];
+    bool is_input_dist_matrix = is_input_dm == "y" or is_input_dm == "Y" or is_input_dm == "d" or is_input_dm == "D";
+
+    std::string log_name  = (argc > 4) ? argv[arg_idx++] : "experiment_log.txt";
     console->info("log_name = {}, epsilon = {}", log_name, eps);
     auto exp_logger = spd::basic_logger_st("experiment_logger", log_name);
     exp_logger->set_pattern("%v");
 
-    read_distance_matrix(dist_matrix, max_dist, min_dist, dist_name);
+    if (is_input_dist_matrix) {
+        read_distance_matrix(dist_matrix, max_dist, min_dist, dist_name);
+    } else {
+        read_points_file(dist_matrix, max_dist, min_dist, dist_name);
+    }
 
     size_t n = dist_matrix.size();
 
     console->info("dist_matrix size = {}, spread = {} / {} = {}", dist_matrix.size(), max_dist, min_dist, max_dist / min_dist);
 
     DynamicSpannerR spanner(dist_matrix);
-
+    DynamicSpannerR ct_spanner(dist_matrix);
     std::cout << "Spanner initialized" << std::endl;
 
-#if 0
+#if 1
 
     DynamicSpannerR copy(spanner);
+//
+//    copy.construct_blind_greedy_eps_spanner(eps);
+//
+//    console->info("eps Spanner built from scratch. Requested distances: {}, computed distances: {}\n", copy.get_fraction_of_requested_distances(),
+//            copy.get_fraction_of_computed_distances());
 
-    copy.construct_blind_greedy_eps_spanner(eps);
 
-    console->info("eps Spanner built from scratch. Requested distances: {}, computed distances: {}\n", copy.get_fraction_of_requested_distances(),
-            copy.get_fraction_of_computed_distances());
+    ct_spanner.make_exact_distance_keeper();
 
-    CoverTree ct(max_dist, spanner);
+    CoverTree ct(max_dist, ct_spanner);
 
     // TODO very ugly
     DynamicSpannerR* ds = &ct.m_dspanner;
 
-    std::cout << "Cover tree built. Requested distance : " << ds->get_fraction_of_requested_distances()
-              << ", computed distances : " << ds->get_fraction_of_computed_distances() << std::endl << std::endl;
+    std::cout << "Cover tree built. Requested distance : " << ds->get_fraction_of_requested_distances() << ", " << ds->get_number_of_requested_distances() << " out of " << ds->m_num_points * (ds->m_num_points  -1 )/ 2 << std::endl;
+//              << ", computed distances : " << ds->get_fraction_of_computed_distances() << std::endl << std::endl;
 
     copy = *ds;
 
-    copy.construct_blind_greedy_eps_spanner(eps);
-
-    std::cout << "eps Spanner built from cover tree. Requested distance : " << copy.get_fraction_of_requested_distances()
-              << ", computed distances : " << copy.get_fraction_of_computed_distances() << std::endl << std::endl;
+//    copy.construct_blind_greedy_eps_spanner(eps);
+//
+//    std::cout << "eps Spanner built from cover tree. Requested distance : " << copy.get_fraction_of_requested_distances()
+//              << ", computed distances : " << copy.get_fraction_of_computed_distances() << std::endl << std::endl;
 
     WspdNode::dspanner = &ct.m_dspanner;
     WSPD wspd(ct, eps);
 
-    std::cout << "WSPD built. Requested distance : " << ds->get_fraction_of_requested_distances()
-              << ", computed distances : " << ds->get_fraction_of_computed_distances() << std::endl << std::endl;
+    std::cout << "WSPD built. Requested distance : " << ds->get_fraction_of_requested_distances() << ", " << ds->get_number_of_requested_distances() << std::endl;
+//              << ", computed distances : " << ds->get_fraction_of_computed_distances() << std::endl << std::endl;
 
-    copy = *ds;
-
-    copy.construct_blind_greedy_eps_spanner(eps);
-
-    std::cout << "eps Spanner built from wspd. Requested distance : " << copy.get_fraction_of_requested_distances()
-              << ", computed distances : " << copy.get_fraction_of_computed_distances() << std::endl << std::endl;
-
+//    copy = *ds;
+//
+//    copy.construct_blind_greedy_eps_spanner(eps);
+//
+//    std::cout << "eps Spanner built from wspd. Requested distance : " << copy.get_fraction_of_requested_distances()
+//              << ", computed distances : " << copy.get_fraction_of_computed_distances() << std::endl << std::endl;
 
     //ds->print_ratios();
-    wspd.make_spanner();
-    std::cout << "eps-Spanner built with WSPD method. Requested distance : " << ds->get_fraction_of_requested_distances()
-              << ", computed distances : " << ds->get_fraction_of_computed_distances() << std::endl << std::endl;
+    wspd.make_spanner1();
+    std::cout << "eps-Spanner built with WSPD method. Requested distance : " << ds->get_fraction_of_requested_distances() << ", " << ds->get_number_of_requested_distances() << std::endl;
+//              << ", computed distances : " << ds->get_fraction_of_computed_distances() << std::endl << std::endl;
 
+    std::cout << "Requested distance / # points " << (double) (ds->get_number_of_requested_distances())  / ds->m_num_points << std::endl;
+//    console->log("ratio: {}",
     //ds->print_ratios();
     //std::cout << std::endl << std::endl;
 
@@ -311,9 +374,9 @@ int main(int argc, char** argv)
     bool is_valid_tree = ct.is_valid_tree();
     std::cout << "Is valid tree:" << is_valid_tree << std::endl;
 
-    bool is_valid_wspd = wspd.is_valid();
-
-    std::cout << "WSPD is valid: " << is_valid_wspd << std::endl;
+//    bool is_valid_wspd = wspd.is_valid();
+//
+//    std::cout << "WSPD is valid: " << is_valid_wspd << std::endl;
 
 #else
 

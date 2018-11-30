@@ -95,6 +95,17 @@ public:
         }
     }
 
+    void make_exact_distance_keeper()
+    {
+        for(int i = 0; i < m_num_points; ++i) {
+            for(int j = 0; j < m_num_points; ++j) {
+                m_matrix[i][j].lower_bound = m_matrix[i][j].upper_bound = m_matrix[i][j].distance;
+                m_matrix[i][j].distance_requested = false;
+                m_matrix[i][j].exact_distance_used = false;
+             }
+        }
+    }
+
     std::vector<std::pair<double, double>> get_buckets()
     {
         int n_buckets = ceil(log2(m_max_dist / m_min_dist));

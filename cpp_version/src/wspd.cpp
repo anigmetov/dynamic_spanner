@@ -144,6 +144,23 @@ size_t WSPD::size() const
     return m_wspd.size();
 }
 
+void WSPD::make_spanner1()
+{
+    m_graph = std::unique_ptr<Graph>(new Graph(m_num_points));
+    initialize_incremental_components(*m_graph, m_conn_comps);
+    incremental_components(*m_graph, m_conn_comps);
+    for (const auto& wspd_node : m_wspd) {
+        VertexDescriptor i = wspd_node.first.get_point_idx();
+        VertexDescriptor j = wspd_node.second.get_point_idx();
+        if (!m_spanner->m_matrix[i][j].exact_distance_used) {
+            //std::cout << i << " " << j << " [ " << m_spanner->m_matrix[i][j].lower_bound << " , " << m_spanner->m_matrix[i][j].upper_bound << " ]" << std::endl;
+        }
+        auto d = m_spanner->get_distance_no_cache(i, j);
+        boost::add_edge(i, j, EdgeWeightProperty(d), *m_graph);
+        m_conn_comps.union_set(i, j);
+    }
+}
+
 void WSPD::make_spanner()
 {
     m_graph = std::unique_ptr<Graph>(new Graph(m_num_points));
