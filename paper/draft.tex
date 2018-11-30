@@ -46,6 +46,8 @@
 \newcommand{\complexity}{C_{\dist}}
 \newcommand{\doublingdimension}{\Delta}
 
+\newcommand{\myparagraph}[1]{\textbf{#1.}}
+
 %\newcommand{\remark}[1]{\textbf{[#1]}}
 
 %\newtheorem{theorem}{Theorem}
@@ -66,13 +68,17 @@
 %\numberwithin{equation}{section}
 %\numberwithin{figure}{section}
 
-%\def\marrow{\marginpar[\hfill$\longrightarrow$]{$\longleftarrow$}}
-%\def\michael#1{\textcolor{red}{\textsc{Michael says: }{\marrow\sf #1}}}
+\def\marrow{\marginpar[\hfill$\longrightarrow$]{$\longleftarrow$}}
+\def\michael#1{\textcolor{red}{\textsc{Michael says: }{\marrow\sf #1}}}
 
 \title{Metric Spaces with Expensive Distances}
 \author{Michael Kerber}{TU Graz}{kerber@tugraz.at}{}{}
 \author{Arnur Nigmetov}{TU Graz}{nigmetov@tugraz.at}{}{}
 \authorrunning{M. Kerber and A. Nigmetov}
+
+\keywords{metric spaces, doubling dimension, spanners, approximate nearest neighbor}
+\subjclass{dummy}
+% \category{dummy}
 
 \Copyright{Michael Kerber and Arnur Nigmetov}
 
@@ -109,7 +115,115 @@ after a logarithmic number of distance queries.
 
 \section{Introduction}
 
-\subsection{Motivation.}
+Given a set $\pointset:=\{p_1,\ldots,p_n\}$ of $n$ points
+in a metric space $(\metricspace,\dist)$, 
+consider the following standard operations:
+
+\begin{description}
+\item[Approximate Nearest Neighbor] Given $\eps>0$ and a point $q\in\metricspace$,
+find $p_i\in\pointset$ such that, for all $j=1,\ldots,n$,
+\[\dist(q,p_i)\leq(1+\eps)\dist(q,p_j)\]
+
+\item[Spanner] Given $\eps>0$, compute a weighted graph $G$ with vertices in $\pointset$
+such that for any $u,v\in\pointset$, the shortest path distance between $u$ and $v$
+is at most $(1+\eps)\dist(u,v)$.
+\end{description}
+
+The performance of algorithms for these problems depends on the number of points,
+the dimension of the metric space, and the cost $\complexity$ of computing a distance in the metric space.
+It is a common assumption to assume $\complexity$ to be a constant; 
+There are good reasons for that: the most common case of a metric space
+is $\metricspace=\R^d$ with $d$ some constant, in which case $\metric$ can be evaluated in $O(d)=O(1)$ time.
+Even if $d$ is considered non-constant,
+it can always be assumed that $d\leq n$, hence $\complexity$ is at most $O(n)$.
+Another typical assumption is that all pairwise distances are part of the input
+in which case $\complexity$ is $O(1)$.
+
+However, we argue that in some situations, distance computations
+in $\metricspace$ can be costly and $\complexity$ might be incomparable
+with $n$. Our motivation comes from topological summaries
+such as persistence diagrams or Reeb graphs, which are of interest
+in the field of topological data analysis. A persistence diagram
+is a point set in $\R^2$, and the distance between two diagrams
+is determined by a min-cost matching between the point sets.
+If the diagrams have $N$ points, computing this matching requires
+polynomial time in $N$, and $N$ might well be larger than $n$, the number
+of diagrams considered. For the case of Reeb graphs, the situation is even
+worse: while several metrics on Reeb graphs have been proposed,
+not even an constant-factor approximation algorithm is known that runs
+in polynomial time in the size of the graphs.
+\michael{This paragraph needs references. As you know the literature better than me,
+I leave that part to you.}
+
+In such situations with expensive distance computations, 
+it makes sense to study a different cost model, where only the number of distance computations
+is taken into account. For instance, that means that quadratic time operations in terms of $n$
+are not counted towards the time complexity, as long as these operations do not query any distance
+in $\metricspace$. We also ignore the space complexity in our model.
+
+We will restrict to the case of \emph{doubling spaces}, that is, the doubling dimension
+of $\metricspace$ is bounded by a constant. 
+In that situation, standard constructions from computational geometry provide partial answers:
+Using net-trees~\cite{hm-fast}, we can construct a $\eps$-well-separated pair decomposition (WSPD)~\cite{CK-decomposition} using $O(n\log n)$ distance queries; a WSPD in turn yields
+an $\eps$-spanner immediately. Net-trees can also be used to compute approximate nearest neighbors
+performing $O(\log n)$ distance computations per query point.
+However, for our relaxed cost model, we pose the question whether simpler constructions achieve
+comparable, or even fewer distance computations.
+
+We also propose a slight variant of our model: we assume that we also have access to an (efficient)
+$2$-approximation algorithm for the distance queries. Queries to this approximation algorithm
+are not counted in the model, hence we can assume that for each pair of points $(u,v)$, we
+know a number $a_{u,v}$ with $\dist(u,v)\leq a_{u,v}\leq 2\dist(u,v)$. This induces an approximate ordering
+of all distances in the metric space, and it is plausible to assume that such an ordering will simplify
+algorithmic tasks on metric spaces, at least in practice.
+
+\myparagraph{Contributions}
+%
+We propose simple algorithms for spanner construction and approximate nearest neighbor search
+and evaluate them theoretically and experimentally in the defined cost model.
+
+Our algorithms are based on the following simple idea: since distance computations are expensive
+and should be avoided, we try to obtain maximal information out of the distances that have been computed
+so far. 
+This information consists of lower and upper bounds for unknown distances, obtained from known distances
+by triangle inequality (see Figure~\ref{fig:1st_example}).
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=6cm]{intro_example.eps}
+\caption{The compute distances are shown as edges in a graph. Note that the exact distance
+of $p_1$ and $p_2$ is unknown. The shortest path from $p_1$ to $p_2$ has length $9$, which clearly
+constitutes an upper bound on the distance by triangle inequality.
+However, we can also infer that $\metric(p_1,p_2)\geq 3$:
+otherwise, the path from $p_3$ to $p_4$ via $p_1$ and $p_2$
+would be shorter than the edge $(p_3,p_4)$, again contradicting
+triangle inequality.}
+\label{fig:1st_example}
+\end{figure}
+
+we see a weighted graph on $P$ whose edges are the distances that have
+been computed so far; note that $\metric(p_1,p_2)$ is unknown. 
+The shortest path from $p_1$ to $p_2$ has length $9$, which clearly
+constitutes an upper bound on the distance by triangle inequality.
+However, we can also infer that $\metric(p_1,p_2)\geq 3$:
+otherwise, the path from $p_3$ to $p_4$ via $p_1$ and $p_2$
+would be shorter than the edge $(p_3,p_4)$, again contradicting
+triangle inequality.
+Hence, the question whether $\metric(p_1,p_2)\leq t$ can be answered positively
+for $t>=9$ and negatively for $t<3$. Only if $t\in[3,9)$
+We describe our idea with an example. In Figure~\ref{fig:1st_example},
+we see a situation on $P$ whose edges are the distances that have
+been computed so far; note that $\metric(p_1,p_2)$ is unknown. 
+The shortest path from $p_1$ to $p_2$ has length $9$, which clearly
+constitutes an upper bound on the distance by triangle inequality.
+However, we can also infer that $\metric(p_1,p_2)\geq 3$:
+otherwise, the path from $p_3$ to $p_4$ via $p_1$ and $p_2$
+would be shorter than the edge $(p_3,p_4)$, again contradicting
+triangle inequality.
+Hence, the question whether $\metric(p_1,p_2)\leq t$ can be answered positively
+for $t>=9$ and negatively for $t<3$. Only if $t\in[3,9)$
+
+
 
 In this paper we look at algorithms in metric spaces,
 in which computing a single distance between points can be very costly.
@@ -438,24 +552,28 @@ by insisting that we must first create a connected graph, or that we must first 
 for all edges, and only after these requirements are satisfied, we consider other pairs.
 
 
-The next option is to make an additional assumption: while
-computing $\dist(\cdot, \cdot)$ exactly is costly, we have access to a cheap approximation algorithm
-that gives, say, a $2$-approximation of $\dist$ much faster (the output of this approximation algorithm is guaranteed to
+
+The last option that we consider is based on an additional assumption: while
+computing $\dist(\cdot, \cdot)$ exactly is costly, we have access to a
+cheap approximation algorithm
+that gives a $2$-approximation of $\dist$ much faster 
+(the output of this approximation algorithm is guaranteed to
 lie in $[\dist(p,q), 2 \dist(p,q)]$). In order to simplify notation, we now assume
 that all pairwise distances between our points belong to $[1, 2^t]$ for some $t$.
-We now introduce \textit{buckets} of the form $[2^k, 2^{k+2}]$ for $k = 0 \dots t$;
-these intervals are not disjoint, but, by calling our algorithm we can assign
+We introduce \textit{buckets} of the form $[2^k, 2^{k+2}]$ for $k = 0 \dots t$;
+these intervals are not disjoint, but by calling the approximation algorithm we can assign
 each pair $(p_i, p_j)$ to one of the buckets.
 Indeed, let $v$ be the output of the approximation algorithm for $\dist(p,q)$,
 then we know that the true distance is in $[v/2, v]$. We want to put the pair $(p,q)$ into the bucket
 that fully contains this interval, thus we need to find $k$ such that
 $2^k \leq v /2$ and $v \leq 2^{k+2}$. These inequalities give $ 2^{k+1} \leq v \leq 2^{k+2}$,
 and we take $k = \lfloor \log v \rfloor - 1$.
-If we find a bucket for each pair $(p_i, p_j)$, we have some sort of a weak ordering: we cannot say anything
+Afer we found a bucket for each pair $(p_i, p_j)$, 
+we have some sort of a weak ordering: we cannot say anything
 about two edges that are assigned to the same bucket or to overlapping buckets, but if the buckets
 are disjoint, we know which edge is longer. Now we can either imitate the greedy spanner (non-blind) algorithm,
 traversing buckets in the order of their left endpoint, and adding edges from them; or we could alternate: in even iterations
-we travers the buckets from left to right, adding edges from each bucket one by one, and in odd iterations
+we traverse the buckets from left to right, adding edges from each bucket one by one, and in odd iterations
 we traverse the buckets from right to left. This alternative makes sense, because we need to have good lower bounds in
 order to build a blind spanner, and good lower bounds can be obtained from the triangle inequality, if one of the edges 
 in a path connecting $p_i$ and $p_j$ in $G$ is longer than the sum of the lengths of all other edges.
@@ -495,9 +613,9 @@ and $\dist(p_k,p_\ell)$. An analogue bound holds with $i$ and $j$ swapped. Hence
 %
 for all $k,\ell$.
 
-Note that after we added the edge $(p_i, p_j)$, the ratio of the upper and lower bound
-for this pair becomes 1, so a blind spanner algorithm always terminates (of course,
-we assume that the procedure \textsc{GetEdgeToAdd} picks an edge only once).
+% Note that after we added the edge $(p_i, p_j)$, the ratio of the upper and lower bound
+% for this pair becomes 1, so a blind spanner algorithm always terminates (of course,
+% we assume that the procedure \textsc{GetEdgeToAdd} picks an edge only once).
 
 
 \subsection{Experimental Results}
