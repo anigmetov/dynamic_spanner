@@ -184,10 +184,12 @@ SELECT spanner_method, dim, epsilon, substr(points_generation_method, 1, 4),
        count(*) as cnt
 FROM public.spanner_results_cpp t
 where 1 = 1
-and dim = 2
-      --and spanner_method != 'greedy-non-blind'
+--and dim = 2
+      and spanner_method in ( 'greedy-non-blind', 'blind-greedy')
       and points_generation_method like 'unif%'
+      and abs(epsilon - 0.1) < 0.001
+      and n_points > 150
 group by spanner_method, dim, epsilon, substr(points_generation_method, 1, 4)
-having count(*) > 5
-order by points_generation_method, epsilon, 5
+--having count(*) > 5
+order by 1,2, 3
 

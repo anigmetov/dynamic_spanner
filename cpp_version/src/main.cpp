@@ -305,7 +305,7 @@ int main(int argc, char** argv)
     DynamicSpannerR ct_spanner(dist_matrix);
     std::cout << "Spanner initialized" << std::endl;
 
-#if 1
+#if 0
 
     DynamicSpannerR copy(spanner);
 //

@@ -10,6 +10,9 @@ def get_points(n_points, dim):
     return np.random.randn(n_points, dim)
 
 
+def get_normal_points(n_points, dim, scale = 1.0):
+    return np.random.normal(scale = scale, size = (n_points, dim))
+
 def get_uniform_points(n_points, dim, max_coord=100.0):
     return np.random.uniform(0.0, max_coord, (n_points, dim))
 

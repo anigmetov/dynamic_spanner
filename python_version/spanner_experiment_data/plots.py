@@ -65,22 +65,7 @@ if __name__ == "__main__":
     # sys.exit(0)
 
     ds_non_blind_greedy.drop(columns=['spanner_method'], inplace=True)
-    ds_blind_greedy.drop(columns=['spanner_met
-        x = ds_to_plot2.n_points
-        y = ds_to_plot2.dist_num
-
-
-        y = y / np.log(x)
-        # x = np.log(x)
-        print(x)
-        print(y)
-        fit = np.polyfit(x, y, 1)
-        fit_fn= np.poly1d(fit)
-        print(fit_fn(x))
-        plt.xlabel("#points")
-        plt.ylabel("#computed distances / log(#points)")
-        plt.plot(x, y)
-        # plt.plot(x, y, 'ro', x, fit_fn(x), '--k')hod'], inplace=True)
+    ds_blind_greedy.drop(columns=['spanner_method'], inplace=True)
     ds_blind_random.drop(columns=['spanner_method'], inplace=True)
     ds_quasi_greedy.drop(columns=['spanner_method'], inplace=True)
     ds_quasi_shaker.drop(columns=['spanner_method'], inplace=True)
@@ -89,7 +74,8 @@ if __name__ == "__main__":
     ds_blind_random_bad_ratio_cf.drop(columns=['spanner_method'], inplace=True)
     ds_blind_random_bad_ratio_cf_lbf.drop(columns=['spanner_method'], inplace=True)
 
-    ds_all_dims = ds_non_blind_greedy.join(ds_blind_greedy, lsuffix=' (non-blind greedy)', rsuffix=' (blind greedy)', how="outer")
+    # ds_all_dims = ds_non_blind_greedy.join(ds_blind_greedy, lsuffix=' (non-blind greedy)', rsuffix=' (blind greedy)', how="outer")
+    ds_all_dims = ds_non_blind_greedy.join(ds_blind_greedy, rsuffix=' (blind greedy)', how="outer")
     ds_all_dims = ds_all_dims.join(ds_blind_random, rsuffix=' (blind random)')
     ds_all_dims = ds_all_dims.join(ds_quasi_greedy, rsuffix=' (quasi-sorted greedy').join(ds_quasi_shaker, rsuffix=' (quasi-sorted shaker)')
     ds_all_dims = ds_all_dims.join(ds_blind_random_bad_ratio, rsuffix=' (blind random bad ratio)')
