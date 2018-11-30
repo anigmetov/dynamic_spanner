@@ -46,6 +46,8 @@
 \newcommand{\complexity}{C_{\dist}}
 \newcommand{\doublingdimension}{\Delta}
 
+\newcommand{\ignore}[1]{}
+
 %\newcommand{\remark}[1]{\textbf{[#1]}}
 
 %\newtheorem{theorem}{Theorem}
@@ -171,7 +173,7 @@ comparable, or even fewer distance computations.
 We also propose a slight variant of our model: we assume that we also have access to an (efficient)
 $2$-approximation algorithm for the distance queries. Queries to this approximation algorithm
 are not counted in the model, hence we can assume that for each pair of points $(u,v)$, we
-know a number $a_{u,v}$ with $\dist(u,v)\leq a_{u,v}\leq 2\dist(u,v)$. This induces an approximate ordering
+know a number $A_{u,v}$ with $\dist(u,v)\leq A_{u,v}\leq 2\dist(u,v)$. This induces an approximate ordering
 of all distances in the metric space, and it is plausible to assume that such an ordering will simplify
 algorithmic tasks on metric spaces, at least in practice.
 
@@ -222,31 +224,19 @@ only a constant number of distances needs to be computed in-between two minima.
 We also experimentally evaluate our approach and observe that the approach follows 
 roughly the theoretical prediction.
 
+\myparagraph{Outline}
 
 
-\section{Notation and Preliminary Notions}
-Let $(X, \dist)$ be a finite metric space with $n$. Let $G$ be a graph with set of vertices $X$,
-its edges have natural weighting $w(x,y) = \dist(x, y)$ which induces the graph metric $\dist_G$ on $X$.
-Graph $X$ is called a $1 + \eps$-spanner of $P$, if $\dist_G$ is a good approximation of $\dist$:
-$\dist(x,y) \leq \dist_G(x, y) \leq (1+\eps) \dist(x, y)$. Obviously, $G$ must have $\Omega(n)$ edges,
-and we consider $G$ optimal, if it has $O(n)$ edges (for each edge of $G$ we must compute the corresponding
-distance, if we want to use the spanner instead of the original metric, which dictates this
-choice of optimality measure). 
-
-
-
+\section{Preliminary Notions}
+%
 A metric space is called \textit{doubling} with \textit{doubling constant} $k$,
 if every ball of radius $r$ can be covered by at most $k$ balls of radius $r/2$,
 and $k$ is the smallest number having that property.
-\textit{Doubling dimension} of a doubling space is defined as $\log k$
+The \textit{doubling dimension} of a doubling space is defined as $\log k$
 (since we usually ignore multiplicative constants, the base of the logarithm is not really important; however,
 we always use $\log$ to denote the logarithm with base 2).
 It is easy to see that a subspace of a space with doubling dimension $d$ 
 is always doubling and has the doubling dimension $O(d)$ (but not necessarily $d$).
-
-
-In this paper we consider some fixed metric space $(X, \dist)$, and, to get interesting
-results we must assume doubling property.
 
 We shall need the following lemma, which is just a reformulation of the well-known
 packing lemma for doubling spaces (see \cite{smid_2009}, Sect. 2.2).
@@ -269,6 +259,10 @@ we cover
 $B(x, R)$ with $2^{md}$ balls of radius at most $r/2$. Since a ball of radius $r/2$ can
 contain at most one point from $P$, the claim follows.
 \end{proof}
+
+In the following, we will assume throughout that every considered metric space
+has a constant doubling dimension.
+\michael{I think that this sentence is enough. I would remove all what follows.}
 If the doubling dimension of $(X, \dist)$ is larger than $d$, then
 there exists a ball of radius $R$ such that there are at least $2^d$ points with pairwise distance at least $R$. On the other hand,
 the maximal distance between any two of these points is at most $2R$, and we have a lot of points with approximately the same distance
@@ -277,24 +271,58 @@ so the space of high doubling dimension cannot have optimal spanners. Thus the q
 the non-doubling metric without computing many distances cannot be solved positively, and we should
 restrict our attention to the case of doubling spaces.
 
-\section{Metric Approximation}
+\section{Algorithms for spanner construction}
 
-It is known that optimal spanner can be constructed by the following greedy algorithm: 
-start with an empty graph on vertices $p_i$,
-sort all edges $\{p_i, p_j\}$ by the length $\dist(p_i, p_j)$ in ascending order and keep adding them to the graph
-until it becomes a $1+\eps$-spanner. 
+\myparagraph{Spanners and known constructions}
+%
+Let $(X, \dist)$ be a finite metric space with $n$ vertices. 
+One way to encode the metric space is a complete weighted graph on $X$,
+where the weights correspond to the distances of the points.
+A subgraph $G$ of this graph is called an \emph{$(1+\eps)$-spanner} for $(X,\dist)$ 
+if for any pair of points $(u,v)$,
+the shortest path distance $d_{uv}$ of $u$ and $v$ in $G$ satisfies $d_{u,v}\leq (1+\eps)\dist(u,v)$.
+In other words, the shortest path metric of $G$ is a good approximation of the actual distance for every pair of points.
+Clearly, it is a necessary condition that $G$ is connected, hence every spanner must have at least $n-1$ edges.
 
+The \emph{greedy spanner}\michael{Cite something} is a simple algorithm to compute linear-sized spanners:
+\begin{algorithmic}
+\label{alg:greedy_spanner}
+\Function{GreedySpanner}{$P, \eps$}
+    \State {$E\gets\emptyset$}
+    \State {Sort all pairwise distances of points in $P$}
+    \ForAll {pairs $(p_i,p_j)$ in increasing order}
+    \State {$d_{ij}\gets$ Shortest path distance in $(P,E)$}
+    \If{$d_{ij}>(1+\eps)\dist(p_i,p_j)$}
+    \State {Add weighted edge $(p_i, p_j, v)$ to $E$}
+    \EndIf
+    \EndFor
+    \Return {$(P,E)$}
+\EndFunction
+\end{algorithmic}
 
- In our setting this is the most expensive approach, because it requires
- computing all pairwise distances first. We propose an alternative approach (or rather a family of algorithms), which we call
- \textit{blind} spanner, meaning that the algorithm that builds a spanner does not have access to $\dist(p_i, p_j)$
- before it decides to add the edge $(p_i, p_j)$.
- The algorithm also maintains lower and upper bounds
- for all pairwise distances, which are updated after a new edge is added.
- These bounds are used in the stopping criterion, namely, if $a_{i, j}$ and $b_{i,j}$ denote lower and upper bounds
- for the distance between $p_i$ and $p_j$, respectively, 
- then the algorithm stops, if $b_{i,j} / a_{i, j} \leq 1 + \eps$
- for all $i \neq j$.
+\michael{Add references here whereever appropriate}
+The greedy spanner is guaranteed to return a spanner of size $O(n)$
+(for constant doubling dimension and fixed $\eps>0$. However, it clearly
+has to compute all $\binom{n}{2}$ pairwise distances in the sorting step;
+this means that in our cost model, the greedy spanner has the worst possible
+performance.
+
+On the other hand, spanner constructions based on WSPDs only compute
+$O(n\log n+n \eps^{-d})$ distances 
+to construct an $(1+\eps)$-spanner in doubling dimension $d$.
+The spanner size is $O(n\eps^{-d})$. Assuming $\eps$ and $d$ again as constants,
+this construction yields a $O(n)$-size spanner using only $O(n\log n)$ distance
+computations. However, the algorithm is significantly more involved.
+
+\myparagraph{Blind spanners}
+%
+We introduce a new framework for constructing spanners
+which we call \emph{blind spanners}: the idea is to maintain,
+for every pair of points $(p_i,p_j)$,
+a lower bound $a_{ij}$ and an upper bound $b_{ij}$ for $\dist(p_i,p_j)$,
+initially set to $[0,\infty)$. While there exists some pair for which $\frac{b_{ij}}{a_{ij}}>(1+\eps)$,
+we pick one of them, compute its distance and update the lower and upper bounds of
+all pairs with respect to the newly acquired information. Here is the pseudocode:
 
 \begin{algorithmic}
 \label{alg:blind_spanner}
@@ -303,7 +331,7 @@ until it becomes a $1+\eps$-spanner.
     \State {$a_{i,j} \gets 0$ for all $1 \leq i,j \leq n$}
     \State {$b_{i,j} \gets \infty$ for all $1 \leq i,j \leq n, i \neq j$}
     \While {$\exists i \neq j : b_{i,j} / a_{i,j} > 1 + \eps$}
-    \State {$(i,j) \gets $} \Call{GetEdgeToAdd}{}
+    \State {$(i,j) \gets $} \Call{GetNextEdgeToAdd()}{}
     \State {$v \gets \dist(p_i, pj)$}
     \State {Add weighted edge $(p_i, p_j, v)$ to $E$}
     \State \Call{UpdateBounds}{$i, j, v$}
@@ -314,30 +342,94 @@ until it becomes a $1+\eps$-spanner.
 
 In this pseudocode we adopt the convention that a positive number divided by 0 is $\infty$
 and $\infty$ is larger than any real number,
-thus making the predicate in the while loop well-defined.  The procedure \textsc{UpdateBounds} is described in the next subsection,
-now we only mention that it updates all upper and lower bounds based on triangle inequality involving the edge $(p_i, p_j)$,
-and the update is monotonic: no upper bound can increase, no lower bound can decrease, and, after the distance
-between $p_i$ and $p_j$ is calculated, both $a_{i,j}$ and  $b_{i,j}$ are set to be $\dist(p_i, p_j)$.
-The most important part of this algorithm is the way of choosing the next edge to be added, and
-there are several possibilities, which give very different results.
+thus making the predicate in the while loop well-defined.  
 
+We give the details of the \textsc{UpdateBounds} procedure next.
+Suppose that
+Assume that $\dist(p_i,p_j)=v\in\R$ has been computed.
+First, we reset $a_{i,j}$ and $b_{j,i}$ to $v$, since the distance
+of $p_i$ and $p_j$ is exactly $v$.
+To update the upper bound of some entry $b_{k,\ell}$,
+we observe that the shortest path from $p_k$ to $p_\ell$ might now
+go through the new edge. Hence, we update
+\[
+    b_{k,\ell}\gets \min_{i,j}\{b_{k,\ell},b_{k,i}+v+b_{j,\ell},b_{k,j}+v+b_{i,\ell}\}
+\]
+Repeating this for all $k,\ell$ yields the updated upper bounds.
+Note that this results in $O(n^2)$ arithmetic operations,
+but no distance computation.
 
+For the lower bound, we observe that for any $1\leq k,\ell\leq n$,
+\[
+    v-b_{k,i}-b_{\ell,j}
+\]
+is a lower bound for $\dist(p_k,p_\ell)$. Indeed, this follows from
+the triangle inequality
+%
+\[\dist(p_i,p_j)\leq \dist(p_i,p_k)+\dist(p_k,p_\ell)+\dist(p_\ell,p_j)\]
+by rearranging terms and plugging in the upper bounds for $\dist(p_i,p_k)$
+and $\dist(p_k,p_\ell)$. An analogue bound holds with $i$ and $j$ swapped. 
 
-The first possibility will be called \textsc{BlindGreedy}, where we choose a pair $(p_i, p_j)$ that maximizes
-the ratio $b_{i,j} / a_{i,j}$. If the number of maximizing pairs is more than 1, we choose one of them at random.
-Note that our conventions imply that in \textsc{BlindGreedy} the edges that have $a_{i,j} = 0$ or $b_{i,j} = \infty$
+Moreover, the inequalities
+\begin{align*}
+  a_{j,\ell} - v - b_{k,i}&\leq \dist(p_k,p_\ell)\\
+  a_{j,k} - v - b_{j,i}&\leq \dist(p_k,p_\ell)
+\end{align*}
+hold by triangle inequality, and the same is true with $i$ and $j$ swapped.
+This yields $6$ lower bounds for $\dist(p_k,p_\ell)$, and $a_{k,\ell}$
+is updated to the maximum of these six lower bounds and its current value.
+
+\myparagraph{Heuristics}
+%
+The last missing ingredient of our algorithm is the procedure \textsc{GetNextEdgeToAdd},
+that is, how to select the next distance to be computed. We propose two natural choices
+
+\begin{description}
+\item[\textsc{BlindRandom}] Among all pairs $(i,j)$ where $\frac{b_{i,j}}{a_{i,j}}>(1+\eps)$,
+we pick one pair uniformly at random
+\item[\textsc{BlindGreedy}] Pick the pair $(i,j)$ which maximizes the ratio $\frac{b_{i,j}}{a_{i,j}}$.
+If the maximizing pair is not unique, choose among the maximizing pairs uniformly at random.
+\end{description}
+%
+The idea behind \textsc{BlindGreedy} is that we query an edge for which we know the least,
+in that way hoping to gather most additional information about the metric space.
+Also, our conventions imply that in \textsc{BlindGreedy} the edges that have $a_{i,j} = 0$ or $b_{i,j} = \infty$
 have the highest priority, so the algorithm first ensures that the graph is connected and there are positive
 lower bounds for every edge before it will start adding any other edges.
 
+\michael{Perhaps talk about force lower bound here briefly (commented out for now}
+%The second possibility will be referred to as \textsc{BlindRandom}, where among all edges $(p_i, p_j)$
+%for which $b_{i,j} / a_{i,j} > 1 + \eps$ we choose one uniformly at random. We may vary this approach
+%by insisting that we must first create a connected graph, or that we must first have some positive lower bound
+%for all edges, and only after these requirements are satisfied, we consider other pairs.
+
+\michael{I have shortened this part considerably. The buckets are nice, but perhaps not needed.
+I commented out the old version}
+
+The next two heuristics assume the existence of a $2$-approximation algorithm for distance
+computation. Denoting by $A_{i,j}$ the number satisfying $\dist(p_i,p_j)\leq A_{i,j}\leq 2 d(p_i,p_j)$,
+We sort all pairwise distances according to the values $A_{i,j}$.
+This yields a roughly sorted sequence of distance, because when $\dist(p_i,p_j)>2\dist(p_k,p_\ell)$,
+then $A_{i,j}>A_{k,\ell}$ is guaranteed.
+We propose two further heuristics that attempt to make use of this sorted sequence.
+\begin{description}
+\item [\textsc{BlindQuasiSortedGreedy}] Traverse the pairs in increasing order with respect to $A_{i,j}$.
+\item [\textsc{BlindQuasiSortedShaker}] Alternates between pairs with small and large $A_{i,j}$
+by traversing in increasing order of $A_{i,j}$ in odd iterations and in decreasing order
+in even iterations.
+\end{description}
+
+\textsc{BlindQuasiSortedGreedy} tries to mimick the blind greedy spanner and hence appears as a natural
+choice at first sight. However, anticipating the experimental results, the heuristic yields very poor
+results. The reason is that no pair acquires useful lower bounds when only short distance are queried
+(the greedy spanner does not have this issue because it knows the distance and hence does not need
+lower bounds).
+Generally speaking, short distances are good for sharp upper bounds, whereas long distances are
+useful for lower bounds. This motivates \textsc{BlindQuasiSortedShaker}
+which alternates between short and long distances.
 
 
-The second possibility will be referred to as \textsc{BlindRandom}, where among all edges $(p_i, p_j)$
-for which $b_{i,j} / a_{i,j} > 1 + \eps$ we choose one uniformly at random. We may vary this approach
-by insisting that we must first create a connected graph, or that we must first have some positive lower bound
-for all edges, and only after these requirements are satisfied, we consider other pairs.
-
-
-
+\ignore{
 The last option that we consider is based on an additional assumption: while
 computing $\dist(\cdot, \cdot)$ exactly is costly, we have access to a
 cheap approximation algorithm
@@ -363,47 +455,10 @@ we traverse the buckets from right to left. This alternative makes sense, becaus
 order to build a blind spanner, and good lower bounds can be obtained from the triangle inequality, if one of the edges 
 in a path connecting $p_i$ and $p_j$ in $G$ is longer than the sum of the lengths of all other edges.
 We refer to the former option as \textsc{BlindQuasiSortedGreedy} and to the latter one as \textsc{BlindQuasiSortedShaker}.
+}
 
 
- \subsection{Maintaining Lower and Upper Bounds}
-
- In this subsection we explain the update procedure that we use. Suppose that
- $a_{k,l}$ and $b_{k,l}$ are valid lower and upper bounds, so that
-\[
-     \forall 1 \leq k < l \leq n \quad a_{k,l} \leq \dist(p_k, p_l) \leq b_{k,l}.
-\]
-Assume that $\dist(p_i,p_j)=v\in\R$ has been computed.
-First, we reset $a_{i,j}$ and $b_{j,i}$ to $v$. 
-To update the upper bound of some entry $b_{k,\ell}$,
-we observe that the shortest path from $p_k$ to $p_\ell$ might now
-go through the new edge. Hence, we update
-\[
-    b_{k,\ell}\gets \min_{i,j}\{b_{k,\ell},b_{k,i}+v+b_{j,\ell},b_{k,j}+v+b_{i,\ell}\}
-\]
-Repeating this for all $k,\ell$ yields the updated upper bounds in $O(n^2)$
-time per entry.
-
-For the lower bound, we observe that for any $1\leq k,\ell\leq n$,
-\[
-    v-b_{k,i}-b_{\ell,j}
-\]
-is a lower bound for $\dist(p_k,p_\ell)$. Indeed, this follows from
-the triangle inequality
-%
-\[\dist(p_i,p_j)\leq \dist(p_i,p_k)+\dist(p_k,p_\ell)+\dist(p_\ell,p_j)\]
-by rearranging terms and plugging in the upper bounds for $\dist(p_i,p_k)$
-and $\dist(p_k,p_\ell)$. An analogue bound holds with $i$ and $j$ swapped. Hence, we update
-%
-\[a_{k,\ell}\gets \max\{a_{k,\ell},v-b_{k,i}-b_{\ell,j},v-b_{k,j}-b_{\ell,i}\}\]
-%
-for all $k,\ell$.
-
-% Note that after we added the edge $(p_i, p_j)$, the ratio of the upper and lower bound
-% for this pair becomes 1, so a blind spanner algorithm always terminates (of course,
-% we assume that the procedure \textsc{GetEdgeToAdd} picks an edge only once).
-
-
-\subsection{Experimental Results}
+\section{Experiments on spanners}
 At the moment we cannot provide any theoretical guarantees for the heuristics that we propose to compute blind spanners,
 and it can happen that it will yield the complete graph as a spanner.
 We run experiments on the points sampled from the low-dimensional Euclidean space to investigate
