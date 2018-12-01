@@ -72,7 +72,7 @@
 \def\michael#1{\textcolor{red}{\textsc{Michael says: }{\marrow\sf #1}}}
 
 \title{Metric Spaces with Expensive Distances}
-\author{Michael Kerber}{TU Graz}{kerber@tugraz.at}{}{}
+\author{Michael Kerber}{TU Graz}{kerber@tugraz.at}{https://orcid.org/0000-0002-8030-9299}{Supported by Austrian Science Fund (FWF) grant number P 29984-N35}
 \author{Arnur Nigmetov}{TU Graz}{nigmetov@tugraz.at}{}{}
 \authorrunning{M. Kerber and A. Nigmetov}
 
@@ -111,6 +111,7 @@ For approximate nearest neighbors, we prove that our
 strategy returns an approximate nearest neighbor
 after a logarithmic number of distance queries.
 \end{abstract}
+
 
 \section{Introduction}
 
@@ -152,6 +153,8 @@ of diagrams considered. For the case of Reeb graphs, the situation is even
 worse: while several metrics on Reeb graphs have been proposed,
 not even an constant-factor approximation algorithm is known that runs
 in polynomial time in the size of the graphs.
+Another instance is a collection of high-resolution images
+endowed with the Wasserstein (or Earth Movers) metric.
 \michael{This paragraph needs references. As you know the literature better than me,
 I leave that part to you.}
 
@@ -570,7 +573,7 @@ a spanner with $O(n)$ edges. The disappointing fact is that quasi-sorted variant
 access to approximate value of the distance, we could exploit this in the spanner construction, but we could not
 find a working heuristics.
 
-\section{Approximate Nearest Neighbors}
+\section{Approximate nearest neighbors}
 \label{sec:ann}
 We consider the standard problem of finding an approximate nearest neighbor: given
 $n$ points $P = \Set{p_1, \dots, p_n}$, a query point $q$ and a real number $\eps > 0$,
@@ -582,19 +585,18 @@ section, and we shall also use the shorthand notation
 We assume for simplicity
 that all exact pairwise distances $\dist(p_i, p_j)$ are already computed
 (a slight modification of the algorithm can also be applied if only a spanner is available).
-Our goal is to reduce the number of computed distances $\dist(p_i, q)$. We shall also assume w.l.o.g.
-that all $\dist(p_i, q)$ are distinct.
+Our goal is to reduce the number of computed distances $\dist(p_i, q)$. 
 
 Our approach can be summarzied as follows. 
 Fix a random permutation of the points of $P$ 
 and consider the points in that order 
-Fix a random permutation of the points of $P$ (to simplify notation,
+(to simplify notation,
 we re-index them, so the order is again $p_1, \dots, p_n$).
 During the loop, we maintain lower bounds of each $p_i$
 to the query point $q$, which are initially all set to $0$.
 We also remember the closest neighbor $c$ that we have seen so
 far and its distance $v$ to $q$.
-We refer to this point as the \emph{candidate}.
+We refer to the point $c$ as the \emph{candidate}.
 We maintain the invariant that $c$ is an approximate nearest neighbor
 to $q$ for the points $\{p_1,\ldots,p_i\}$.
 When reaching the point $p_i$, we check whether the lower
@@ -674,9 +676,8 @@ the distance of $p_j$ to $q$.
 \begin{proof}
 The algorithm computes $r_i$ by assumption and updates
 all lower bounds. For $p_j$, it sets $a_j\gets \max (a_j,|\dist(p_i,p_j)-r_i|)$.
-If $|\dist(p_i,p_j)-r_i|\geq (1+\frac{1}{1+\eps})r_i$,
-so 
-\[a_j\geq (1+\frac{1}{1+\eps}r_i - r_i = \frac{r_i}{1+\eps}.\]
+If $\dist(p_i,p_j)\geq (1+\frac{1}{1+\eps})r_i$, it follows that 
+\[a_j\geq (1+\frac{1}{1+\eps})r_i - r_i = \frac{r_i}{1+\eps}.\]
 Likewise, if $\dist(p_i,p_j)\leq\frac{\eps}{1+\eps}r_i$,
 \[a_j\geq r_i-\dist(p_i,p_j) \geq r_i - \frac{\eps}{1+\eps}r_i = \frac{r_i}{1+\eps}.\]
 In both cases, after the point $p_i$ is handled,
@@ -686,20 +687,22 @@ it follows that $a_j\geq \frac{v}{1+\eps}$ when $p_j$ is handled,
 so the algorithm proceeds without a distance computation.
 \end{proof}
 
-With the previous lemma, we can derive an upper bound for the number
-of distance computations in an arbitrary subsequence of $p_1,\ldots,p_n$
-as follows. In what follows, we let $c_1,\ldots,c_n$ denote the candidates
+In what follows, we let $c_1,\ldots,c_n$ denote the candidates
 at the end of the $i$-th iteration of the loop, and $v_1,\ldots,v_n$
 their distances to $q$. Clearly, $v_1,\ldots,v_n$ is a decreasing sequence.
+With the previous lemma, we can derive an upper bound for the number
+of distance computations in an arbitrary subsequence of $p_1,\ldots,p_n$
+as follows. 
 
 \begin{lemma}
+\label{lem:sequence_lemma}
 Among the points $p_k,\ldots,p_\ell$ with $1\leq k< \ell\leq n$, the algorithm computes at most
 \[\left(\frac{2(2+\eps) v_k}{\eps v_\ell}\right)^{2d}\]
 distances to $q$.
 \end{lemma}
 \begin{proof}
 By the first part of Lemma~\ref{lem:bound_lemma}, every point in $p_k,\ldots,p_\ell$
-whose distance to $q$ is queried lies in the ball of radius $(1+\frac{1}{1+\eps})v_i=\frac{2+\eps}{1+\eps} v_k$
+whose distance to $q$ is queried lies in the ball of radius $(1+\frac{1}{1+\eps})v_k=\frac{2+\eps}{1+\eps} v_k$
 around $c_k$. Moreover, if the distance of two points $p_i$ and $p_j$ with $k\leq i<j\leq\ell$
 is computed, the second part of Lemma~\ref{lem:bound_lemma} implies that $\dist(p_i,p_j)> \frac{\eps}{1+\eps}r_i\geq \frac{\eps}{1+\eps}v_\ell$.
 Hence, all points in $p_k,\ldots,p_\ell$ for which the algorithm computes the distance
@@ -707,127 +710,53 @@ have a pairwise distance of at least $\frac{\eps}{1+\eps}v_\ell$. The statement 
 \end{proof}
 
 A consequence of the lemma is that as long as a candidate $c$ is fixed in the algorithm,
-the number of computed distances is a constant (since $v_k=v_\ell$). This means that to prove our statement, it would suffice to show
+the number of computed distances is a constant (since $v_k=v_\ell$). 
+This means that to prove Theorem~\ref{thm:ann_bound}, it would suffice to show
 that the candidate changes only a logarithmic number of times in expectation.
 While we have not found a simple proof for this claim, we can prove the statement with a slight variant of
 that argument.
 
 \begin{proof} (of Theorem~\ref{thm:ann_bound})
-\michael{I need to rewrite this...to be continued asap}
-Let $i_k$ be the {$k$-th} position where the sequence  $m_i := \min \Set{m_1, \dots, m_i}$
-changes, so that
+%
+In the sequence $p_1,\ldots,p_n$, let $p_k$ be a point 
+such that $r_i<r_k$ for all $1\leq i\leq k-1$. We call an element
+of this form a \emph{minimum} of the sequence. 
+A standard backwards analysis argument~\cite{seidel-backwards} shows that the probability
+of $p_k$ being a minimum is at most $1/k$, so that the number of minima
+in the sequence is $O(\log n)$ in expectation.
+
+Note that for $\eps>0$,
+a minimum $p_k$ is not necessarily the candidate $c_k$ because a previous point
+in the sequence close to $p_k$ might have caused the lower bound $a_k$ to be
+in the interval $[\frac{v_k}{1+\eps},v_k]$, which leads to not
+computing the distance $r_k$. However, it is true that
+$v_k\leq (1+\eps)r_k$, because otherwise, $c_k$ would not be an approximate
+nearest neighbor of $\{p_1,\ldots,p_k\}$.
+
+Now, let $p_k$, $p_\ell$ be two consecutive minima in the sequence
+(we also allow that $\ell=n+1$ if $k$ is the last minimum in the sequence).
+Note that $v_{\ell-1}\geq r_k$ because each $v_j$ is equal to $r_i$ for
+some $i\leq j$, and in the sequence $r_1,\ldots,r_{\ell-1}$, $r_k$
+is minimal by construction. Using Lemma~\ref{lem:sequence_lemma},
+the number of distance computations among the points
+$p_k,\ldots,p_{\ell-1}$ is at most
 \[
-m_1 = m_2 = \dots = m_{i_1 - 1} > m_{i_1} = m_{i_1 + 1} = \dots = m_{i_2 - 1} > m_{i_2} = \dots. 
-\]
-In other words, if we traversed the list $p_1, \dots, p_n$ and used the bruteforce algorithm
-for exact nearest neighbor, then $i_k$ would the indices where the current candidate
-changes, because we found a point that is closer to $q$ than all the previously seen points.
-We shall refer to $i_k$ as the \textit{change position}.
-Standard backwards analysis argument (e.g., \cite{dubch}, Sect. 4.4) shows that $k=O(log n)$.
-
-    Consider two consecutive change positions $s:=i_j$ and $t:=i_{j+1}$. We claim that in the sequence
-$p_s,...,p_{t-1}$
-only a constant number of distances are computed by our algorithm, irrespective of its length. This claim immediately implies the theorem.
-
-To see that it true, let $c_1,...,c_n$ be the candidates after the $i$-th step of
-the for loop of the algorithm. We have no guarantee that $c_s=p_s$, because $p_s$ it is possible
-    that $p_s$ was discarded without computing $r_s$ (see the picture). However, we know that
-$d(c_s,q)<=(1+ \eps) r_s$.
-Indeed, suppose that $c_s \neq p_s$ and $r_s < d(c_s,q)/(1+\eps)$. In this
-    case $p_s$ cannot be discarded 
-by its lower bound, and hence the distance to $p_s$ would
-have been queried, but this distance is a minimum among $r_1, \dots, r_s$,
-    and then we must reset $c_s$ to be $p_s$, a contradiction.
-
-It follows that any point in the sequence $p_s,...,p_{t-1}$ for which a
-distance is queried must lie in the ball around $c_s$ of radius at most $2(1+\eps)r_s$.
-
-Moreover, we know that for any index $j=s,\dots, t-1$ it holds
-$d(c_j,q)>=r_s$.
-
-Indeed, assume the opposite. $c_j$ is equal to $p_k$ for some $k<t$. If $k<s$,
-that is, the candidate came from before, than $p_s$ would not be in the
-change position. If $s<k<t$, then at least one of the
-elements in $p_{s+1},\dots,p_k$ is a change position, contradicting
-the assumption that $p_s$ and $p_t$ were chosen to be consecutive change positions.
-
-Hence, it follows that whenever a distance is queried, we can exclude a
-ball of radius $\eps r_s$ around the query point. All queried points must
-hence have pairwise distance of at least $ \eps r_s / 2$. 
-Now we can apply the packing lemma \ref{lem:packing_lemma} to bound the number of
-queried points by some constant that depends only on $\eps$ and the dimension. Indeed,
-they all are contained in a ball of radius $R = 2(1+\eps)r_s$, and, if we divide this by $\eps r_s$, the ratio depends only on $\eps$.
+\left(\frac{2(2+\eps) v_k}{\eps v_{\ell-1}}\right)^{2d}\leq \left(\frac{2(2+\eps)(1+\eps)r_k}{\eps r_k}\right)^{2d}=\left(\frac{2(2+\eps)(1+\eps)}{\eps}\right)^{2d},\]
+which is a constant depending only of $\eps$ and $d$, irrespective of the length of the sequence.
+Since $p_1,\ldots,p_n$ decomposes into $O(\log n)$ such sequences in expectation, the result follows.
 \end{proof}
 
+We point out that the proof fails for $\eps=0$ because in that case, we cannot exlude an $\eps$-ball
+of close-by points as in the second part of Lemma~\ref{lem:bound_lemma}, and the packing argument fails.
+Indeed, as the example in Figure~\ref{} shows, there are point sets where the expected number
+of distance computations for exact nearest neighbor is linear.
 
-We should note that the constant factor that is obtained in this proof can be very pessimistic,
-because in practice the algorithm can discard much more points.
+Finally, we remark that a fast $2$-approximation algorithm for $\dist$ would lead to a straight-forward
+optimization: compute a $2$-approximation of $\dist(p_i,q)$ for all $1\leq i\leq n$
+and let $m$ denote the minimal approximate distance encountered. Then, we can discard all points
+whose approximate distance is larger than $2m$, and run the above algorithm on the remaining points.
 
-%\begin{proof}
-%    We start with the lemma of purely combinatorial (or probabilistic) nature.
-%\begin{lemma}
-%    Let $z$ be a random permutation of $n$ distinct real numbers,
-%    $z = X_{1}, \dots, X_{n}$, and denote $x_t = \min \Set{X_1, \dots, X_t}$.
-%    The expected number of positions $t$ where the sequence $X_t$ changes is $O(n)$.
-%\end{lemma}
-%    \begin{proof}
-%        The proof is easily obtained with the standard backwards analysis technique and can be found in the appendix.
-%        %Define random variable $Y_i$ to be 1, if $X_{i-1} = X_{i}$, and 0 otherwise.
-%        %We must estimate $Y = \sum_{i = 2}^n Y_i$, and 
-%        %\[
-%        %    E[Y] = \sum_{i = 2}^n E[Y_i] = \sum_{i = 2}^n P(Y_i = 1).
-%        %\]
-%        %It remains to observe than $P(Y_i) = 1 / (n - i)$, so the expectation
-%        %of $Y$ is the sum of the 
-%    \end{proof}
-
-
-
-%\begin{lemma}
-%    There exists a constant $C$ that depends only on $\eps$ and the doubling dimension
-%    such that after computing at most $C$ distances $\dist(p_k, q)$
-%    either the algorithm verifies that the current candidate $p_i$ is a correct answer and terminates
-%    or the algorithm finds another candidate $p_j$ such that $r_j < r_i$.
-%\end{lemma}
-%\begin{proof}
-%    First, all points that are not contained in the ball $B(p_i, 2r_i)$
-%    are discarded without computing the distance to them.
-%    Now we have to examine all points $p_j$ inside this ball. 
-%    Suppose that we cannot discard the current point $p_j$ based
-%    on the lower bound for $r_j$, then we must compute the distance $r_j$.
-%    There are two possibilities: either $r_j \leq r_i$ or $r_j > r_i$.
-%    The latter case means that we discard the point $p_j$,
-%    but we also discard all points of $P$ that are contained in some ball around it.
-%    The triangle inequality tells us that we can take the ball of radius $r_j - r_i / (1 + \eps)$,
-%    but in this proof it is sufficient to consider the ball of radius $r_i \eps / (1 + \eps)$.
-%    In the figure this radius corresponds to the width of the annulus surrounding $q$,
-%    and it is  geometrically clear that this ball is indeed smaller than the one we could have discarded.
-%    The advantage of choosing this small radius is that, if we divide it by $2r_i$, we 
-%    get the expression $\eps / (2(1 + \eps))$, that depends only on $\eps$.
-%    By lemma \ref{lem:packing_lemma_dd} we know that there is an upper bound $T$ for the number of points
-%    $p_i$ inside the ball $B(p_i, 2r)$ that are at the distance at least $r_i / 2 ( 1 + \eps)$
-%    from each other, and the constant $T$ depends only on $\eps$ and the doubling dimension.
-%    This means that even in the worst case after we have computed $T$ distances, we have discarded all
-%    points of $P$ that lie outside of the ball $B(q, r_i)$, because all other points that lie in $B(p_i, 2r_i) \setminus B(q, r_i)$ 
-%    do not require distance computation. Indeed, each of these points lies in
-%    one of the balls $B(p_j, r_i \eps / (1 + \eps)$ for whose center we computed the distance already,
-%    and is therefore discarded, Now, either we have exhausted the set $P$, and in this
-%    case we terminate with an approximate nearest neighbor, or the next available $p_j$ that requires
-%    distance computation necessarily lies in $B(q, r_i)$, thus we found a closer neighbor. This means that $C = T+1$.
-%    Note that the algorithm still computes an approximate nearest neighbor, not the exact one, 
-%    because some of the points that are inside the annulus can be discarded, 
-%    if there is a point from $P$ close to them but outside of the annulus. 
-%\end{proof}
-
-
-
-%Now the theorem follows from the lemma by standard argument
-%of the backwards analysis.
-
-%\end{proof}
-
-
-\subsection{Experimental Results}
+\subsection{Experiments on approximate nearest neighbors}
 
 In order to experimentally evaluate the performance of our algorithm,
 we generate random point sets and random query points, and for each query point
@@ -967,8 +896,40 @@ approaching 30000.
 %Solving for $s$ the inequality $1 + \frac{2t + 2}{s} < t$ gives $s > \frac{2t+2}{t-1}$.
 
 
-\section{Conclusion and Future Work}
+\section{Conclusion and future work}
 \label{sec:conclusion}
+%
+We have introduced a new cost model for the analysis of algorithms
+for metric spaces that fits the situation that computing an individual distance
+is more costly than other types of primitive operations.
+Our theoretical and experimental results are under the usual assumption
+that the metric space has a low doubling dimension.
+However, in our motivating example of collections of persistence diagrams
+or Reeb graphs, this assumption does not hold. For instance,
+the space of persistence diagrams has an infinite doubling dimension.
+Nevertheless, realisitic data sets are usually not just a random sample
+in that infinite-dimensional space, but have structures
+(e.g. clusters of close-by diagrams) which should be favorable for our approach
+We plan to consider the quality of our algorithms for persistence diagrams
+as future work.
+
+On the theoretical side, the obvious next question is whether our strategy
+for blind spanners yields a linear spanner in expectation. 
+Our experiments are not conclusive enough in this respect to make this conjecture yet.
+However, it has been brought to our attention\footnote{Yusu Wang, personal communication}
+that the size of the blind spanner is bounded by the \emph{weight} of the WSPD
+which is the sum of the cardinalities of all pairs in a WSPD.
+The weight of a WSPD can be quadratic, but premilinary
+experimental evaluation on worst-case examples do not show such a quadratic
+behavior. Therefore, we postpone the theortical analysis of the spanner construction
+to an extended version of this article.
+
+The existence of a $2$-approximation algorithm did not help us to significantly
+reduce the number of exact distance computations, although it seems obvious
+that knowing the all approximate distances is useful.
+We pose the question what heuristic could make more use of this feature.
+
+\ignore{
 We presented experimental evidence showing that in low
 doubling dimension we can avoid many distance computations,
 if we try to get as much information as possible from the triangle inequality
@@ -993,7 +954,7 @@ which guarantee that dimension does not increase too much.
 % scaled by $\lambda$.
 % If the perturbations are very small, then they will produce some small wiggles on the function,
 % and then the optimal matcih
-
+}
 
 \bibliography{bib}
 \bibliographystyle{plain}
