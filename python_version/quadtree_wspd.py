@@ -201,7 +201,7 @@ def make_spanner(eps):
 
 
 if __name__ == "__main__":
-    n_points = 4000
+    n_points = 8000
     n_pairs = int(n_points * (n_points - 1 ) / 2)
     np.random.seed(1)
     global_points = ue.get_uniform_points(n_points, dim=2, max_coord=1.0)

@@ -239,9 +239,9 @@ public:
         if (dist_ij == -1.0)
             dist_ij = m_matrix[i][j].distance;
 
-//#pragma omp parallel
+#pragma omp parallel
         {
-//#pragma omp for schedule(dynamic)
+#pragma omp for schedule(dynamic)
             for (size_t x = 0; x < m_num_points; x++) {
                 for (size_t y = x + 1; y < m_num_points; y++) {
                     Pair_of_points_info& info_xy = m_matrix[x][y];
@@ -276,7 +276,7 @@ public:
             }
         }
 
-//#pragma omp for schedule(dynamic)
+#pragma omp for schedule(dynamic)
         for (size_t x = 0; x < m_num_points; x++) {
             for (size_t y = x + 1; y < m_num_points; y++) {
                 Pair_of_points_info& info_xy = m_matrix[x][y];
@@ -313,9 +313,9 @@ public:
         }
 
 #if 1
-//#pragma omp parallel
+#pragma omp parallel
         {
-//#pragma omp for schedule(dynamic)
+#pragma omp for schedule(dynamic)
             for (size_t x = 0; x < m_num_points; x++) {
                 for (size_t y = x + 1; y < m_num_points; y++) {
                     Pair_of_points_info& info_xy = m_matrix[x][y];

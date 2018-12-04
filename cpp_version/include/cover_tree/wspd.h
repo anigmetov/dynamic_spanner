@@ -42,6 +42,7 @@ namespace wasser_spanner {
 
         CoverTree* m_cover_tree;
         int m_num_points;
+        int m_num_spanner_edges;
         double m_epsilon;
         double m_tau;
         DynamicSpannerR* m_spanner;

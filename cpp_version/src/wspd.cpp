@@ -146,6 +146,7 @@ size_t WSPD::size() const
 
 void WSPD::make_spanner1()
 {
+    m_num_spanner_edges = 0;
     m_graph = std::unique_ptr<Graph>(new Graph(m_num_points));
     initialize_incremental_components(*m_graph, m_conn_comps);
     incremental_components(*m_graph, m_conn_comps);
@@ -157,6 +158,7 @@ void WSPD::make_spanner1()
         }
         auto d = m_spanner->get_distance_no_cache(i, j);
         boost::add_edge(i, j, EdgeWeightProperty(d), *m_graph);
+        m_num_spanner_edges++;
         m_conn_comps.union_set(i, j);
     }
 }

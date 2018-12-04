@@ -32,6 +32,18 @@ import matplotlib.pyplot as plt
 
 if __name__ == "__main__":
 
+    if True:
+        ds = pd.read_csv("eps_dep.csv", header = 0, sep = ";")
+        ds.set_index(["dim"], drop=True)
+        ds  = ds.loc[(ds['dim'] == 2)].set_index(["Epsilon"], drop = True)
+        # ds.plot(y=["Edges (greedy)", "Edges (blind greedy)"], logx = True, xticks = [0.0625, 0.09375, 0.125, 0.25, 0.5, 1, 2])
+        ds.plot(y=["Edges (greedy)", "Edges (blind greedy)"], logx = True)
+        plt.xticks([0.0625, 0.09375, 0.125, 0.25, 0.5, 1, 2], ['1/32', '1/16', '1/8', '1/4', '1/2', '1','2'])
+        plt.show()
+
+
+    sys.exit(0)
+
     # ds = pd.read_csv("n_edges_blind_greedy_dimensions.csv", header  = 0, sep = ';')
     # ds = ds.set_index(["# points"], drop=True)
     # ds = ds.sort_index(ascending=True)
