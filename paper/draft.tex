@@ -77,7 +77,8 @@
 \authorrunning{M. Kerber and A. Nigmetov}
 
 \keywords{metric spaces, doubling dimension, spanners, approximate nearest neighbor}
-\subjclass{dummy}
+%\subjclass{\ccsdesc[500]{Theory of computation~Nearest neighbor algorithms}}
+\subjclass{\ccsdesc[500]{Theory of computation~Random search heuristics}}
 % \category{dummy}
 
 \Copyright{Michael Kerber and Arnur Nigmetov}
@@ -228,9 +229,6 @@ only a constant number of distances needs to be computed in-between two minima.
 We also experimentally evaluate our approach and observe that the approach follows 
 roughly the theoretical prediction.
 
-\myparagraph{Outline}
-
-
 \section{Preliminary Notions}
 %
 A metric space is called \textit{doubling} with \textit{doubling constant} $k$,
@@ -250,7 +248,7 @@ packing lemma for doubling spaces (see \cite{smid_2009}, Sect. 2.2).
  Let $(X,\dist)$ be a metric space of doubling dimension $d$, and let $P$ be a subset of a ball 
  $B(x,R)$ in $X$ such that the distance between any two distinct points of $P$ is at least $r$.
  Then 
- \[|P|\leq \left(\frac{2R}{r}\right)^{2d}\]
+ \[|P|\leq \left(\frac{4R}{r}\right)^{d}\]
 % Then $P$ is finite and cardinality of $P$ satisfies the inequality $|P| < 2^{md}$, where $m = 1 + \lceil \log (R/r) \rceil $. 
 
 % Let $(X,\dist)$ be a metric space of doubling dimension $d$, and let $P$ be a subset of a ball $B(x,R)$ in $X$ such that the distance between any two distinct points of $P$ is at least $r$.
@@ -262,7 +260,7 @@ balls of radius $R/4$, etc. Repeating this process $m := \lceil \log \frac{R}{r/
 we cover
 $B(x, R)$ with $2^{md}$ balls of radius at most $r/2$. Since a ball of radius $r/2$ can
 contain at most one point from $P$, 
-\[|P|\leq 2^{md}= 2^{\lceil \log \frac{R}{r/2} \rceil d}\leq 2^{2(\log \frac{R}{r/2})d}=\left(\frac{2R}{r}\right)^{2d}.\qedhere\]
+\[|P|\leq 2^{md}= 2^{\lceil \log \frac{R}{r/2} \rceil d}\leq 2^{(1 + \log \frac{R}{r/2})d}=\left(\frac{4R}{r}\right)^{d}.\qedhere\]
 \end{proof}
 
 In the following, we will assume throughout that every considered metric space
@@ -283,7 +281,7 @@ has a constant doubling dimension.
 Let $(X, \dist)$ be a finite metric space with $n$ vertices. 
 One way to encode the metric space is a complete weighted graph on $X$,
 where the weights correspond to the distances of the points.
-A subgraph $G$ of this graph is called an \emph{$(1+\eps)$-spanner} for $(X,\dist)$ 
+A subgraph $G$ of this graph is called a \emph{$(1+\eps)$-spanner} for $(X,\dist)$ 
 if for any pair of points $(u,v)$,
 the shortest path distance $d_{uv}$ of $u$ and $v$ in $G$ satisfies $d_{u,v}\leq (1+\eps)\dist(u,v)$.
 In other words, the shortest path metric of $G$ is a good approximation of the actual distance for every pair of points.
@@ -406,14 +404,14 @@ we also tested variations of the \textsc{BlindRandom} algorithm, where the algor
 first enforces connectedness and/or lower bounds (i.e., if there are infinite upper bounds,
 then the algorith can only choose one of the corresponding edges, etc).
 
-\michael{Perhaps talk about force lower bound here briefly (commented out for now}
+%\michael{Perhaps talk about force lower bound here briefly (commented out for now}
 %The second possibility will be referred to as \textsc{BlindRandom}, where among all edges $(p_i, p_j)$
 %for which $b_{i,j} / a_{i,j} > 1 + \eps$ we choose one uniformly at random. We may vary this approach
 %by insisting that we must first create a connected graph, or that we must first have some positive lower bound
 %for all edges, and only after these requirements are satisfied, we consider other pairs.
 
-\michael{I have shortened this part considerably. The buckets are nice, but perhaps not needed.
-I commented out the old version}
+%\michael{I have shortened this part considerably. The buckets are nice, but perhaps not needed.
+%I commented out the old version}
 
 The next two heuristics assume the existence of a $2$-approximation algorithm for distance
 computation. Denoting by $A_{i,j}$ the number satisfying $\dist(p_i,p_j)\leq A_{i,j}\leq 2 d(p_i,p_j)$,
@@ -484,7 +482,7 @@ this space is well-suited for controlled experiments.
 
 \begin{figure}[ht]
     \includegraphics[width=0.7\textwidth]{pics/blind-greedy-dims.png}
-    \caption{}
+    \caption{Results of blind greedy spanner for different dimensions.}
     \label{fig:blind_greedy_only}
 \end{figure}
 
@@ -537,8 +535,8 @@ the estimated exponents $\alpha$ for \textsc{BlindGreedy} and standard
 greedy algorithms. Note that even for the greedy algorithm these estimated
 exponents can be significantly larger than 1,
 which is explained by the fact that the number of points
-on which we computed is not large enough to clearly see
-the linear dependency.
+on which we computed spanners is not large enough to clearly see
+the linear dependence.
 
 
 \begin{table}[]
@@ -549,7 +547,7 @@ dimension & \textbf{Greedy (non-blind)} & \textbf{Blind greedy} \\ \hline
 3         &         1.24                &  1.41                \\ \hline
 4         &         1.42                &  1.77                 \\ \hline
 \end{tabular}
-\caption{Estimated exponents in the $|E|= C |V|^\alpha$ dependency of the number of edges
+\caption{Estimated exponents in the $|E|= C |V|^\alpha$ dependence of the number of edges
 on the number of points. The data is for $\eps = 0.1$ and for uniform points.}
 \label{tbl:regr_coeff_spanner}
 \end{table}
@@ -604,7 +602,7 @@ that all exact pairwise distances $\dist(p_i, p_j)$ are already computed
 (a slight modification of the algorithm can also be applied if only a spanner is available).
 Our goal is to reduce the number of computed distances $\dist(p_i, q)$. 
 
-Our approach can be summarzied as follows. 
+Our approach can be summarized as follows. 
 Fix a random permutation of the points of $P$ 
 and consider the points in that order 
 (to simplify notation,
@@ -714,7 +712,7 @@ as follows.
 \begin{lemma}
 \label{lem:sequence_lemma}
 Among the points $p_k,\ldots,p_\ell$ with $1\leq k< \ell\leq n$, the algorithm computes at most
-\[\left(\frac{2(2+\eps) v_k}{\eps v_\ell}\right)^{2d}\]
+\[\left(\frac{4(2+\eps) v_k}{\eps v_\ell}\right)^{d}\]
 distances to $q$.
 \end{lemma}
 \begin{proof}
@@ -758,15 +756,24 @@ is minimal by construction. Using Lemma~\ref{lem:sequence_lemma},
 the number of distance computations among the points
 $p_k,\ldots,p_{\ell-1}$ is at most
 \[
-\left(\frac{2(2+\eps) v_k}{\eps v_{\ell-1}}\right)^{2d}\leq \left(\frac{2(2+\eps)(1+\eps)r_k}{\eps r_k}\right)^{2d}=\left(\frac{2(2+\eps)(1+\eps)}{\eps}\right)^{2d},\]
+\left(\frac{4(2+\eps) v_k}{\eps v_{\ell-1}}\right)^{d}\leq \left(\frac{4(2+\eps)(1+\eps)r_k}{\eps r_k}\right)^{d}=\left(\frac{4(2+\eps)(1+\eps)}{\eps}\right)^{d},\]
 which is a constant depending only of $\eps$ and $d$, irrespective of the length of the sequence.
 Since $p_1,\ldots,p_n$ decomposes into $O(\log n)$ such sequences in expectation, the result follows.
 \end{proof}
 
 We point out that the proof fails for $\eps=0$ because in that case, we cannot exlude an $\eps$-ball
 of close-by points as in the second part of Lemma~\ref{lem:bound_lemma}, and the packing argument fails.
-Indeed, as the example in Figure~\ref{} shows, there are point sets where the expected number
+Indeed, as the example in Figure~\ref{fig:exact_bad_example} shows, there are point sets where the expected number
 of distance computations for exact nearest neighbor is linear.
+
+\begin{figure}[ht]
+    \includegraphics[width=0.7\textwidth]{pics/exact_bad_example.png}
+    \caption{Example of point set where exact nearest neighbor search cannot be accelerated by maintaining bounds.
+    Next $p_i$ is placed in the curvilinear triange formed by the balls around the query point, $p_2$ and $p_{i-1}$.}
+    \label{fig:exact_bad_example}
+\end{figure}
+
+
 
 Finally, we remark that a fast $2$-approximation algorithm for $\dist$ would lead to a straight-forward
 optimization: compute a $2$-approximation of $\dist(p_i,q)$ for all $1\leq i\leq n$
@@ -794,7 +801,7 @@ of the code (10 instances, 10 random permutations per instance).
 \begin{figure}[ht]
     \includegraphics[width=0.7\textwidth]{pics/ann_computed_distances_dimension_dep.png}
     \caption{Number of computed distances for different dimensions. Points are chosen uniformly, $\eps = 0.01$.}
-    \label{fig:ann_dimension_dependency}
+    \label{fig:ann_dimension_dependence}
 \end{figure}
 
 
@@ -816,12 +823,12 @@ We see that this ratio, though fluctuating a lot, remains in the interval $[1,4]
 the theoretical upper bound, but also shows that the algorithm in the low-dimensional case
 really computes only a very small number of distances to the query point.
 As expected, in high dimensions the algorithm does not perform as well.
-In figure \ref{fig:ann_dimension_dependency} we plot the average number of computed distances
+In figure \ref{fig:ann_dimension_dependence} we plot the average number of computed distances
 for $d = 2, 5, 10$. While for $d = 2$ the growth is hardly noticeable, for $d = 10$
 the sublinearity of the growth becomes clear only when the number of points is relatively large,
 approaching 30000.
 
-% We also looked at the dependency on the density. Note that our algorithm is not invariant under scaling: if we multiply the metric
+% We also looked at the dependence on the density. Note that our algorithm is not invariant under scaling: if we multiply the metric
 % by $\lambda$, we should also change $\eps$ to $\lambda \eps$, if we want
 % the same behavior. Therefore we could \textit{a priori} expect some
 % changes even if we change the parameters of the uniform distribution
