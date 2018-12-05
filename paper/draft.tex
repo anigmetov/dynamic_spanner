@@ -174,7 +174,7 @@ Using net-trees~\cite{hm-fast}, we can construct a $\eps$-well-separated pair de
 an $\eps$-spanner immediately. Net-trees can also be used to compute approximate nearest neighbors
 performing $O(\log n)$ distance computations per query point.
 Krauthgamer and Lee \cite{krauthgamer2005black} investigated \textit{black box model},
-and proved that ANN search for $\eps < 2/5$ can be done efficiently (i.e., in polylog time, with polynomial preprocessing
+and proved that ANN search for $\eps < 2/5$ can be done efficiently (i.e., in polylogarithmic time, with polynomial preprocessing
 and space) if and only if the dimension is $O(\log \log n)$; their bounds count the number of distance computations.
 However, for our relaxed cost model, we pose the question whether simpler constructions achieve
 comparable, or even fewer distance computations.
@@ -196,7 +196,7 @@ and should be avoided, we try to obtain maximal information out of the distances
 so far. 
 This information consists of lower and upper bounds for unknown distances, obtained from known distances
 by triangle inequality (see Figure~\ref{fig:1st_example}). We remark that updating these bounds involves $\Omega(n^2)$ arithmetic
-operations whenever a new distance has been computed, turing the method useless in the standard computational model.
+operations whenever a new distance has been computed, turning the method useless in the standard computational model.
 
 \begin{figure}[h]
 \centering
@@ -214,14 +214,12 @@ triangle inequality.}
 We propose several heuristics of how to explore the metric space to obtain accurate lower and upper bounds
 with a small number of distance computation. Once the ratio of upper and lower bound is at most $(1+\eps)$
 for each point pair, the set of all computed distances forms the spanner.
-The experimentally most succesful exploration strategy that we found is to
+The experimentally most successful exploration strategy that we found is to
 repeatedly query the distance of a pair with the worst ratio of upper and lower bound.
 We call the obtained spanner the \emph{blind greedy spanner}, as opposed to the well-known
 \emph{greedy spanner} that precomputes all pairwise distances and only maintains upper bounds (\cite{althofer1993sparse}).
 Remarkably, we were not able to improve the quality when knowing initial $2$-approximations of all point pairs.
-\michael{Acutally, is that true? We could run BlindGreedy on the 2-approximations instead of on $[0,\infty]$,
-that might save something}
-We also compare with a spanner construction based on WSPDs. Our simple algorithms tend to give much smaller
+We also compare with a spanner construction based on WSPD. Our simple algorithms tend to give much smaller
 spanners on the tested example. Nevertheless, we leave the question open whether our construction
 yields a spanner of asymptotically linear size.
 
@@ -307,7 +305,6 @@ The \emph{greedy spanner}(\cite{althofer1993sparse}) is a simple algorithm to co
 \EndFunction
 \end{algorithmic}
 
-\michael{Add references here whereever appropriate}
 The greedy spanner is guaranteed (\cite{althofer1993sparse}) to return a spanner of size $O(n)$
 (for constant doubling dimension and fixed $\eps>0$); in experimental study \cite{farshi2009experimental}
 it was also shown to return the sparsest graph. However, it clearly
@@ -315,7 +312,7 @@ has to compute all $\binom{n}{2}$ pairwise distances in the sorting step;
 this means that in our cost model, the greedy spanner has the worst possible
 performance.
 
-On the other hand, spanner constructions based on WSPDs only compute
+On the other hand, spanner constructions based on WSPD only compute
 $O(n\log n+n \eps^{-d})$ distances 
 to construct an $(1+\eps)$-spanner in doubling dimension $d$.
 The spanner size is $O(n\eps^{-d})$. Assuming $\eps$ and $d$ again as constants,
@@ -406,7 +403,7 @@ have the highest priority, so the algorithm first ensures that the graph is conn
 lower bounds for every edge before it will start adding any other edges. Based on this observation,
 we also tested variations of the \textsc{BlindRandom} algorithm, where the algorithm
 first enforces connectedness and/or lower bounds (i.e., if there are infinite upper bounds,
-then the algorith can only choose one of the corresponding edges, etc).
+then the algorithm can only choose one of the corresponding edges, etc).
 
 %\michael{Perhaps talk about force lower bound here briefly (commented out for now}
 %The second possibility will be referred to as \textsc{BlindRandom}, where among all edges $(p_i, p_j)$
@@ -430,7 +427,7 @@ by traversing in increasing order of $A_{i,j}$ in odd iterations and in decreasi
 in even iterations.
 \end{description}
 
-\textsc{BlindQuasiSortedGreedy} tries to mimick the blind greedy spanner and hence appears as a natural
+\textsc{BlindQuasiSortedGreedy} tries to mimic the blind greedy spanner and hence appears as a natural
 choice at first sight. However, anticipating the experimental results, the heuristic yields very poor
 results. The reason is that no pair acquires useful lower bounds when only short distance are queried
 (the greedy spanner does not have this issue because it knows the distance and hence does not need
@@ -889,7 +886,7 @@ which is a constant depending only of $\eps$ and $d$, irrespective of the length
 Since $p_1,\ldots,p_n$ decomposes into $O(\log n)$ such sequences in expectation, the result follows.
 \end{proof}
 
-We point out that the proof fails for $\eps=0$ because in that case, we cannot exlude an $\eps$-ball
+We point out that the proof fails for $\eps=0$ because in that case, we cannot exclude an $\eps$-ball
 of close-by points as in the second part of Lemma~\ref{lem:bound_lemma}, and the packing argument fails.
 Indeed, as the example in Figure~\ref{fig:exact_bad_example} shows, there are point sets where the expected number
 of distance computations for exact nearest neighbor is linear.
@@ -979,7 +976,7 @@ approaching 30000.
 
 %\paragraph{Notion of Dimensionality.}
 %%
-%Exansion constant, doubling dimension.
+%Expansion constant, doubling dimension.
 
 %\subsection{Cover trees}
 
@@ -1032,7 +1029,7 @@ approaching 30000.
 
 %Suppose that the pair $(a_1, b_1)$ with $a_1 \in A$, $b_1 \in B$ was processed and the edge $(a, b)$
 %was added to the spanner. Then from claim 1 we know that we already have a $t$-spanner on $A$ and $B$.
-%Consider another pair $(a_2, b_2)$. Let $G$ be the weighted graph we have immediately after the edge $(a_1, b_1)$ has been addedhttps://v2.overleaf.com/project/5bf6fa26032afa24d94383a5
+%Consider another pair $(a_2, b_2)$. Let $G$ be the weighted graph we have immediately after the edge $(a_1, b_1)$ has been added
 %to the spanner. By claim 1
 %$d_G(a_2, a_1) \leq td(a_2, a_1)$ and $d_G(b_1, b_2) \leq t d(b_1, b_2)$.
 %By properties of WSPD, $d_G(a_1, b_1) = d(a_1, b_1) \leq (1 + \frac{2}{s})d(a_2, b_2)$
@@ -1062,7 +1059,7 @@ that the metric space has a low doubling dimension.
 However, in our motivating example of collections of persistence diagrams
 or Reeb graphs, this assumption does not hold. For instance,
 the space of persistence diagrams has an infinite doubling dimension.
-Nevertheless, realisitic data sets are usually not just a random sample
+Nevertheless, realistic data sets are usually not just a random sample
 in that infinite-dimensional space, but have structures
 (e.g. clusters of close-by diagrams) which should be favorable for our approach
 We plan to consider the quality of our algorithms for persistence diagrams
@@ -1073,10 +1070,10 @@ for blind spanners yields a linear spanner in expectation.
 Our experiments are not conclusive enough in this respect to make this conjecture yet.
 However, it has been brought to our attention\footnote{Yusu Wang, personal communication}
 that the size of the blind spanner is bounded by the \emph{weight} of the WSPD
-which is the sum of the cardinalities of all pairs in a WSPD.
-The weight of a WSPD can be quadratic, but premilinary
+which is the sum of the  cardinalities of all pairs in a WSPD.
+The weight of a WSPD can be quadratic, but preliminary
 experimental evaluation on worst-case examples do not show such a quadratic
-behavior. Therefore, we postpone the theortical analysis of the spanner construction
+behavior. Therefore, we postpone the theoretical analysis of the spanner construction
 to an extended version of this article.
 
 The existence of a $2$-approximation algorithm did not help us to significantly
@@ -1084,35 +1081,10 @@ reduce the number of exact distance computations, although it seems obvious
 that knowing the all approximate distances is useful.
 We pose the question what heuristic could make more use of this feature.
 
-\ignore{
-We presented experimental evidence showing that in low
-doubling dimension we can avoid many distance computations,
-if we try to get as much information as possible from the triangle inequality
-applied to the previously computed distance. The \textsc{BlindGreedy} spanner
-performs especially well, being able to produce  sparse spanners even for small values of  $\eps$.
-For the approximate nearest neighbor algorithm we proved a logarithmic upper bound,
-and, even though the constant in the proof was very large, we demonstrated
-experimentally that this does not show in practice.
-
-The next step on the theoretical side could be proving some upper bound
-for blind spanners; it is also interesting to look at other metric space
-algorithms and data structures in the setting of expensive distance computation.
-On the more applied side, the further development of this approach would
-be to find finite spaces of low dimension in practically
-important cases, like spaces of persistence diagrams or images endowed with Wasserstein (a.k.a. Earth Movers)
-metric. We know that low-dimensional subspaces of functions do not necessarily produce
-low-dimensional spaces of persistence diagrams, but there may be some conditions
-which guarantee that dimension does not increase too much.
-% An easy example: consider a fixed function $f$ to which we apply
-% a finite-dimensional family of perturbations, $f(x) + g(x; \lambda_1, \dots, \lambda_n)$;
-% for instance, each $\lambda_i$ is associated with some $x_i$ and adds a Gaussian noise
-% scaled by $\lambda$.
-% If the perturbations are very small, then they will produce some small wiggles on the function,
-% and then the optimal matcih
-}
 
 \bibliography{bib}
 \bibliographystyle{plain}
 
 
 \end{document}
+
