@@ -467,8 +467,6 @@ We refer to the former option as \textsc{BlindQuasiSortedGreedy} and to the latt
 
 
 \section{Experiments on spanners}
-At the moment we cannot provide any theoretical guarantees for the heuristics that we propose to compute blind spanners,
-and it can happen that it will yield the complete graph as a spanner.
 We run experiments on the points sampled from the low-dimensional Euclidean space to investigate
 experimentally the performance of these heuristics. Clearly, this has no practical meaning for $\R^d$, but
 this space is well-suited for controlled experiments.
@@ -908,7 +906,7 @@ optimization: compute a $2$-approximation of $\dist(p_i,q)$ for all $1\leq i\leq
 and let $m$ denote the minimal approximate distance encountered. Then, we can discard all points
 whose approximate distance is larger than $2m$, and run the above algorithm on the remaining points.
 
-\subsection{Experiments on approximate nearest neighbors}
+\section{Experiments on approximate nearest neighbors}
 
 In order to experimentally evaluate the performance of our algorithm,
 we generate random point sets and random query points, and for each query point
