@@ -76,7 +76,7 @@ def save_normal_files(dim, n_points, scale, n_instance):
 if __name__ == "__main__":
 
 
-    if False:
+    if True:
         results = jl.Parallel(n_jobs=-1)(
             jl.delayed(save_unif_files)(dim, n_points, max_coord)
             for dim in [2]
@@ -87,7 +87,7 @@ if __name__ == "__main__":
             )
         sys.exit(0)
 
-    if True:
+    if False:
         results = jl.Parallel(n_jobs=-1)(
             jl.delayed(save_normal_files)(dim, n_points, scale, n_instance)
             for dim in [2, 3, 4, 5]

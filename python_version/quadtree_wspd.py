@@ -52,6 +52,7 @@ class QuadtreeNode:
         self.max_x = max_x
         self.max_y = max_y
         self.points = points
+        self.level = level
 
         mid_x = 0.5 * (min_x + max_x)
         mid_y = 0.5 * (min_y + max_y)
@@ -79,7 +80,7 @@ class QuadtreeNode:
                     p11.append(p)
 
         self.children = []
-
+   
         if p00:
             child00 = QuadtreeNode(min_x, min_y, mid_x, mid_y, level + 1, p00)
             self.children.append(child00)
@@ -122,9 +123,20 @@ class QuadtreeNode:
         return min([np.linalg.norm(p - q) for p in self.corner_points() for q in other_node.corner_points])
 
 
+    def size(self):
+        return len(self.points)
+
+
+    def print(self):
+        print(f"level = {self.level},  ({self.min_x}, {self.min_y}) - ({self.max_x}, {self.max_y}), {len(self.points)}")
+        for c in self.children:
+            c.print()
+
+
 class Quadtree:
     def __init__(self, points):
         self.root = QuadtreeNode(0.0, 0.0, 1.0, 1.0, 1, points)
+
 
 
 class WspdFromQuadtree:
@@ -157,6 +169,12 @@ class WspdFromQuadtree:
     def _dist_between_sets(self, node_1, node_2):
         global global_points
         return min([euclidean_dist_no_count(global_points[p],global_points[q]) for p in node_1.points for q in node_2.points])
+
+    def print_size(self):
+        for wspd_mem in self.wspd:
+            node_1 = wspd_mem[0]
+            node_2 = wspd_mem[1]
+            print("sizes {} {}".format(node_1.size(), node_2.size()))
 
     def check(self):
         # all pairs must be covered
@@ -196,12 +214,13 @@ def make_spanner(eps):
     global dist_matrix
     global dist_calls_matrix
     qt = Quadtree(range(len(global_points)))
+    qt.root.print()
     wspd = WspdFromQuadtree(eps, qt)
     return wspd
 
 
 if __name__ == "__main__":
-    n_points = 8000
+    n_points = 100
     n_pairs = int(n_points * (n_points - 1 ) / 2)
     np.random.seed(1)
     global_points = ue.get_uniform_points(n_points, dim=2, max_coord=1.0)
@@ -210,6 +229,7 @@ if __name__ == "__main__":
     # qt = Quadtree(range(len(global_points)))
     eps = 0.1
     wspd = make_spanner(eps)
+    # wspd.print_size()
     # wspd.check()
     print(len(wspd.wspd), n_pairs, len(wspd.wspd) / n_pairs)
 
