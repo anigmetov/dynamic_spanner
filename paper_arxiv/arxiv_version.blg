@@ -1,0 +1,49 @@
+This is BibTeX, Version 0.99d (TeX Live 2017/Debian)
+Capacity: max_strings=100000, hash_size=100000, hash_prime=85009
+The top-level auxiliary file: arxiv_version.aux
+The style file: plainnat.bst
+Database file #1: bib.bib
+Warning--there's a number but no series in hp-book
+Warning--empty booktitle in smid_2009
+You've used 17 entries,
+            2773 wiz_defined-function locations,
+            718 strings with 7912 characters,
+and the built_in function-call counts, 8388 in all, are:
+= -- 798
+> -- 427
+< -- 14
++ -- 145
+- -- 127
+* -- 698
+:= -- 1280
+add.period$ -- 71
+call.type$ -- 17
+change.case$ -- 92
+chr.to.int$ -- 16
+cite$ -- 36
+duplicate$ -- 385
+empty$ -- 695
+format.name$ -- 156
+if$ -- 1779
+int.to.chr$ -- 2
+int.to.str$ -- 1
+missing$ -- 18
+newline$ -- 108
+num.names$ -- 70
+pop$ -- 162
+preamble$ -- 1
+purify$ -- 76
+quote$ -- 0
+skip$ -- 278
+stack$ -- 0
+substring$ -- 358
+swap$ -- 45
+text.length$ -- 5
+text.prefix$ -- 0
+top$ -- 0
+type$ -- 182
+warning$ -- 2
+while$ -- 81
+width$ -- 0
+write$ -- 263
+(There were 2 warnings)

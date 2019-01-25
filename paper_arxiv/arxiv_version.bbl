@@ -1,0 +1,133 @@
+\begin{thebibliography}{17}
+\providecommand{\natexlab}[1]{#1}
+\providecommand{\url}[1]{\texttt{#1}}
+\expandafter\ifx\csname urlstyle\endcsname\relax
+  \providecommand{\doi}[1]{doi: #1}\else
+  \providecommand{\doi}{doi: \begingroup \urlstyle{rm}\Url}\fi
+
+\bibitem[Alth{\"o}fer et~al.(1993)Alth{\"o}fer, Das, Dobkin, Joseph, and
+  Soares]{althofer1993sparse}
+Ingo Alth{\"o}fer, Gautam Das, David Dobkin, Deborah Joseph, and Jos{\'e}
+  Soares.
+\newblock On sparse spanners of weighted graphs.
+\newblock \emph{Discrete \& Computational Geometry}, 9\penalty0 (1):\penalty0
+  81--100, 1993.
+
+\bibitem[Bauer et~al.(2014)Bauer, Ge, and Wang]{bauer2014measuring}
+Ulrich Bauer, Xiaoyin Ge, and Yusu Wang.
+\newblock Measuring distance between reeb graphs.
+\newblock In \emph{Proceedings of the thirtieth annual symposium on
+  Computational geometry}, page 464. ACM, 2014.
+
+\bibitem[Beygelzimer et~al.(2006)Beygelzimer, Kakade, and
+  Langford]{cover-trees}
+Alina Beygelzimer, Sham Kakade, and John Langford.
+\newblock Cover trees for nearest neighbor.
+\newblock In \emph{Proceedings of the 23rd International Conference on Machine
+  Learning}, ICML '06, pages 97--104, New York, NY, USA, 2006. ACM.
+\newblock ISBN 1-59593-383-2.
+\newblock \doi{10.1145/1143844.1143857}.
+\newblock URL \url{http://doi.acm.org/10.1145/1143844.1143857}.
+
+\bibitem[Biasotti et~al.(2008)Biasotti, Giorgi, Spagnuolo, and
+  Falcidieno]{reeb-survey}
+S.~Biasotti, D.~Giorgi, M.~Spagnuolo, and B.~Falcidieno.
+\newblock {R}eeb graphs for shape analysis and applications.
+\newblock \emph{Theoretical Computer Science}, 392\penalty0 (13):\penalty0 5 --
+  22, 2008.
+\newblock ISSN 0304-3975.
+\newblock \doi{http://dx.doi.org/10.1016/j.tcs.2007.10.018}.
+\newblock URL
+  \url{http://www.sciencedirect.com/science/article/pii/S0304397507007396}.
+\newblock Computational Algebraic Geometry and Applications.
+
+\bibitem[Callahan and Kosaraju(1995{\natexlab{a}})]{CK-decomposition}
+Paul~B. Callahan and S.~Rao Kosaraju.
+\newblock A decomposition of multidimensional point sets with applications to
+  k-nearest-neighbors and n-body potential fields.
+\newblock \emph{J. ACM}, 42\penalty0 (1):\penalty0 67--90, January
+  1995{\natexlab{a}}.
+\newblock ISSN 0004-5411.
+\newblock \doi{10.1145/200836.200853}.
+\newblock URL \url{http://doi.acm.org/10.1145/200836.200853}.
+
+\bibitem[Callahan and Kosaraju(1995{\natexlab{b}})]{cal-kos-wspd}
+Paul~B Callahan and S~Rao Kosaraju.
+\newblock A decomposition of multidimensional point sets with applications to
+  k-nearest-neighbors and n-body potential fields.
+\newblock \emph{Journal of the ACM (JACM)}, 42\penalty0 (1):\penalty0 67--90,
+  1995{\natexlab{b}}.
+
+\bibitem[Cohen-Steiner et~al.(2007)Cohen-Steiner, Edelsbrunner, and
+  Harer]{cohen2007stability}
+David Cohen-Steiner, Herbert Edelsbrunner, and John Harer.
+\newblock Stability of persistence diagrams.
+\newblock \emph{Discrete \& Computational Geometry}, 37\penalty0 (1):\penalty0
+  103--120, 2007.
+
+\bibitem[De~Silva et~al.(2016)De~Silva, Munch, and Patel]{de2016categorified}
+Vin De~Silva, Elizabeth Munch, and Amit Patel.
+\newblock Categorified reeb graphs.
+\newblock \emph{Discrete \& Computational Geometry}, 55\penalty0 (4):\penalty0
+  854--906, 2016.
+
+\bibitem[Di~Fabio and Landi(2016)]{di2016edit}
+Barbara Di~Fabio and Claudia Landi.
+\newblock The edit distance for reeb graphs of surfaces.
+\newblock \emph{Discrete \& Computational Geometry}, 55\penalty0 (2):\penalty0
+  423--461, 2016.
+
+\bibitem[Edelsbrunner et~al.(2002)Edelsbrunner, Letscher, and
+  Zomorodian]{elz-topological}
+H.~Edelsbrunner, D.~Letscher, and A.~Zomorodian.
+\newblock Topological persistence and simplification.
+\newblock \emph{Discrete \& Computational Geometry}, 28\penalty0 (4):\penalty0
+  511--533, 2002.
+\newblock ISSN 01795376.
+\newblock \doi{10.1007/s00454-002-2885-2}.
+
+\bibitem[Farshi and Gudmundsson(2009)]{farshi2009experimental}
+Mohammad Farshi and Joachim Gudmundsson.
+\newblock Experimental study of geometric t-spanners.
+\newblock \emph{Journal of Experimental Algorithmics (JEA)}, 14:\penalty0 3,
+  2009.
+
+\bibitem[Har-Peled and Mendel(2006)]{hm-fast}
+S.~Har-Peled and M.~Mendel.
+\newblock Fast construction of nets in low dimensional metrics and their
+  applications.
+\newblock \emph{{SIAM} Journal on Computing}, 35:\penalty0 1148--1184, 2006.
+
+\bibitem[Har-Peled(2011)]{hp-book}
+Sariel Har-Peled.
+\newblock \emph{Geometric approximation algorithms}.
+\newblock Number 173. American Mathematical Soc., 2011.
+
+\bibitem[Krauthgamer and Lee(2005)]{krauthgamer2005black}
+Robert Krauthgamer and James~R Lee.
+\newblock The black-box complexity of nearest-neighbor search.
+\newblock \emph{Theoretical Computer Science}, 348\penalty0 (2-3):\penalty0
+  262--276, 2005.
+
+\bibitem[Rubner et~al.(2000)Rubner, Tomasi, and Guibas]{rubner2000earth}
+Yossi Rubner, Carlo Tomasi, and Leonidas~J Guibas.
+\newblock The earth mover's distance as a metric for image retrieval.
+\newblock \emph{International journal of computer vision}, 40\penalty0
+  (2):\penalty0 99--121, 2000.
+
+\bibitem[Seidel(1993)]{seidel-backwards}
+Raimund Seidel.
+\newblock Backwards analysis of randomized geometric algorithms.
+\newblock In Janos Pach, editor, \emph{New Trends in Discrete and Computational
+  Geometry}. Springer, 1993.
+
+\bibitem[Smid(2009)]{smid_2009}
+Michiel Smid.
+\newblock Efficient algorithms.
+\newblock chapter The Weak Gap Property in Metric Spaces of Bounded Doubling
+  Dimension, pages 275--289. Springer-Verlag, Berlin, Heidelberg, 2009.
+\newblock ISBN 978-3-642-03455-8.
+\newblock \doi{10.1007/978-3-642-03456-5_19}.
+\newblock URL \url{http://dx.doi.org/10.1007/978-3-642-03456-5_19}.
+
+\end{thebibliography}

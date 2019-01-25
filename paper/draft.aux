@@ -17,6 +17,8 @@
 \gdef\HyperFirstAtBeginDocument#1{#1}
 \providecommand\HyField@AuxAddToFields[1]{}
 \providecommand\HyField@AuxAddToCoFields[2]{}
+\citation{elz-topological}
+\citation{reeb-survey}
 \citation{cohen2007stability}
 \citation{bauer2014measuring}
 \citation{de2016categorified}
@@ -61,32 +63,34 @@
 \newlabel{alg:ann_blind}{{0}{10}{Approximate nearest neighbors}{section.5}{}}
 \newlabel{thm:ann_bound}{{2}{10}{}{theorem.5.2}{}}
 \newlabel{lem:bound_lemma}{{3}{11}{}{theorem.5.3}{}}
-\newlabel{fig:ann_illustration}{{7}{11}{First two steps of the ANN algorithm. First $p_1$ is chosen as the current candidate, and we must compute $\dist (p_2, q)$. After that the algorithm will not compute distance to any of the points inside the heavily shaded ball or outside the lightly shaded ball that are centered at $p_2$, because their lower bounds allow us to discard them. Note that the point $p_5$, which is closer to $q$ than $p_1$, also will not be a candidate, and at least one of the points $p_6,p_7,p_8,p_9$ in the annulus between the dashed and solid circle, which are further from $q$ than $p_5$, will be chosen as $c$. This shows that in our algorithm the distance from the candidate to $q$ can drop \textit {slower} than in the bruteforce algorithm, thus Theorem \ref {thm:ann_bound} does not immediately follow from standard backwards analysis. The small black ball between the dashed circle and the solid circle has diameter $v_1 \eps / (1 + \eps )$; it is the ball that we use in the packing argument, because it is smaller than any of the lightly shaded balls that correspond to points like $p_2$ and $p_4$, that is, the points that do not improve $v$.\relax }{figure.caption.8}{}}
+\newlabel{fig:ann_illustration}{{7}{11}{First two steps of the ANN algorithm. First $p_1$ is chosen as the current candidate, and we must compute $\dist (p_2, q)$. After that the algorithm will not compute distance to any of the points inside the heavily shaded ball or outside the lightly shaded ball that are centered at $p_2$, because their lower bounds allow us to discard them. Note that the point $p_5$, which is closer to $q$ than $p_1$, also will not be a candidate, and at least one of the points $p_6,p_7,p_8,p_9$ in the annulus between the dashed and solid circle, which are further from $q$ than $p_5$, will be chosen as $c$. This shows that in our algorithm the distance from the candidate to $q$ can drop \textit {slower} than in the bruteforce algorithm, thus Theorem \ref {thm:ann_bound} does not immediately follow from standard backwards analysis. The small black ball between the dashed circle and the solid circle has radius $v_1 \eps / (1 + \eps )$; it is the ball that we use in the packing argument, because it is smaller than any of the lightly shaded balls that correspond to points like $p_2$ and $p_4$, that is, the points that do not improve $v$.\relax }{figure.caption.8}{}}
 \citation{seidel-backwards}
 \newlabel{lem:sequence_lemma}{{4}{12}{}{theorem.5.4}{}}
 \newlabel{fig:exact_bad_example}{{8}{12}{Example of point set where exact nearest neighbor search cannot be accelerated by maintaining bounds. The exact nearest neighbor is the point $p_1$, next point $p_i$ is placed in the curvilinear triange formed by the balls around the query point, $p_2$ and $p_{i-1}$. Even verifying that $p_1$ is the true nearest neighbor cannot be done without computing all distances $\dist (p_i,q)$. Indeed, every computed $\dist (p_i,q)$ allows to exclude the region in the corresponding ball around $p_i$, but all these balls contain only one $p_i$.\relax }{figure.caption.9}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {5.1}Experiments on approximate nearest neighbors}{13}{subsection.5.1}}
+\@writefile{toc}{\contentsline {section}{\numberline {6}Experiments on approximate nearest neighbors}{13}{section.6}}
 \bibdata{bib}
 \newlabel{fig:ann_const_ratio}{{9}{14}{Ratio $\log (\mbox {computed distances}) / n$ for ANN algorithm. Data is for uniformly distributed points.\relax }{figure.caption.10}{}}
-\@writefile{toc}{\contentsline {section}{\numberline {6}Conclusion and future work}{14}{section.6}}
-\newlabel{sec:conclusion}{{6}{14}{Conclusion and future work}{section.6}{}}
-\setcounter {socglastlinecounter}{453}
+\@writefile{toc}{\contentsline {section}{\numberline {7}Conclusion and future work}{14}{section.7}}
+\newlabel{sec:conclusion}{{7}{14}{Conclusion and future work}{section.7}{}}
+\setcounter {socglastlinecounter}{456}
 \bibcite{althofer1993sparse}{1}
 \bibcite{bauer2014measuring}{2}
 \bibcite{cover-trees}{3}
-\bibcite{CK-decomposition}{4}
-\bibcite{cal-kos-wspd}{5}
-\bibcite{cohen2007stability}{6}
-\bibcite{de2016categorified}{7}
-\bibcite{di2016edit}{8}
-\bibcite{farshi2009experimental}{9}
-\bibcite{hm-fast}{10}
-\bibcite{hp-book}{11}
-\bibcite{krauthgamer2005black}{12}
-\bibcite{rubner2000earth}{13}
-\bibcite{seidel-backwards}{14}
+\bibcite{reeb-survey}{4}
+\bibcite{CK-decomposition}{5}
+\bibcite{cal-kos-wspd}{6}
+\bibcite{cohen2007stability}{7}
+\bibcite{de2016categorified}{8}
+\bibcite{di2016edit}{9}
+\bibcite{elz-topological}{10}
+\bibcite{farshi2009experimental}{11}
+\bibcite{hm-fast}{12}
+\bibcite{hp-book}{13}
+\bibcite{krauthgamer2005black}{14}
 \newlabel{fig:ann_dimension_dependence}{{10}{15}{Number of computed distances for different dimensions. Points are chosen uniformly, $\eps = 0.01$.\relax }{figure.caption.11}{}}
-\bibcite{smid_2009}{15}
+\bibcite{rubner2000earth}{15}
+\bibcite{seidel-backwards}{16}
+\bibcite{smid_2009}{17}
 \bibstyle{plain}
 \newlabel{LastPage}{{}{16}{}{page.16}{}}
 \xdef\lastpage@lastpage{16}

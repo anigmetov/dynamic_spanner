@@ -28,6 +28,14 @@ wasserstein/build/
 *.dll
 *.lib
 *.exe
+*.blg
+*.fls
+*.out
+*.aux
+*.zip
+*.tgz
+*.tar
+*.bak
 makeout
 tags
 .idea/
@@ -35,3 +43,7 @@ build/
 input_files/
 cmake-build-debug/
 cmake-build-release/
+python_version/*.txt
+build_*/
+killme/
+python_version/old_points/

@@ -1,7 +1,7 @@
-\documentclass[a4paper,USenglish]{socg-lipics-v2018}
-%\documentclass[a4paper,USenglish]{article}
+%\documentclass[a4paper,USenglish]{socg-lipics-v2018}
+\documentclass[a4paper,USenglish]{article}
 
-%\usepackage{arxiv}
+\usepackage{arxiv}
 
 \usepackage{amsthm}
 \usepackage{amsmath}
@@ -81,16 +81,42 @@
 \def\michael#1{\textcolor{red}{\textsc{Michael says: }{\marrow\sf #1}}}
 
 \title{Metric Spaces with Expensive Distances}
-\author{Michael Kerber}{TU Graz}{kerber@tugraz.at}{https://orcid.org/0000-0002-8030-9299}{Supported by Austrian Science Fund (FWF) grant number P 29984-N35}
-\author{Arnur Nigmetov}{TU Graz}{nigmetov@tugraz.at}{}{}
-\authorrunning{M. Kerber and A. Nigmetov}
+% uncomment for LIPICS 
+%\author{Michael Kerber}{TU Graz}{kerber@tugraz.at}{https://orcid.org/0000-0002-8030-9299}{Supported by Austrian Science Fund (FWF) grant number P 29984-N35}
+%\author{Arnur Nigmetov}{TU Graz}{nigmetov@tugraz.at}{}{}
+%\authorrunning{M. Kerber and A. Nigmetov}
 
-\keywords{metric spaces, doubling dimension, spanners, approximate nearest neighbor}
-%\subjclass{\ccsdesc[500]{Theory of computation~Nearest neighbor algorithms}}
-\subjclass{\ccsdesc[500]{Theory of computation~Random search heuristics}}
-% \category{dummy}
+%\keywords{metric spaces, doubling dimension, spanners, approximate nearest neighbor}
+%%\subjclass{\ccsdesc[500]{Theory of computation~Nearest neighbor algorithms}}
+%\subjclass{\ccsdesc[500]{Theory of computation~Random search heuristics}}
+%% \category{dummy}
 
-\Copyright{Michael Kerber and Arnur Nigmetov}
+%\Copyright{Michael Kerber and Arnur Nigmetov}
+% END uncomment for LIPICS
+
+% uncomment for Arxiv
+\author{Michael Kerber\\
+Graz University of Technology\\
+Institut fuer Geometrie\\
+Kopernikusgasse 24\\
+8010 Graz\\
+Austria\\
+kerber@tugraz.at\\
+Supported by Austrian Science Fund (FWF) grant number P 29984-N35
+\And
+
+Arnur Nigmetov
+Graz University of Technology\\
+Institut fuer Geometrie\\
+Kopernikusgasse 24\\
+8010 Graz\\
+Austria\\
+nigmetov@tugraz.at}
+
+%\keywords{metric spaces, doubling dimension, spanners, approximate nearest neighbor}
+
+% END uncomment for arxiv
+
 
 \begin{document}
 \maketitle
@@ -121,6 +147,11 @@ For approximate nearest neighbors, we prove that our
 strategy returns an approximate nearest neighbor
 after a logarithmic number of distance queries.
 \end{abstract}
+
+% uncomment for Arxiv
+\keywords{metric spaces, doubling dimension, spanners, approximate nearest neighbor}
+% END uncomment for Arxiv
+
 
 
 \section{Introduction}
@@ -889,7 +920,7 @@ the distance of $p_j$ to $q$.
 \draw (3.51,0.63)-- (6.12,3.39);
 \draw (8.52,0.98)-- (3.51,0.63);
 \draw (8.52,0.98)-- (14.89,-3.85);
-\draw (11.88,-1) node[anchor=north west] {$r_2 +r_1 / ( 1 + \eps$};
+\draw (11.88,-1) node[anchor=north west] {$r_2 +r_1 / ( 1 + \eps)$};
 \begin{scriptsize}
 \fill [color=qqqqff] (3.51,0.63) circle (1.5pt);
 \draw[color=qqqqff] (3.71,0.94) node {$q$};
