@@ -138,6 +138,68 @@ bool read_distance_matrix(MatrixR& distance_matrix, double& max_distance, double
     return true;
 }
 
+bool read_distance_matrix_mcgill(MatrixR& distance_matrix, double& max_distance, double& min_distance, const std::string& fname, std::vector<int>::size_type n_samples)
+{
+    std::ifstream matr_file(fname);
+    if (not matr_file.good()) {
+        std::cerr << "Cannot read matrix from file " << fname << std::endl;
+        return false;
+    }
+
+    int n_points;
+
+    matr_file >> n_points;
+
+    distance_matrix = MatrixR(n_points, std::vector<double>(n_points, 0.0));
+
+    for (size_t i = 0; i < n_points; ++i) {
+        for (size_t j = 0; j < n_points; ++j) {
+            matr_file >> distance_matrix[i][j];
+        }
+    }
+
+    for (size_t i = 0; i < n_points; ++i) {
+        for (size_t j = i; j < n_points; ++j) {
+            if (i == j)
+                assert(distance_matrix[i][j] == 0.0);
+            else
+                assert(distance_matrix[i][j] == distance_matrix[j][i]);
+        }
+    }
+
+    if (n_samples == 0)
+        n_samples = n_points;
+
+    std::vector<size_t> indices(n_points);
+    std::iota(indices.begin(), indices.end(), 0);
+    std::random_device rd;
+    std::mt19937_64 twister(rd());
+    std::shuffle(indices.begin(), indices.end(), twister);
+
+    indices.resize(n_samples);
+
+    min_distance = std::numeric_limits<double>::max();
+    max_distance = -1.0;
+
+    assert(0.0 < min_distance and min_distance <= max_distance);
+
+    MatrixR distance_matrix_final {n_samples, std::vector<double>(n_samples, 0.0)};
+    for(size_t i = 0; i < n_samples; ++i) {
+        for(size_t j = 0; j < n_samples; ++j) {
+            distance_matrix_final[i][j] = distance_matrix[indices[i]][indices[j]];
+            max_distance = std::max(distance_matrix_final[i][j], max_distance);
+            if (i != j) {
+                min_distance = std::min(distance_matrix_final[i][j], min_distance);
+            }
+        }
+    }
+
+    distance_matrix = distance_matrix_final;
+
+    return true;
+}
+
+
 bool read_distance_matrix_and_queries(MatrixR& distance_matrix, MatrixR& queries, double& max_distance, double& min_distance, const std::string& fname)
 {
     using Real = std::remove_reference<decltype(min_distance)>::type;
@@ -271,7 +333,7 @@ int main(int argc, char** argv)
 
     if (argc < 4) {
         std::cout << "Usage: " << argv[0]
-                  << " input_name epsilon is_point [logname]"
+                  << " input_name epsilon is_point [n_samples] [logname]"
                   << std::endl;
         return 0;
     }
@@ -286,14 +348,18 @@ int main(int argc, char** argv)
     std::string is_input_dm = argv[arg_idx++];
     bool is_input_dist_matrix = is_input_dm == "y" or is_input_dm == "Y" or is_input_dm == "d" or is_input_dm == "D";
 
-    std::string log_name  = (argc > 4) ? argv[arg_idx++] : "experiment_log.txt";
-    console->info("log_name = {}, epsilon = {}", log_name, eps);
+    std::vector<int>::size_type n_samples = (argc > arg_idx) ? atoi(argv[arg_idx++]) : 0;
+
+    std::string log_name  = (argc > arg_idx) ? argv[arg_idx++] : "experiment_log.txt";
+    console->info("log_name = {}, epsilon = {}, n_samples = {}", log_name, eps, n_samples);
     auto exp_logger = spd::basic_logger_st("experiment_logger", log_name);
     exp_logger->set_pattern("%v");
 
     if (is_input_dist_matrix) {
-        read_distance_matrix(dist_matrix, max_dist, min_dist, dist_name);
+        console->info("Reading distance matrix");
+        read_distance_matrix_mcgill(dist_matrix, max_dist, min_dist, dist_name, n_samples);
     } else {
+        console->info("Reading points");
         read_points_file(dist_matrix, max_dist, min_dist, dist_name);
     }
 
