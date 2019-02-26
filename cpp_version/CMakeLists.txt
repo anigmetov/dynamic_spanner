@@ -4,9 +4,9 @@ cmake_minimum_required      (VERSION 3.5.1)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 include (GenerateExportHeader)
-find_package(Armadillo REQUIRED)
+#find_package(Armadillo REQUIRED)
 find_package(OpenMP REQUIRED)
-find_package(Boost COMPONENTS system filesystem REQUIRED)
+find_package(Boost REQUIRED)
 
 # Default to Release
 
@@ -18,7 +18,7 @@ endif                       (NOT CMAKE_BUILD_TYPE)
 include_directories         (${CMAKE_CURRENT_SOURCE_DIR}/include
                              ${CMAKE_CURRENT_SOURCE_DIR}/include/cover_tree
                              ${CMAKE_CURRENT_SOURCE_DIR}/include/wasserstein
-                             ${ARMADILLO_INCLUDE_DIR}
+                             #${ARMADILLO_INCLUDE_DIR}
                              SYSTEM ${Boost_INCLUDE_DIR})
 
 set(CMAKE_CXX_STANDARD 14)
