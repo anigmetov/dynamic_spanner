@@ -167,8 +167,6 @@ class NearestNeighborFinder:
 
 
 def run_experiment_ann(n_points, fname, epsilon, n_attempts):
-    np.random.seed(1)
-    random.seed(1)
     # print("reading file ", fname, "\n")
     dist_matrix, n_total_points = read_mcgill_matrix(fname)
     # print(f"n_total_points = {n_total_points}\n")
@@ -185,14 +183,14 @@ def run_experiment_ann(n_points, fname, epsilon, n_attempts):
         for t in range(n_attempts):
             nearest_neighbor = ann_finder.find_ann(query, epsilon)
             if not ann_finder.check_nearest_neighbor(nearest_neighbor, epsilon):
-                print(f"ACHTUNG! ERROR! j = {j}, {fname};{n_points};{np.min(computed_distance_fractions)};{np.max(computed_distance_fractions)}")
+                print("ACHTUNG! ERROR! j = {j}, {fname};{n_points};{np.min(computed_distance_fractions)};{np.max(computed_distance_fractions)}".format(**locals()))
             computed_distance_fractions[n_attempts * j + t] = ann_finder.fraction_of_distances_computed()
             computed_distances[n_attempts * j + t] = ann_finder.number_of_computed_distances()
 
-    s1 = f"{fname};{epsilon};{n_points};"
-    s2 = f"{np.min(computed_distance_fractions)};{np.max(computed_distance_fractions)};{np.average(computed_distance_fractions)};"
-    s3 = f"{np.min(computed_distances)};{np.max(computed_distances)};{np.average(computed_distances)}"
-    print(f"{s1}{s2}{s3}")
+    s1 = "{fname};{epsilon};{n_points};".format(**locals())
+    s2 = "{};{};{};".format(np.min(computed_distance_fractions), np.max(computed_distance_fractions), np.average(computed_distance_fractions))
+    s3 = "{};{};{}".format(np.min(computed_distances), np.max(computed_distances), np.average(computed_distances))
+    print("{s1}{s2}{s3}".format(**locals()))
     sys.stdout.flush()
     return (n_points, fname, epsilon,
             np.min(computed_distance_fractions), np.max(computed_distance_fractions),
@@ -202,17 +200,19 @@ def run_experiment_ann(n_points, fname, epsilon, n_attempts):
 
 if __name__ == "__main__":
     np.random.seed(1)
-    n_pointses = [100]
-    # dims = [0, 1, 2]
-    dims = [0]
-    # qs = [1, 2, 3]
-    qs = [1]
+    n_pointses = [ i for i in range(100, 4000, 200)]
+    dims = [0, 1, 2]
+    qs = [1, 2, 3, 4]
     fnames = ["dist_matrix_q_{}_dim_{}.txt".format(q, dim) for q in qs for dim in dims]
-    # epsilons = [0.0001, 0.0005, 0.001, 0.005, 0.01, 0.1, 0.5]
-    epsilons = [0.1]
-    n_attempts = 5
+    epsilons = [0.0001, 0.0005, 0.001, 0.005, 0.01, 0.1, 0.5]
+    n_attempts = 20
+    # n_pointses = [ 100 ]
+    # dims = [0]
+    # qs = [1]
+    # epsilons = [0.1]
+    # n_attempts = 2
 
-    results_ann = jl.Parallel(n_jobs=-1)(
+    results_ann = jl.Parallel(n_jobs=8)(
         jl.delayed(run_experiment_ann)(n_points, fname, eps, n_attempts)
         for n_points in n_pointses
         for fname in fnames
