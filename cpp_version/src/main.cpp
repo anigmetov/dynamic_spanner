@@ -181,8 +181,6 @@ bool read_distance_matrix_mcgill(MatrixR& distance_matrix, double& max_distance,
     min_distance = std::numeric_limits<double>::max();
     max_distance = -1.0;
 
-    assert(0.0 < min_distance and min_distance <= max_distance);
-
     MatrixR distance_matrix_final {n_samples, std::vector<double>(n_samples, 0.0)};
     for(size_t i = 0; i < n_samples; ++i) {
         for(size_t j = 0; j < n_samples; ++j) {
@@ -193,6 +191,8 @@ bool read_distance_matrix_mcgill(MatrixR& distance_matrix, double& max_distance,
             }
         }
     }
+
+    assert(0.0 < min_distance and min_distance <= max_distance);
 
     distance_matrix = distance_matrix_final;
 
