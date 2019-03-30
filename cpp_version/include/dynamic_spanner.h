@@ -8,6 +8,7 @@
 #include <algorithm>
 #include <math.h>
 #include <random>
+#include <ostream>
 
 #include <cassert>
 
@@ -17,16 +18,10 @@ namespace spd = spdlog;
 
 constexpr int INVALID_ID = -1;
 
-template<class Real_ = double>
-class DynamicSpanner {
 
-public:
 
-    using Real = Real_;
-
-protected:
-
-    struct Pair_of_points_info {
+template<class Real>
+struct Pair_of_points_info {
 
       Real distance;
       bool distance_requested;
@@ -43,12 +38,34 @@ protected:
           exact_distance_used = false;
           upper_bound = std::numeric_limits<Real>::max();
           lower_bound = 0.0;
+
+
       }
+
     };
+
+
+template<class R>
+std::ostream& operator<<(std::ostream& os, const Pair_of_points_info<R>& x)
+{
+  os << "(d = " << x.distance << ", exact_distance_used = " << x.exact_distance_used;
+  os << ", low = " << x.lower_bound << ", upp = " << x.upper_bound << ")";
+  return os;
+}
+
+template<class Real_ = double>
+class DynamicSpanner {
 
 public:
 
-    using Matrix = std::vector<std::vector<Pair_of_points_info>>;
+    using Real = Real_;
+
+//protected:
+
+
+public:
+
+    using Matrix = std::vector<std::vector<Pair_of_points_info<Real>>>;
 
     using MatrixReal = typename std::vector<std::vector<Real>>;
 
@@ -77,7 +94,7 @@ public:
             m_matrix[i].resize(m_num_points);
 
             for (size_t j = 0; j < m_num_points; j++) {
-                m_matrix[i][j] = Pair_of_points_info(distance_matrix[i][j]);
+                m_matrix[i][j] = Pair_of_points_info<Real>(distance_matrix[i][j]);
             }
         }
 
@@ -200,8 +217,8 @@ public:
             }
         }
 
-        Pair_of_points_info& info = m_matrix[i][j];
-        Pair_of_points_info& info_mirror = m_matrix[j][i];
+        Pair_of_points_info<Real>& info = m_matrix[i][j];
+        Pair_of_points_info<Real>& info_mirror = m_matrix[j][i];
 
         info.distance_requested = true;
         info_mirror.distance_requested = true;
@@ -239,13 +256,13 @@ public:
         if (dist_ij == -1.0)
             dist_ij = m_matrix[i][j].distance;
 
-#pragma omp parallel
+//#pragma omp parallel
         {
-#pragma omp for schedule(dynamic)
+//#pragma omp for schedule(dynamic)
             for (size_t x = 0; x < m_num_points; x++) {
                 for (size_t y = x + 1; y < m_num_points; y++) {
-                    Pair_of_points_info& info_xy = m_matrix[x][y];
-                    Pair_of_points_info& info_yx = m_matrix[y][x];
+                    Pair_of_points_info<Real>& info_xy = m_matrix[x][y];
+                    Pair_of_points_info<Real>& info_yx = m_matrix[y][x];
                     if (info_xy.exact_distance_used) {
                         continue;
                     }
@@ -270,17 +287,22 @@ public:
                     }
                     Real new_upper_bound = std::min(new_upper_bound_1, new_upper_bound_2);
 
+                    if (new_upper_bound < info_xy.distance) {
+                        std::cerr << "ERROR HERE: " << "i = " << i << ", j = " << j << ", dist_ij = " << dist_ij << ", x = " << x << ", y = " << y << ", " << info_xy << ", new_ub_1  = " << new_upper_bound_1 << ", new ub2 = " << new_upper_bound_2 << std::endl;
+                        throw std::runtime_error("bad upper bound");
+                    }
+
                     info_xy.upper_bound = std::min(info_xy.upper_bound, new_upper_bound);
                     info_yx.upper_bound = info_xy.upper_bound;
                 }
             }
         }
 
-#pragma omp for schedule(dynamic)
+//#pragma omp for schedule(dynamic)
         for (size_t x = 0; x < m_num_points; x++) {
             for (size_t y = x + 1; y < m_num_points; y++) {
-                Pair_of_points_info& info_xy = m_matrix[x][y];
-                Pair_of_points_info& info_yx = m_matrix[y][x];
+                Pair_of_points_info<Real>& info_xy = m_matrix[x][y];
+                Pair_of_points_info<Real>& info_yx = m_matrix[y][x];
                 if (info_xy.exact_distance_used) {
                     continue;
                 }
@@ -307,19 +329,24 @@ public:
                 }
                 Real new_lower_bound = std::max(new_lower_bound_1, new_lower_bound_2);
 
+                if (new_lower_bound > info_xy.distance) {
+                    std::cerr << "ERROR HERE: " << "x = " << x << ", y = " << y << ", " << info_xy << ", new_lb_1  = " << new_lower_bound_1 << ", new_lb2 = " << new_lower_bound_2 << std::endl;
+                    throw std::runtime_error("bad lower bound");
+                }
+
                 info_xy.lower_bound = std::max(info_xy.lower_bound, new_lower_bound);
                 info_yx.lower_bound = info_xy.lower_bound;
             }
         }
 
 #if 1
-#pragma omp parallel
+//#pragma omp parallel
         {
-#pragma omp for schedule(dynamic)
+//#pragma omp for schedule(dynamic)
             for (size_t x = 0; x < m_num_points; x++) {
                 for (size_t y = x + 1; y < m_num_points; y++) {
-                    Pair_of_points_info& info_xy = m_matrix[x][y];
-                    Pair_of_points_info& info_yx = m_matrix[y][x];
+                    Pair_of_points_info<Real>& info_xy = m_matrix[x][y];
+                    Pair_of_points_info<Real>& info_yx = m_matrix[y][x];
                     if (info_xy.exact_distance_used) {
                         continue;
                     }
@@ -368,26 +395,33 @@ public:
                     Real new_lower_bound = std::max(std::max(new_lower_bound_1, new_lower_bound_2),
                             std::max(new_lower_bound_3, new_lower_bound_4));
 
+
+                    if (new_lower_bound > info_xy.distance) {
+                        std::cerr << "ERROR HERE: " << "x = " << x << ", y = " << y << ", " << info_xy << ", new_lb_1  = " << new_lower_bound_1 << ", new_lb2 = " << new_lower_bound_2 << ", new lb 3 = " << new_lower_bound_3 << ", new_lb_4 = " << new_lower_bound_4 << std::endl;
+                        throw std::runtime_error("bad lower bound");
+                    }
+
                     info_xy.lower_bound = std::max(info_xy.lower_bound, new_lower_bound);
                     info_yx.lower_bound = info_xy.lower_bound;
                 }
+
             }
         }
 
 #endif
 
-#if DEBUG
+//#if DEBUG
         for(size_t x=0;x<m_num_points;x++) {
             for(size_t y=0;y<m_num_points;y++) {
-                Pair_of_points_info& info_xy = m_matrix[x][y];
-                Pair_of_points_info& info_yx = m_matrix[y][x];
+                Pair_of_points_info<Real>& info_xy = m_matrix[x][y];
+                Pair_of_points_info<Real>& info_yx = m_matrix[y][x];
                 assert(info_xy.upper_bound>=info_xy.distance);
                 assert(info_xy.lower_bound<=info_xy.distance);
                 assert(info_xy.upper_bound==info_yx.upper_bound);
                 assert(info_xy.lower_bound==info_yx.lower_bound);
             }
         }
-#endif
+//#endif
 
     }
 
@@ -399,8 +433,8 @@ public:
     Real get_distance(VertexDescriptor i, VertexDescriptor j)
     {
         //console->debug("get_distance called for {} {}", i, j);
-        Pair_of_points_info& info = m_matrix[i][j];
-        Pair_of_points_info& info_mirror = m_matrix[j][i];
+        Pair_of_points_info<Real>& info = m_matrix[i][j];
+        Pair_of_points_info<Real>& info_mirror = m_matrix[j][i];
         info.distance_requested = true;
         info_mirror.distance_requested = true;
         info.exact_distance_used = true;
@@ -521,6 +555,30 @@ public:
         return true;
     }
 
+    void check_ratio(double _eps)
+    {
+        int n_used = 0;
+        for (size_t i = 0; i<m_num_points; i++) {
+            for (size_t j = i+1; j<m_num_points; j++) {
+                Real true_dist = m_matrix[i][j].distance;
+                n_used += m_matrix[i][j].distance_requested;
+                Real low = m_matrix[i][j].lower_bound;
+                Real upp = m_matrix[i][j].upper_bound;
+                Real approx_dist = upp;
+                if ( fabs(true_dist - approx_dist) / true_dist > _eps) {
+                    std::cerr << "ERROR -1 : " << i << ", " << j << " , low = " << low << ", true = " << true_dist << ", upp = " << upp << std::endl;
+                    throw std::runtime_error("Bad spanner - bad ratio");
+                }
+
+                if (low >true_dist || upp < true_dist) {
+                    std::cerr << "ERROR - 2: " << i << ", " << j << " , low = " << low << ", true = " << true_dist << ", upp = " << upp << std::endl;
+                    throw std::runtime_error("Bad spanner - bad bounds");
+                }
+            }
+        }
+        std::cout << "CHECKED SPANNER, n_used = " << n_used << std::endl;
+    }
+
     void find_worst_ratio(size_t& x, size_t& y, double& ratio)
     {
         std::vector<std::pair<size_t, size_t>> candidates;
@@ -553,7 +611,7 @@ public:
         x = candidates.begin()->first;
         y = candidates.begin()->second;
         ratio = result;
-        //std::cout << "Worst ratio at " << x << ", " << y << ": " << m_matrix[x][y].lower_bound << " " << m_matrix[x][y].upper_bound << std::endl;
+//        std::cout << "Worst ratio at " << x << ", " << y << ": " << m_matrix[x][y].lower_bound << " " << m_matrix[x][y].upper_bound << std::endl;
     }
 
     double find_worst_ratio()
@@ -752,7 +810,7 @@ public:
         //std::random_shuffle(vec.begin(),vec.end());
 
         for (size_t k = 0; k < vec.size(); k++) {
-            Pair_of_points_info& info = m_matrix[vec[k].i][vec[k].j];
+            Pair_of_points_info<Real>& info = m_matrix[vec[k].i][vec[k].j];
 
             //std::cout << "New pair " << vec[k].i << " " << vec[k].j << " with dist " << info.distance << " bounds: " << info.lower_bound << " " << info.upper_bound << " ratio: " << info.upper_bound / info.distance << std::endl;
 
@@ -785,6 +843,7 @@ public:
     }
 
 };
+
 
 #endif // WASSERSTEIN_SPACE_POINT_H
 

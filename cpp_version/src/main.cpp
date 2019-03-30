@@ -172,11 +172,11 @@ bool read_distance_matrix_mcgill(MatrixR& distance_matrix, double& max_distance,
 
     std::vector<size_t> indices(n_points);
     std::iota(indices.begin(), indices.end(), 0);
-    std::random_device rd;
-    std::mt19937_64 twister(rd());
-    std::shuffle(indices.begin(), indices.end(), twister);
+//    std::random_device rd;
+//    std::mt19937_64 twister(rd());
+//    std::shuffle(indices.begin(), indices.end(), twister);
 
-    indices.resize(n_samples);
+//    indices.resize(n_samples);
 
     min_distance = std::numeric_limits<double>::max();
     max_distance = -1.0;
@@ -463,52 +463,53 @@ int main(int argc, char** argv)
         exp_logger->info("{};{}", dist_name, greedy_spanner.get_statistics());
         console->flush();
         exp_logger->flush();
+        greedy_spanner.check_ratio(eps);
     }
 
-    {
-        DynamicSpannerR quasi_greedy_spanner(dist_matrix);
-        quasi_greedy_spanner.construct_blind_quasi_sorted_greedy_eps_spanner(eps);
-        console->info("{};{}", dist_name, quasi_greedy_spanner.get_statistics());
-        exp_logger->info("{};{}", dist_name, quasi_greedy_spanner.get_statistics());
-    }
-
-    {
-        DynamicSpannerR quasi_shaker_spanner(dist_matrix);
-        quasi_shaker_spanner.construct_blind_quasi_sorted_shaker_eps_spanner(eps);
-        exp_logger->info("{};{}", dist_name, quasi_shaker_spanner.get_statistics());
-    }
-
-    {
-        DynamicSpannerR blind_random_spanner_1_1(dist_matrix);
-        blind_random_spanner_1_1.construct_blind_random_ratio_eps_spanner(true, true, eps);
-        console->info("{};{}", dist_name, blind_random_spanner_1_1.get_statistics());
-        exp_logger->info("{};{}", dist_name, blind_random_spanner_1_1.get_statistics());
-        console->flush();
-        exp_logger->flush();
-    }
-
-    {
-        DynamicSpannerR blind_random_spanner_0_0(dist_matrix);
-        blind_random_spanner_0_0.construct_blind_random_ratio_eps_spanner(false, false, eps);
-        console->info("{};{}", dist_name, blind_random_spanner_0_0.get_statistics());
-        exp_logger->info("{};{}", dist_name, blind_random_spanner_0_0.get_statistics());
-        console->flush();
-        exp_logger->flush();
-    }
-
-    {
-        DynamicSpannerR blind_random_spanner_1_0(dist_matrix);
-        blind_random_spanner_1_0.construct_blind_random_ratio_eps_spanner(true, false, eps);
-        console->info("{};{}", dist_name, blind_random_spanner_1_0.get_statistics());
-        exp_logger->info("{};{}", dist_name, blind_random_spanner_1_0.get_statistics());
-    }
-
-    {
-        DynamicSpannerR blind_random_spanner_0_1(dist_matrix);
-        blind_random_spanner_0_1.construct_blind_random_ratio_eps_spanner(false, true, eps);
-        console->info("{};{}", dist_name, blind_random_spanner_0_1.get_statistics());
-        exp_logger->info("{};{}", dist_name, blind_random_spanner_0_1.get_statistics());
-    }
+//    {
+//        DynamicSpannerR quasi_greedy_spanner(dist_matrix);
+//        quasi_greedy_spanner.construct_blind_quasi_sorted_greedy_eps_spanner(eps);
+//        console->info("{};{}", dist_name, quasi_greedy_spanner.get_statistics());
+//        exp_logger->info("{};{}", dist_name, quasi_greedy_spanner.get_statistics());
+//    }
+//
+//    {
+//        DynamicSpannerR quasi_shaker_spanner(dist_matrix);
+//        quasi_shaker_spanner.construct_blind_quasi_sorted_shaker_eps_spanner(eps);
+//        exp_logger->info("{};{}", dist_name, quasi_shaker_spanner.get_statistics());
+//    }
+//
+//    {
+//        DynamicSpannerR blind_random_spanner_1_1(dist_matrix);
+//        blind_random_spanner_1_1.construct_blind_random_ratio_eps_spanner(true, true, eps);
+//        console->info("{};{}", dist_name, blind_random_spanner_1_1.get_statistics());
+//        exp_logger->info("{};{}", dist_name, blind_random_spanner_1_1.get_statistics());
+//        console->flush();
+//        exp_logger->flush();
+//    }
+//
+//    {
+//        DynamicSpannerR blind_random_spanner_0_0(dist_matrix);
+//        blind_random_spanner_0_0.construct_blind_random_ratio_eps_spanner(false, false, eps);
+//        console->info("{};{}", dist_name, blind_random_spanner_0_0.get_statistics());
+//        exp_logger->info("{};{}", dist_name, blind_random_spanner_0_0.get_statistics());
+//        console->flush();
+//        exp_logger->flush();
+//    }
+//
+//    {
+//        DynamicSpannerR blind_random_spanner_1_0(dist_matrix);
+//        blind_random_spanner_1_0.construct_blind_random_ratio_eps_spanner(true, false, eps);
+//        console->info("{};{}", dist_name, blind_random_spanner_1_0.get_statistics());
+//        exp_logger->info("{};{}", dist_name, blind_random_spanner_1_0.get_statistics());
+//    }
+//
+//    {
+//        DynamicSpannerR blind_random_spanner_0_1(dist_matrix);
+//        blind_random_spanner_0_1.construct_blind_random_ratio_eps_spanner(false, true, eps);
+//        console->info("{};{}", dist_name, blind_random_spanner_0_1.get_statistics());
+//        exp_logger->info("{};{}", dist_name, blind_random_spanner_0_1.get_statistics());
+//    }
 
     {
         DynamicSpannerR blind_greedy_spanner(dist_matrix);
@@ -516,15 +517,17 @@ int main(int argc, char** argv)
         console->info("{};{}", dist_name, blind_greedy_spanner.get_statistics());
         exp_logger->info("{};{}", dist_name, blind_greedy_spanner.get_statistics());
         exp_logger->flush();
+        console->flush();
+        blind_greedy_spanner.check_ratio(eps);
     }
 
-    {
-        DynamicSpannerR blind_random_spanner(dist_matrix);
-        blind_random_spanner.construct_blind_random_eps_spanner(eps);
-        console->info("{};{}", dist_name, blind_random_spanner.get_statistics());
-        exp_logger->info("{};{}", dist_name, blind_random_spanner.get_statistics());
-        exp_logger->flush();
-    }
+//    {
+//        DynamicSpannerR blind_random_spanner(dist_matrix);
+//        blind_random_spanner.construct_blind_random_eps_spanner(eps);
+//        console->info("{};{}", dist_name, blind_random_spanner.get_statistics());
+//        exp_logger->info("{};{}", dist_name, blind_random_spanner.get_statistics());
+//        exp_logger->flush();
+//    }
 
 //    for (size_t i = 0; i < queries.size(); i++) {
 //        std::vector<double>& query = queries[i];
