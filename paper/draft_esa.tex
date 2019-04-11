@@ -1,5 +1,4 @@
 \documentclass[a4paper,UKenglish,cleveref, autoref]{lipics-v2019}
-%\documentclass[a4paper,USenglish]{article}
 
 \bibliographystyle{plainurl}% the mandatory bibstyle
 
@@ -26,20 +25,16 @@
 \usepackage{pgf,tikz}
 \usetikzlibrary{arrows}
 
-% \usepackage{ccaption}
-
 \pgfplotsset{compat=1.14}
 
 \newcommand{\ra}[1]{\renewcommand{\arraystretch}{#1}}
 
-\newcommand{\N}{\mathbb{N}}
-\newcommand{\Q}{\mathbb{Q}}
-\newcommand{\R}{\mathbb{R}}
-\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\NN}{\mathbb{N}}
+\newcommand{\QQ}{\mathbb{Q}}
+\newcommand{\RR}{\mathbb{R}}
+\newcommand{\ZZ}{\mathbb{Z}}
 \renewcommand{\S}{\mathbb{S}}
 \newcommand{\dappr}{\tilde{d}}
-%\newcommand{\Wlog}{W.l.o.g.\ }
-%\newcommand{\wlog}{w.l.o.g.\ }
 \newcommand{\eps}{\varepsilon}
 \newcommand{\orient}{O}
 \newcommand{\cpro}{\Pi}
@@ -60,25 +55,7 @@
 
 \newcommand{\ignore}[1]{}
 
-%\newcommand{\remark}[1]{\textbf{[#1]}}
-
-%\newtheorem{theorem}{Theorem}
-%\newdef{definition}{Definition}
-%\newtheorem{lemma}[theorem]{Lemma}
-%\newtheorem{corollary}[theorem]{Corollary}
-
 \newcommand{\myparagraph}[1]{\textbf{#1.}}
-
-%\newtheorem{theorem}{Theorem}
-%\newtheorem{lemma}[theorem]{Lemma}
-%\newtheorem{proposition}[theorem]{Proposition}
-%\newtheorem{corollary}[theorem]{Corollary}
-%\newtheorem{definition}[theorem]{Definition}
-%\newtheorem{remark}[theorem]{Remark}
-%\newtheorem{note}[theorem]{Note}
-
-%\numberwithin{equation}{section}
-%\numberwithin{figure}{section}
 
 \def\marrow{\marginpar[\hfill$\longrightarrow$]{$\longleftarrow$}}
 \def\michael#1{\textcolor{red}{\textsc{Michael says: }{\marrow\sf #1}}}
@@ -96,30 +73,6 @@
 
 \Copyright{Michael Kerber and Arnur Nigmetov}
 % END uncomment for LIPICS
-
-% uncomment for Arxiv
-%\author{Michael Kerber\\
-%Graz University of Technology\\
-%Institut fuer Geometrie\\
-%Kopernikusgasse 24\\
-%8010 Graz\\
-%Austria\\
-%kerber@tugraz.at\\
-%Supported by Austrian Science Fund (FWF) grant number P 29984-N35
-%\And
-
-%Arnur Nigmetov
-%Graz University of Technology\\
-%Institut fuer Geometrie\\
-%Kopernikusgasse 24\\
-%8010 Graz\\
-%Austria\\
-%nigmetov@tugraz.at}
-
-%\keywords{metric spaces, doubling dimension, spanners, approximate nearest neighbor}
-
-% END uncomment for arxiv
-
 
 \begin{document}
 \maketitle
@@ -151,12 +104,6 @@ strategy returns an approximate nearest neighbor
 after a logarithmic number of distance queries.
 \end{abstract}
 
-% uncomment for Arxiv
-%\keywords{metric spaces, doubling dimension, spanners, approximate nearest neighbor}
-% END uncomment for Arxiv
-
-
-
 \section{Introduction}
 
 Given a set $\pointset:=\{p_1,\ldots,p_n\}$ of $n$ points
@@ -178,7 +125,7 @@ The performance of algorithms for these problems depends on the number of points
 the dimension of the metric space, and the cost $\complexity$ of computing a distance in the metric space.
 It is a common assumption to assume $\complexity$ to be a constant; 
 There are good reasons for that: the most common case of a metric space
-is $\metricspace=\R^d$ with $d$ some constant, in which case $\complexity$ can be evaluated in $O(d)=O(1)$ time.
+is $\metricspace=\RR^d$ with $d$ some constant, in which case $\complexity$ can be evaluated in $O(d)=O(1)$ time.
 Even if $d$ is considered non-constant,
 it can always be assumed that $d\leq n$, hence $\complexity$ is at most $O(n)$.
 Another typical assumption is that all pairwise distances are part of the input
@@ -189,7 +136,7 @@ in $\metricspace$ can be costly and $\complexity$ might be incomparable
 with $n$. Our motivation comes from topological summaries
 such as persistence diagrams~\cite{elz-topological} or Reeb graphs~\cite{reeb-survey}, which are of interest
 in the field of topological data analysis. A persistence diagram
-is a point set in $\R^2$, and the distance between two diagrams
+is a point set in $\RR^2$, and the distance between two diagrams
 is determined by a min-cost matching between the point sets.
 If the diagrams have $N$ points, computing this matching requires
 polynomial time in $N$, and $N$ might well be larger than $n$, the number
@@ -292,10 +239,7 @@ packing lemma for doubling spaces (see \cite{smid_2009}, Sect. 2.2).
  $B(x,R)$ in $\metricspace$ such that the distance between any two distinct points of $P$ is at least $r$.
  Then 
  \[|P|\leq \left(\frac{4R}{r}\right)^{d}\]
-% Then $P$ is finite and cardinality of $P$ satisfies the inequality $|P| < 2^{md}$, where $m = 1 + \lceil \log (R/r) \rceil $. 
 
-% Let $(X,\dist)$ be a metric space of doubling dimension $d$, and let $P$ be a subset of a ball $B(x,R)$ in $X$ such that the distance between any two distinct points of $P$ is at least $r$.
-% Then $P$ is finite and cardinality of $P$ satisfies the inequality $|P| < 2^{md}$, where $m = 1 + \lceil \log (R/r) \rceil $. 
 \end{lemma}
 \begin{proof}
 We can cover $B(x,R)$ with $2^d$ ball of radius $R/2$, each of these balls we can cover with $2^d$
@@ -308,14 +252,6 @@ contain at most one point from $P$,
 
 In the following, we will assume throughout that every considered metric space
 has a constant doubling dimension.
-%\michael{I think that this sentence is enough. I would remove all what follows.}
-%If the doubling dimension of $(X, \dist)$ is larger than $d$, then
-%there exists a ball of radius $R$ such that there are at least $2^d$ points with pairwise distance at least $R$. On the other hand,
-%the maximal distance between any two of these points is at most $2R$, and we ave a lot of points with approximately the same distance
-%between them. If we want a high-quality spanner on these points, then we can expect that its size will be quadratic, not linear;
-%so the space of high doubling dimension cannot have optimal spanners. Thus the question of approximating
-%the non-doubling metric without computing many distances cannot be solved positively, and we should
-%restrict our attention to the case of doubling spaces.
 
 \myparagraph{Well-separated pair decomposition}
 Given $t > 1$, two disjoint subsets $A, B$ of a metric space $(\metricspace, \dist)$ are called $t$-\textit{well-separated},
@@ -418,7 +354,7 @@ thus making the predicate in the while loop well-defined.
 
 We give the details of the \textsc{UpdateBounds} procedure next.
 Suppose that
-$\dist(p_i,p_j)=v\in\R$ has been computed.
+$\dist(p_i,p_j)=v\in\RR$ has been computed.
 First, we reset $a_{i,j}$ and $b_{j,i}$ to $v$, since the distance
 of $p_i$ and $p_j$ is exactly $v$.
 To update the upper bound of some entry $b_{k,\ell}$,
@@ -472,14 +408,6 @@ we also tested variations of the \textsc{BlindRandom} algorithm, where the algor
 first enforces connectedness and/or lower bounds (i.e., if there are infinite upper bounds,
 then the algorithm can only choose one of the corresponding edges, etc).
 
-%\michael{Perhaps talk about force lower bound here briefly (commented out for now}
-%The second possibility will be referred to as \textsc{BlindRandom}, where among all edges $(p_i, p_j)$
-%for which $b_{i,j} / a_{i,j} > 1 + \eps$ we choose one uniformly at random. We may vary this approach
-%by insisting that we must first create a connected graph, or that we must first have some positive lower bound
-%for all edges, and only after these requirements are satisfied, we consider other pairs.
-
-%\michael{I have shortened this part considerably. The buckets are nice, but perhaps not needed.
-%I commented out the old version}
 
 The next two heuristics assume the existence of a $2$-approximation algorithm for distance
 computation. Denoting by $A_{i,j}$ the number satisfying $\dist(p_i,p_j)\leq A_{i,j}\leq 2 d(p_i,p_j)$,
@@ -572,7 +500,6 @@ In order to test the \textsc{BlindQuasiSorted} algorithms we multiply the true d
 \end{axis}
 \end{tikzpicture}
 \end{centering}
-    %\includegraphics[width=0.7\textwidth]{pics/edges_to_points_ratio_dim_2_normal_points.png}
     \caption{Number of edges in blind spanners generated by different variants of the blind
     algorithm. Greedy non-blind algorithm and WSPD algorithm are included for comparison. The plot is for normally distributed points
     in dimension 2, $\eps = 0.1$.}
@@ -587,18 +514,6 @@ In order to test the \textsc{BlindQuasiSorted} algorithms we multiply the true d
     \begin{axis}[xlabel=\# Points,ylabel=\# Edges / \# Points,
         legend pos=outer north east]
 
-    %\addplot+ table [x=n_points, y=ratio_quasi_sorted_greedy, col sep=comma] {all_methods_dim_2_eps_0.1_ratio.csv};
-    %\addlegendentry{Blind quasi-sorted greedy}
-
-    %\addplot+ table [x=n_points, y=ratio_quasi_sorted_shaker, col sep=comma] {all_methods_dim_2_eps_0.1_ratio.csv};
-    %\addlegendentry{Blind quasi-sorted shaker}
-
-    %\addplot+ table [x=n_points, y=ratio_wspd, col sep=comma] {all_methods_dim_2_eps_0.1_ratio.csv};
-    %\addlegendentry{WSPD}
-
-    %\addplot+ table [x=n_points, y=ratio_blind_random, col sep=comma] {all_methods_dim_2_eps_0.1_ratio.csv};
-    %\addlegendentry{Blind random}
-
 
     \addplot+ table [x=n_points, y=ratio_blind_random_lower_bound_first, col sep=comma] {all_methods_dim_2_eps_0.1_ratio.csv};
     \addlegendentry{Blind random, lower bound first}
@@ -612,7 +527,6 @@ In order to test the \textsc{BlindQuasiSorted} algorithms we multiply the true d
 \end{axis}
 \end{tikzpicture}
 \end{centering}
-    %\includegraphics[width=0.7\textwidth]{pics/edges_to_points_ratio_dim_2_normal_points.png}
     \caption{Ratio \# edges / \# points for different variants of spanner 
     algorithms. The plot is for normally distributed points
     in dimension 2, $\eps = 0.1$.}
@@ -623,7 +537,7 @@ In order to test the \textsc{BlindQuasiSorted} algorithms we multiply the true d
 \begin{figure}[ht!]
     \includegraphics[width=0.7\textwidth]{pics/blind-greedy-dims.png}
     \caption{Results of blind greedy spanner for different dimensions.}
-    \label{fig:blind_greedy_only}
+    \label{fig:blind_greedy_dimensions}
 \end{figure}
 
 
@@ -655,11 +569,6 @@ In order to test the \textsc{BlindQuasiSorted} algorithms we multiply the true d
 
 
 
-
-%\begin{figure}[ht]
-%    \includegraphics[width=0.7\textwidth]{pics/random-bad-ratio-comparison.png}
-%\end{figure}
-
 \begin{figure}[ht!]
     \begin{centering}
 \begin{tikzpicture}
@@ -672,16 +581,10 @@ In order to test the \textsc{BlindQuasiSorted} algorithms we multiply the true d
     \addplot+ table [x=Epsilon, y=edges_blind_greedy_dim_2, col sep=comma] {eps_dep.csv};
     \addlegendentry{Blind greedy, dim = 2}
 
-    %\addplot+ table [x=Epsilon, y=edges_greedy_dim_3, col sep=comma] {eps_dep.csv};
-    %\addlegendentry{Greedy, dim = 3}
-
-    %\addplot+ table [x=Epsilon, y=edges_blind_greedy_dim_3, col sep=comma] {eps_dep.csv};
-    %\addlegendentry{Blind greedy, dim = 3}
-
 \end{axis}
 \end{tikzpicture}
 \end{centering}
-    \caption{Number of edges in the blind greedy and greedy spanners for different values of $\eps$. Data is for 400 normally distributed points in $\R^2$ and $\R^3$.}
+    \caption{Number of edges in the blind greedy and greedy spanners for different values of $\eps$. Data is for 400 normally distributed points in $\RR^2$ and $\RR^3$.}
     \label{fig:spanner_eps_dependence}
 \end{figure}
 
@@ -692,29 +595,23 @@ In order to test the \textsc{BlindQuasiSorted} algorithms we multiply the true d
     \begin{axis}[xlabel=\# Diagrams,ylabel=\# Edges / \# Diagrams,
         legend pos=outer north east]
 
-    %\addplot+ table [x=n_points, y=ratio_greedy_dim_0_eps_01_q_1, col sep=comma] {mcgill_perturbed_blind_greedy.csv};
-    %\addlegendentry{Greedy, $\eps = 0.1$}
 
-    %\addplot+ table [x=n_points, y=ratio_blind_greedy_dim_0_eps_01_q_1, col sep=comma] {mcgill_perturbed_blind_greedy.csv};
-    %\addlegendentry{Blind greedy, $\eps = 0.1$}
+        \addplot+ table [x=n_points, y=ratio_greedy_dim_0_eps_02_q_1, col sep=comma] {mcgill_perturbed_blind_greedy.csv};
+        \addlegendentry{Greedy, $\eps = 0.2$}
 
-    \addplot+ table [x=n_points, y=ratio_greedy_dim_0_eps_02_q_1, col sep=comma] {mcgill_perturbed_blind_greedy.csv};
-    \addlegendentry{Greedy, $\eps = 0.2$}
+        \addplot+ table [x=n_points, y=ratio_blind_greedy_dim_0_eps_02_q_1, col sep=comma] {mcgill_perturbed_blind_greedy.csv};
+        \addlegendentry{Blind greedy, $\eps = 0.2$}
 
-    \addplot+ table [x=n_points, y=ratio_blind_greedy_dim_0_eps_02_q_1, col sep=comma] {mcgill_perturbed_blind_greedy.csv};
-    \addlegendentry{Blind greedy, $\eps = 0.2$}
+        \addplot+ table [x=n_points, y=ratio_greedy_dim_0_eps_05_q_1, col sep=comma] {mcgill_perturbed_blind_greedy.csv};
+        \addlegendentry{Greedy, $\eps = 0.5$}
 
-    \addplot+ table [x=n_points, y=ratio_greedy_dim_0_eps_05_q_1, col sep=comma] {mcgill_perturbed_blind_greedy.csv};
-    \addlegendentry{Greedy, $\eps = 0.5$}
-
-    \addplot+ table [x=n_points, y=ratio_blind_greedy_dim_0_eps_05_q_1, col sep=comma] {mcgill_perturbed_blind_greedy.csv};
-    \addlegendentry{Blind greedy, $\eps = 0.5$}
+        \addplot+ table [x=n_points, y=ratio_blind_greedy_dim_0_eps_05_q_1, col sep=comma] {mcgill_perturbed_blind_greedy.csv};
+        \addlegendentry{Blind greedy, $\eps = 0.5$}
 
 
 \end{axis}
 \end{tikzpicture}
 \end{centering}
-    %\includegraphics[width=0.7\textwidth]{pics/edges_to_points_ratio_dim_2_normal_points.png}
     \caption{Ratio \# edges / \# diagrams for blind greedy spanner 
     algorithm. The plot is for 0-dimensional diagrams of perturbed McGill data
     $\eps = 0.1, 0.2, 0.5$ with $W_1$ distance.}
@@ -750,20 +647,12 @@ In order to test the \textsc{BlindQuasiSorted} algorithms we multiply the true d
 \end{axis}
 \end{tikzpicture}
 \end{centering}
-    %\includegraphics[width=0.7\textwidth]{pics/edges_to_points_ratio_dim_2_normal_points.png}
     \caption{Ratio \# edges / \# all distances for blind greedy spanner 
     algorithm. The plot is for 0-dimensional diagrams of perturbed McGill data
     $\eps = 0.1, 0.2, 0.5$ with $W_1$ distance.}
-    \label{fig:spanner_ratio}
+    \label{fig:spanner_sparseness_mcgill_perturbed}
 \end{figure}
 
-
-
-\begin{figure}[ht!]
-    \includegraphics[width=0.7\textwidth]{pics/blind-greedy-dims.png}
-    \caption{Results of blind greedy spanner for different dimensions.}
-    \label{fig:blind_greedy_only}
-\end{figure}
 
 
 \begin{table}\centering
@@ -787,11 +676,6 @@ $\eps = 0.5$\\
 diagrams of shapes from McGill dataset with Wasserstein distance $W_q$. The number of diagrams is 450.}
 \label{tbl:mcgill_original_blind_greedy_spanner}
 \end{table}
-
-
-%\begin{figure}[ht]
-%    \includegraphics[width=0.7\textwidth]{pics/epsilon_dependency_400_pts_normal_500_dim_2.png}
-%\end{figure}
 
 
 We tested the algorithm for $\eps \in \Set{0.01, 0.1, 0.2, 0.5}$ on the following sets of points in dimensions $d = 2,3,4,5$:
@@ -873,7 +757,7 @@ are infeasible for such $n$.
 
 
 We also tested higher dimensions and show the results for the best algorithm, \textsc{BlindGreedy},
-in dimensions 2, 3 and 4 in the plot \ref{fig:blind_greedy_only}.
+in dimensions 2, 3 and 4 in the plot \ref{fig:blind_greedy_dimensions}.
 We can see that already in dimension 4, it produces a graph with roughly $\frac{1}{2}\binom{n}{2}$
 edges for $700$ points, which clearly shows some degrading for higher dimensions. Still,
 we remark that the WSPD spanner remains worse also in the higher-dimensional setup.
@@ -1200,7 +1084,7 @@ of the code (10 instances, 10 random permutations per instance).
 
 We used the following methods of generating random points:
 \begin{enumerate}
-    \item Uniform. Points are sampled uniformly at random from the unit cube in $\R^d$.
+    \item Uniform. Points are sampled uniformly at random from the unit cube in $\RR^d$.
     \item Normal. Points are sampled from the normal distribution.
 \end{enumerate}
 Query points were sampled from the uniform distribution on the cube $[-10, 10]^d$
@@ -1220,98 +1104,6 @@ In Figure \ref{fig:ann_dimension_dependence} we plot the average number of compu
 for $d = 2, 5, 10$. While for $d = 2$ the growth is hardly noticeable, for $d = 10$
 the sublinearity of the growth becomes clear only when the number of points is relatively large,
 approaching 30000.
-
-% We also looked at the dependence on the density. Note that our algorithm is not invariant under scaling: if we multiply the metric
-% by $\lambda$, we should also change $\eps$ to $\lambda \eps$, if we want
-% the same behavior. Therefore we could \textit{a priori} expect some
-% changes even if we change the parameters of the uniform distribution
-% without changing epsilon. However,
-% when we tested the algorithm on uniform data sampled from $[-a,a]^d$
-% for $a \in \Set{1, 10, 100, 1000, 10000}$ and on normal data
-% sampled from normal distribution with scales from the same set,
-% we did not observe any significant difference.
-
-
-%\section{Geometric concepts}
-
-%We revise the concepts that were designed for nearest neighbor queries
-%and metric approximation in metric spaces with low dimensionality.
-%We will also review the computation methods and how they depend
-%on the predicate ``$\dist(p_i,p_j)\leq t$?'' mentioned above.
-
-%\paragraph{Notion of Dimensionality.}
-%%
-%Expansion constant, doubling dimension.
-
-%\subsection{Cover trees}
-
-
-%\subsection{WSPD}
-%Given $s > 1$, two disjoint subsets $A, B$ of a metric space $(X, d)$ are called $s$-\textit{well-separated},
-%if 
-%\[
-%\forall a \in A \, \forall b \in B \, d(a, b) \geq s \max(\diam(A), \diam(B))
-%\]
-%A well-separated pair decomposition (WSPD) is a set of unordered pairs of sets $\{ \{A_1, B_1 \}, 
-%\dots, \{A_s, B_s\} \}$ such that each pair $\{A_i, B_i\}$ is $s$-well-separated, and for every unordered pair $\{a, b\}$ of distinct points of $X$ there exists a unique $j$ such that $a \in A_j$ and $b \in B_j$.
-%The notion of WSPD was introduced by Callahan and Kosaraju \cite{cal-kos-wspd}.
-
-
-%\subsection{Spanners}
-
-%\subsection{Approximate Greedy Spannner}
-
-%Suppose that we have fast algorithms for computing $\lambda$-approximation of $d(x,y)$.
-%In other words, for every pair of points $x,y$ we can compute an interval $[c, \lambda c]$ that is guaranteed to contain 
-%the true distance $d(x,y)$.  Note that for every interval of this form there exists 
-%a unique $k \in \{1, \dots, N-1 \}$ such that $[c, \lambda c] \subset [\lambda^k, \lambda^{k+2}]$. 
-%Indeed, $k = \lceil \log_{\lambda}(c) \rceil$.
-%We also assume that we know the range of all possible values of $k$ and they are all non-negative,
-%$k = 1\dots N$. We call the intervals $[\lambda^k, \lambda^{k+2}]$ \textit{buckets}, even though they are overlapping.
-%Now we can formulate the algorithm for finding a spanner.
-
-%\begin{algorithmic}
-%\label{alg:local_init}
-%\Function{Approximate greedy spanner}{$rho$}
-%    \ForAll {pairs $x,y \in X$}
-%    \State {Place $x, y$ into corresponding bucket }
-%    \EndFor
-%\EndFunction
-%\end{algorithmic}
-
-%We can use essentially the same proof as in \cite{bose2010computing}.
-%Claim 1. If $s > \lambda^2 $ and $A, B$ are $s$-separated, then all pairs $(a, a')$, $(b, b')$ with $a, a' \in A$
-%and $b, b' \in B$ are processed before any of the pairs $(a, b)$.
-
-%Indeed, if $s > \lambda^2$, then for every points $a_1, a_2 \in A$ and $b \in B$
-%we have $\lambda^2 d(a_1, a_2) < d(a_1, b)$. If $\dappr(a_1, a_2)$ and $\dappr(a_1, b)$ denote the $\lambda$-approximations
-%of the corresponding distances, then the inequality $\frac{\dappr(a_1, b)}{\dappr(a_1, a_2)} > \lambda$
-%holds , hence $(a_1, a_2)$ will be placed in the bucket that precedes the bucket of $(a_1, b)$.
-
-
-%Claim 2. If $s > \max(\lambda^2, \frac{2t+2}{t-1})$ and $A, B$ are two $s$-well-separated subsets of $X$,
-%then in the approximate greedy spanner computed by \ref{alg:approx_greedy_spanner} there is at most one edge between $A$ and $B$.
-
-%Suppose that the pair $(a_1, b_1)$ with $a_1 \in A$, $b_1 \in B$ was processed and the edge $(a, b)$
-%was added to the spanner. Then from claim 1 we know that we already have a $t$-spanner on $A$ and $B$.
-%Consider another pair $(a_2, b_2)$. Let $G$ be the weighted graph we have immediately after the edge $(a_1, b_1)$ has been added
-%to the spanner. By claim 1
-%$d_G(a_2, a_1) \leq td(a_2, a_1)$ and $d_G(b_1, b_2) \leq t d(b_1, b_2)$.
-%By properties of WSPD, $d_G(a_1, b_1) = d(a_1, b_1) \leq (1 + \frac{2}{s})d(a_2, b_2)$
-%and $t d(a_2, a_1) \leq \frac{t}{s} d(a_2, b_2)$, $t d(b_1, b_2) \leq \frac{t}{s} d(a_2, b_2)$.
-
-%Combining these inequalities, we get
-
-%\begin{equation}
-%    \begin{split}
-%        d_G(a_2, b_2) & \leq  d_G(a_2, a_1) + d_G(a_1, b_1) + d_G(b_1, b_2)  \\
-%                      & \leq  \frac{t}{s} d(a_2, b_2) + (1 + \frac{2}{s})d(a_2, b_2) + \frac{t}{s} d(a_2, b_2) \\
-%                      & =     (1 + \frac{2t + 2}{s}) d(a_2, b_2)
-%    \end{split}
-%\end{equation}
-
-%Solving for $s$ the inequality $1 + \frac{2t + 2}{s} < t$ gives $s > \frac{2t+2}{t-1}$.
-
 
 \section{Conclusion and future work}
 \label{sec:conclusion}
