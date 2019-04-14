@@ -63,16 +63,23 @@
 \title{Metric Spaces with Expensive Distances}
 \titlerunning{Metric Spaces with Expensive Distances}
 % uncomment for LIPICS 
-\author{Michael Kerber}{TU Graz}{kerber@tugraz.at}{https://orcid.org/0000-0002-8030-9299}{Supported by Austrian Science Fund (FWF) grant number P 29984-N35}
-\author{Arnur Nigmetov}{TU Graz}{nigmetov@tugraz.at}{}{}
-\authorrunning{M. Kerber and A. Nigmetov}
+\author{Anonymous Authors}{Anon}{}{}{}
+%\author{Michael Kerber}{TU Graz}{kerber@tugraz.at}{https://orcid.org/0000-0002-8030-9299}{Supported by Austrian Science Fund (FWF) grant number P 29984-N35}
+%\author{Arnur Nigmetov}{TU Graz}{nigmetov@tugraz.at}{}{}
+%\authorrunning{M. Kerber and A. Nigmetov}
+\authorrunning{Anonymous Authors}
 
 \keywords{metric spaces, doubling dimension, spanners, approximate nearest neighbor}
 \subjclass{\ccsdesc[500]{Theory of computation~Random search heuristics}}
 % \category{dummy}
 
-\Copyright{Michael Kerber and Arnur Nigmetov}
+%\Copyright{Michael Kerber and Arnur Nigmetov}
+\Copyright{Anonymous Authors}
 % END uncomment for LIPICS
+
+
+\def \expDistFigPath {pics/}
+\def \expDistDataPath {./}
 
 \begin{document}
 \maketitle
@@ -187,7 +194,7 @@ operations whenever a new distance has been computed, turning the method useless
 
 \begin{figure}[h]
 \centering
-\includegraphics[width=6cm]{intro_example.eps}
+\includegraphics[width=6cm]{\expDistFigPath  intro_example.eps}
 \caption{The compute distances are shown as edges in a graph. Note that the exact distance
 of $p_1$ and $p_2$ is unknown. The shortest path from $p_1$ to $p_2$ has length $9$, which clearly
 constitutes an upper bound on the distance by triangle inequality.
@@ -475,26 +482,26 @@ In order to test the \textsc{BlindQuasiSorted} algorithms we multiply the true d
     \begin{axis}[xlabel=\# Points,ylabel=\# Edges,
         legend pos=outer north east]
 
-    \addplot+ table [x=n_points, y=edges_quasi_sorted_greedy, col sep=comma] {all_methods_dim_2_eps_0.1.txt};
+    \addplot+ table [x=n_points, y=edges_quasi_sorted_greedy, col sep=comma] {\expDistDataPath all_methods_dim_2_eps_0.1.txt};
     \addlegendentry{Blind quasi-sorted greedy}
 
-    \addplot+ table [x=n_points, y=edges_quasi_sorted_shaker, col sep=comma] {all_methods_dim_2_eps_0.1.txt};
+    \addplot+ table [x=n_points, y=edges_quasi_sorted_shaker, col sep=comma] {\expDistDataPath all_methods_dim_2_eps_0.1.txt};
     \addlegendentry{Blind quasi-sorted shaker}
 
-    \addplot+ table [x=n_points, y=edges_wspd, col sep=comma] {all_methods_dim_2_eps_0.1.txt};
+    \addplot+ table [x=n_points, y=edges_wspd, col sep=comma] {\expDistDataPath all_methods_dim_2_eps_0.1.txt};
     \addlegendentry{WSPD}
 
-    \addplot+ table [x=n_points, y=edges_blind_random, col sep=comma] {all_methods_dim_2_eps_0.1.txt};
+    \addplot+ table [x=n_points, y=edges_blind_random, col sep=comma] {\expDistDataPath all_methods_dim_2_eps_0.1.txt};
     \addlegendentry{Blind random}
 
 
-    \addplot+ table [x=n_points, y=edges_blind_random_lower_bound_first, col sep=comma] {all_methods_dim_2_eps_0.1.txt};
+    \addplot+ table [x=n_points, y=edges_blind_random_lower_bound_first, col sep=comma] {\expDistDataPath all_methods_dim_2_eps_0.1.txt};
     \addlegendentry{Blind random, lower bound first}
 
-    \addplot+ table [x=n_points, y=edges_blind_greedy, col sep=comma] {all_methods_dim_2_eps_0.1.txt};
+    \addplot+ table [x=n_points, y=edges_blind_greedy, col sep=comma] {\expDistDataPath all_methods_dim_2_eps_0.1.txt};
     \addlegendentry{Blind greedy}
 
-    \addplot+ table [x=n_points, y=edges_greedy, col sep=comma] {all_methods_dim_2_eps_0.1.txt};
+    \addplot+ table [x=n_points, y=edges_greedy, col sep=comma] {\expDistDataPath all_methods_dim_2_eps_0.1.txt};
     \addlegendentry{Greedy}
 
 \end{axis}
@@ -515,13 +522,13 @@ In order to test the \textsc{BlindQuasiSorted} algorithms we multiply the true d
         legend pos=outer north east]
 
 
-    \addplot+ table [x=n_points, y=ratio_blind_random_lower_bound_first, col sep=comma] {all_methods_dim_2_eps_0.1_ratio.csv};
+    \addplot+ table [x=n_points, y=ratio_blind_random_lower_bound_first, col sep=comma] {\expDistDataPath all_methods_dim_2_eps_0.1_ratio.csv};
     \addlegendentry{Blind random, lower bound first}
 
-    \addplot+ table [x=n_points, y=ratio_blind_greedy, col sep=comma] {all_methods_dim_2_eps_0.1_ratio.csv};
+    \addplot+ table [x=n_points, y=ratio_blind_greedy, col sep=comma] {\expDistDataPath all_methods_dim_2_eps_0.1_ratio.csv};
     \addlegendentry{Blind greedy}
 
-    \addplot+ table [x=n_points, y=ratio_greedy, col sep=comma] {all_methods_dim_2_eps_0.1_ratio.csv};
+    \addplot+ table [x=n_points, y=ratio_greedy, col sep=comma] {\expDistDataPath all_methods_dim_2_eps_0.1_ratio.csv};
     \addlegendentry{Greedy}
 
 \end{axis}
@@ -535,7 +542,7 @@ In order to test the \textsc{BlindQuasiSorted} algorithms we multiply the true d
 
 
 \begin{figure}[ht!]
-    \includegraphics[width=0.7\textwidth]{pics/blind-greedy-dims.png}
+    \includegraphics[width=0.7\textwidth]{\expDistFigPath blind-greedy-dims.png}
     \caption{Results of blind greedy spanner for different dimensions.}
     \label{fig:blind_greedy_dimensions}
 \end{figure}
@@ -547,17 +554,17 @@ In order to test the \textsc{BlindQuasiSorted} algorithms we multiply the true d
     \begin{axis}[xlabel=\# Points,ylabel=\# Edges,
         legend pos=outer north east]
 
-    \addplot+ table [x=n_points, y=edges_blind_random, col sep=comma] {all_methods_dim_2_eps_0.1.txt};
+    \addplot+ table [x=n_points, y=edges_blind_random, col sep=comma] {\expDistDataPath all_methods_dim_2_eps_0.1.txt};
     \addlegendentry{Blind random}
 
-    \addplot+ table [x=n_points, y=edges_blind_random_connect_first, col sep=comma] {all_methods_dim_2_eps_0.1.txt};
+    \addplot+ table [x=n_points, y=edges_blind_random_connect_first, col sep=comma] {\expDistDataPath all_methods_dim_2_eps_0.1.txt};
     \addlegendentry{Blind random, connect first}
 
 
-    \addplot+ table [x=n_points, y=edges_blind_random_lower_bound_first, col sep=comma] {all_methods_dim_2_eps_0.1.txt};
+    \addplot+ table [x=n_points, y=edges_blind_random_lower_bound_first, col sep=comma] {\expDistDataPath all_methods_dim_2_eps_0.1.txt};
     \addlegendentry{Blind random, lower bound first}
 
-    \addplot+ table [x=n_points, y=edges_blind_random_connect_first_lower_bound_first, col sep=comma] {all_methods_dim_2_eps_0.1.txt};
+    \addplot+ table [x=n_points, y=edges_blind_random_connect_first_lower_bound_first, col sep=comma] {\expDistDataPath all_methods_dim_2_eps_0.1.txt};
     \addlegendentry{Blind random, connect first, lower bound first}
 
 \end{axis}
@@ -575,10 +582,10 @@ In order to test the \textsc{BlindQuasiSorted} algorithms we multiply the true d
     \begin{axis}[xlabel=epsilon,ylabel=\# Edges,
         legend pos=outer north east]
 
-    \addplot+ table [x=Epsilon, y=edges_greedy_dim_2, col sep=comma] {eps_dep.csv};
+    \addplot+ table [x=Epsilon, y=edges_greedy_dim_2, col sep=comma] {\expDistDataPath eps_dep.csv};
     \addlegendentry{Greedy, dim = 2}
 
-    \addplot+ table [x=Epsilon, y=edges_blind_greedy_dim_2, col sep=comma] {eps_dep.csv};
+    \addplot+ table [x=Epsilon, y=edges_blind_greedy_dim_2, col sep=comma] {\expDistDataPath eps_dep.csv};
     \addlegendentry{Blind greedy, dim = 2}
 
 \end{axis}
@@ -596,16 +603,16 @@ In order to test the \textsc{BlindQuasiSorted} algorithms we multiply the true d
         legend pos=outer north east]
 
 
-        \addplot+ table [x=n_points, y=ratio_greedy_dim_0_eps_02_q_1, col sep=comma] {mcgill_perturbed_blind_greedy.csv};
+        \addplot+ table [x=n_points, y=ratio_greedy_dim_0_eps_02_q_1, col sep=comma] {\expDistDataPath mcgill_perturbed_blind_greedy.csv};
         \addlegendentry{Greedy, $\eps = 0.2$}
 
-        \addplot+ table [x=n_points, y=ratio_blind_greedy_dim_0_eps_02_q_1, col sep=comma] {mcgill_perturbed_blind_greedy.csv};
+        \addplot+ table [x=n_points, y=ratio_blind_greedy_dim_0_eps_02_q_1, col sep=comma] {\expDistDataPath mcgill_perturbed_blind_greedy.csv};
         \addlegendentry{Blind greedy, $\eps = 0.2$}
 
-        \addplot+ table [x=n_points, y=ratio_greedy_dim_0_eps_05_q_1, col sep=comma] {mcgill_perturbed_blind_greedy.csv};
+        \addplot+ table [x=n_points, y=ratio_greedy_dim_0_eps_05_q_1, col sep=comma] {\expDistDataPath mcgill_perturbed_blind_greedy.csv};
         \addlegendentry{Greedy, $\eps = 0.5$}
 
-        \addplot+ table [x=n_points, y=ratio_blind_greedy_dim_0_eps_05_q_1, col sep=comma] {mcgill_perturbed_blind_greedy.csv};
+        \addplot+ table [x=n_points, y=ratio_blind_greedy_dim_0_eps_05_q_1, col sep=comma] {\expDistDataPath mcgill_perturbed_blind_greedy.csv};
         \addlegendentry{Blind greedy, $\eps = 0.5$}
 
 
@@ -625,22 +632,22 @@ In order to test the \textsc{BlindQuasiSorted} algorithms we multiply the true d
     \begin{axis}[xlabel=\# Diagrams,ylabel=\# Edges / \# All distances,
         legend pos=outer north east]
 
-    \addplot+ table [x=n_points, y=sparseness_greedy_dim_0_eps_01_q_1, col sep=comma] {mcgill_perturbed_blind_greedy.csv};
+    \addplot+ table [x=n_points, y=sparseness_greedy_dim_0_eps_01_q_1, col sep=comma] {\expDistDataPath mcgill_perturbed_blind_greedy.csv};
     \addlegendentry{Greedy, $\eps = 0.1$}
 
-    \addplot+ table [x=n_points, y=sparseness_blind_greedy_dim_0_eps_01_q_1, col sep=comma] {mcgill_perturbed_blind_greedy.csv};
+    \addplot+ table [x=n_points, y=sparseness_blind_greedy_dim_0_eps_01_q_1, col sep=comma] {\expDistDataPath mcgill_perturbed_blind_greedy.csv};
     \addlegendentry{Blind greedy, $\eps = 0.1$}
 
-    \addplot+ table [x=n_points, y=sparseness_greedy_dim_0_eps_02_q_1, col sep=comma] {mcgill_perturbed_blind_greedy.csv};
+    \addplot+ table [x=n_points, y=sparseness_greedy_dim_0_eps_02_q_1, col sep=comma] {\expDistDataPath mcgill_perturbed_blind_greedy.csv};
     \addlegendentry{Greedy, $\eps = 0.2$}
 
-    \addplot+ table [x=n_points, y=sparseness_blind_greedy_dim_0_eps_02_q_1, col sep=comma] {mcgill_perturbed_blind_greedy.csv};
+    \addplot+ table [x=n_points, y=sparseness_blind_greedy_dim_0_eps_02_q_1, col sep=comma] {\expDistDataPath mcgill_perturbed_blind_greedy.csv};
     \addlegendentry{Blind greedy, $\eps = 0.2$}
 
-    \addplot+ table [x=n_points, y=sparseness_greedy_dim_0_eps_05_q_1, col sep=comma] {mcgill_perturbed_blind_greedy.csv};
+    \addplot+ table [x=n_points, y=sparseness_greedy_dim_0_eps_05_q_1, col sep=comma] {\expDistDataPath mcgill_perturbed_blind_greedy.csv};
     \addlegendentry{Greedy, $\eps = 0.5$}
 
-    \addplot+ table [x=n_points, y=sparseness_blind_greedy_dim_0_eps_05_q_1, col sep=comma] {mcgill_perturbed_blind_greedy.csv};
+    \addplot+ table [x=n_points, y=sparseness_blind_greedy_dim_0_eps_05_q_1, col sep=comma] {\expDistDataPath mcgill_perturbed_blind_greedy.csv};
     \addlegendentry{Blind greedy, $\eps = 0.5$}
 
 
@@ -956,7 +963,7 @@ is closer to $q$ than $p_1$, also will not be a candidate, and at least one of t
 
 
 \begin{figure}[hb!]
-    \includegraphics[width=0.7\textwidth]{pics/exact_bad_example.png}
+    \includegraphics[width=0.7\textwidth]{\expDistFigPath exact_bad_example.png}
     \caption{Example of point set where exact nearest neighbor search cannot be accelerated by maintaining bounds.
     The exact nearest neighbor is the point $p_1$, next point $p_i$ is placed 
     in the curvilinear triange formed by the balls around the query point, $p_2$ and $p_{i-1}$. Even verifying that $p_1$
@@ -1069,14 +1076,14 @@ each point on the plots in this section is the result of averaging of 100 runs
 of the code (10 instances, 10 random permutations per instance).
 
 \begin{figure}[ht]
-    \includegraphics[width=0.7\textwidth]{pics/log_dependency_constant_ratio.png}
+    \includegraphics[width=0.7\textwidth]{\expDistFigPath log_dependency_constant_ratio.png}
     \caption{Ratio $\log(\mbox{computed distances}) / n$ for ANN algorithm. Data is for uniformly distributed
     points.}
     \label{fig:ann_const_ratio}
 \end{figure}
 
 \begin{figure}[ht]
-    \includegraphics[width=0.7\textwidth]{pics/ann_computed_distances_dimension_dep.png}
+    \includegraphics[width=0.7\textwidth]{\expDistFigPath ann_computed_distances_dimension_dep.png}
     \caption{Number of computed distances for different dimensions. Points are chosen uniformly, $\eps = 0.01$.}
     \label{fig:ann_dimension_dependence}
 \end{figure}
