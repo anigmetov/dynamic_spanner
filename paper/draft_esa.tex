@@ -771,14 +771,27 @@ of high doubling dimension, being close to a clique, and there is no hope
 of getting a small spanner. On the other hand, computation of $\btdist$ in practice
 requires significantly less time than computation of $\wsdist{q}$, and the case
 of $\wsdist{1}$ and $\wsdist{2}$ is of practical importance.
+For $wsdist{1}$ we observe more encouraging figures, like avoiding 70 \% of distance
+computations for $\eps = 0.1$; if we are happy with a 1.5 approximation, than we
+reduce the number of distances computed by a factor of 10.
 
 
 
-
-We plot the sparseness of the spanners obtained by \grdy
+In order to see the growth of the spanner size, we use the \dtype{perturbed}
+dataset.  We plot the sparseness of the spanners obtained by \grdy
 and \bgrdy algorithms in \cref{fig:spanner_sparseness_mcgill_perturbed}
 for different values of $\eps$, always using the $W_1$ distance.
-We can see
+As expected, the ratio of computed distances decreases as the number of diagrams
+grows. In \cref{fig:spanner_ratio_mcgill_perturbed} we show
+the growth of the spanner size relative to the number of diagrams. 
+For $\eps = 0.5$ the \bgrdy spanner starts to stabilize (i.e., demonstrates
+linear growth) for larger values of $n$, while for $\eps = 0.2$
+this 
+
+Linear
+growth of \grdy spanner can be seen distinctly for $\eps = 0.5$ (the plot
+is almost constant), while for $\eps = 0.2$ even the \grdy algorithm
+stabilizes 
 
 
 
