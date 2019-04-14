@@ -2,63 +2,7 @@
 
 \bibliographystyle{plainurl}% the mandatory bibstyle
 
-\usepackage{amsthm}
-\usepackage{amsmath}
-\usepackage{mathbbol}
-\usepackage{amsfonts}
-\usepackage{amssymb}
-\usepackage{graphicx}
-\usepackage{algorithm}
-\usepackage{url}
-\usepackage{floatflt}
-\usepackage{mathptmx}
-\usepackage{epsfig}
-\usepackage{wrapfig}
-\usepackage{color}
-
-\usepackage{algorithm}
-\usepackage[noend]{algpseudocode}
-\usepackage{comment}
-\usepackage{braket}
-\usepackage{pgfplots}
-\usepackage{booktabs}
-\usepackage{pgf,tikz}
-\usetikzlibrary{arrows}
-
-\pgfplotsset{compat=1.14}
-
-\newcommand{\ra}[1]{\renewcommand{\arraystretch}{#1}}
-
-\newcommand{\NN}{\mathbb{N}}
-\newcommand{\QQ}{\mathbb{Q}}
-\newcommand{\RR}{\mathbb{R}}
-\newcommand{\ZZ}{\mathbb{Z}}
-\renewcommand{\S}{\mathbb{S}}
-\newcommand{\dappr}{\tilde{d}}
-\newcommand{\eps}{\varepsilon}
-\newcommand{\orient}{O}
-\newcommand{\cpro}{\Pi}
-\newcommand{\fib}{\mathrm{Fib}}
-
-\newcommand{\metricspace}{\mathcal{M}}
-\newcommand{\approxmetric}{\gamma}
-\newcommand{\parent}{\mathrm{par}}
-\newcommand{\point}{p}
-\newcommand{\level}{\ell}
-\newcommand{\diam}{\mathrm{diam}}
-\newcommand{\pointset}{P}
-\newcommand{\distspace}{\mathcal{M}}
-\newcommand{\dist}{\delta}
-\newcommand{\adist}{\gamma}
-\newcommand{\complexity}{C_{\dist}}
-\newcommand{\doublingdimension}{\Delta}
-
-\newcommand{\ignore}[1]{}
-
-\newcommand{\myparagraph}[1]{\textbf{#1.}}
-
-\def\marrow{\marginpar[\hfill$\longrightarrow$]{$\longleftarrow$}}
-\def\michael#1{\textcolor{red}{\textsc{Michael says: }{\marrow\sf #1}}}
+\input{my_preamble.tex}
 
 \title{Metric Spaces with Expensive Distances}
 \titlerunning{Metric Spaces with Expensive Distances}
@@ -189,7 +133,7 @@ Our algorithms are based on the following simple idea: since distance computatio
 and should be avoided, we try to obtain maximal information out of the distances that have been computed
 so far. 
 This information consists of lower and upper bounds for unknown distances, obtained from known distances
-by triangle inequality (see Figure~\ref{fig:1st_example}). We remark that updating these bounds involves $\Omega(n^2)$ arithmetic
+by triangle inequality (see \cref{fig:1st_example}). We remark that updating these bounds involves $\Omega(n^2)$ arithmetic
 operations whenever a new distance has been computed, turning the method useless in the standard computational model.
 
 \begin{figure}[h]
@@ -400,18 +344,18 @@ The last missing ingredient of our algorithm is the procedure \textsc{GetNextEdg
 that is, how to select the next distance to be computed. We propose two natural choices
 
 \begin{description}
-\item[\textsc{BlindRandom}] Among all pairs $(i,j)$ where $\frac{b_{i,j}}{a_{i,j}}>(1+\eps)$,
+\item[\brndm] Among all pairs $(i,j)$ where $\frac{b_{i,j}}{a_{i,j}}>(1+\eps)$,
 we pick one pair uniformly at random
-\item[\textsc{BlindGreedy}] Pick the pair $(i,j)$ which maximizes the ratio $\frac{b_{i,j}}{a_{i,j}}$.
+\item[\bgrdy] Pick the pair $(i,j)$ which maximizes the ratio $\frac{b_{i,j}}{a_{i,j}}$.
 If the maximizing pair is not unique, choose among the maximizing pairs uniformly at random.
 \end{description}
 %
-The idea behind \textsc{BlindGreedy} is that we query an edge for which we know the least,
+The idea behind \bgrdy is that we query an edge for which we know the least,
 in that way hoping to gather most additional information about the metric space.
-Also, our conventions imply that in \textsc{BlindGreedy} the edges that have $a_{i,j} = 0$ or $b_{i,j} = \infty$
+Also, our conventions imply that in \bgrdy the edges that have $a_{i,j} = 0$ or $b_{i,j} = \infty$
 have the highest priority, so the algorithm first ensures that the graph is connected and there are positive
 lower bounds for every edge before it will start adding any other edges. Based on this observation,
-we also tested variations of the \textsc{BlindRandom} algorithm, where the algorithm
+we also tested variations of the \brndm algorithm, where the algorithm
 first enforces connectedness and/or lower bounds (i.e., if there are infinite upper bounds,
 then the algorithm can only choose one of the corresponding edges, etc).
 
@@ -423,19 +367,19 @@ This yields a roughly sorted sequence of distance, because when $\dist(p_i,p_j)>
 then $A_{i,j}>A_{k,\ell}$ is guaranteed.
 We propose two further heuristics that attempt to make use of this sorted sequence.
 \begin{description}
-\item [\textsc{BlindQuasiSortedGreedy}] Traverse the pairs in increasing order with respect to $A_{i,j}$.
-\item [\textsc{BlindQuasiSortedShaker}] Alternates between pairs with small and large $A_{i,j}$
+\item [\bqsgrdy] Traverse the pairs in increasing order with respect to $A_{i,j}$.
+\item [\bqsshaker] Alternates between pairs with small and large $A_{i,j}$
 by traversing in increasing order of $A_{i,j}$ in odd iterations and in decreasing order
 in even iterations.
 \end{description}
 
-\textsc{BlindQuasiSortedGreedy} tries to mimic the greedy spanner and hence appears as a natural
+\bqsgrdy tries to mimic the greedy spanner and hence appears as a natural
 choice at first sight. However, anticipating the experimental results, the heuristic yields very poor
 results. The reason is that no pair acquires useful lower bounds when only short distance are queried
 (the greedy spanner does not have this issue because it knows the distance and hence does not need
 lower bounds).
 Generally speaking, short distances are good for sharp upper bounds, whereas long distances are
-useful for lower bounds. This motivates \textsc{BlindQuasiSortedShaker}
+useful for lower bounds. This motivates \bqsshaker
 which alternates between short and long distances.
 
 
@@ -464,7 +408,7 @@ we traverse the buckets from left to right, adding edges from each bucket one by
 we traverse the buckets from right to left. This alternative makes sense, because we need to have good lower bounds in
 order to build a blind spanner, and good lower bounds can be obtained from the triangle inequality, if one of the edges 
 in a path connecting $p_i$ and $p_j$ in $G$ is longer than the sum of the lengths of all other edges.
-We refer to the former option as \textsc{BlindQuasiSortedGreedy} and to the latter one as \textsc{BlindQuasiSortedShaker}.
+We refer to the former option as \bqsgrdy and to the latter one as \bqsshaker.
 }
 
 
@@ -570,7 +514,7 @@ In order to test the \textsc{BlindQuasiSorted} algorithms we multiply the true d
 \end{axis}
 \end{tikzpicture}
 \end{centering}
-    \caption{Comparison of the four variants of \textsc{BlindRandom} algorithm.}
+    \caption{Comparison of the four variants of \brndm algorithm.}
     \label{fig:blind_rbr_variants}
 \end{figure}
 
@@ -679,7 +623,7 @@ $\eps = 0.5$\\
 \% of distances computed   & 2.24 & 10.3          && 3.38 & 19.94        &&   4.66  & 26.88 \\
 \bottomrule
 \end{tabular}
-\caption{Comparison of \textsc{BlindGreedy} and \textsc{Greedy} algorithms for 0-dimensional
+\caption{Comparison of \bgrdy and \textsc{Greedy} algorithms for 0-dimensional
 diagrams of shapes from McGill dataset with Wasserstein distance $W_q$. The number of diagrams is 450.}
 \label{tbl:mcgill_original_blind_greedy_spanner}
 \end{table}
@@ -701,7 +645,7 @@ We tested the algorithm for $\eps \in \Set{0.01, 0.1, 0.2, 0.5}$ on the followin
 In all experiments the algorithms that we tested compared in the same way,
 so we only present results for the \textbf{uniform} point set in dimension 2.
 
-Figure \ref{fig:spanner_sparseness}
+\cref{fig:spanner_sparseness}
 shows the number of edges of the spanner for various variants of 
 blind and non-blind spanner constructions.
 Note that for all blind spanner variants, the number of computed distances
@@ -710,16 +654,16 @@ this number is always $\binom{n}{2}$ and for WPSD it is lower bounded
 by the size of the spanner.
 We can see that, even though none of the blind spanners can produce
 spanners of the same quality (i.e., sparse) as the standard greedy algorithm,
-\textsc{BlindGreedy} and all variants of \textsc{BlindRandom}
+\bgrdy and all variants of \brndm
 perform significantly better than both variants of \textsc{BlindQuasiSorted}.
-Figure \ref{fig:spanner_ratio} shows the ratio of the number of edges to the number of points.
+\cref{fig:spanner_ratio} shows the ratio of the number of edges to the number of points.
 The ideal behavior is demonstrated by the non-blind greedy spanner,
 for which this ratio stays practically constant, confirming the linear growth.
 None of the blind algorithms seems to have this property, but among them
 the blind greedy spanner is the best one. If we assume that the number of edges
 is proportional to $n^\alpha$, then we can try to estimate $\alpha$ by 
-linear regression (after taking $\log$).  We give in the table \ref{tbl:regr_coeff_spanner}
-the estimated exponents $\alpha$ for \textsc{BlindGreedy} and standard
+linear regression (after taking $\log$).  We give in \cref{tbl:regr_coeff_spanner}
+the estimated exponents $\alpha$ for \bgrdy and standard
 greedy algorithms. Note that even for the greedy algorithm these estimated
 exponents can be significantly larger than 1,
 which is explained by the fact that the number of points
@@ -741,12 +685,12 @@ on the number of points. The data is for $\eps = 0.1$ and for uniform points.}
 \end{table}
 
 
-As for different variants of the \textsc{BlindRandom} algorithm,
+As for different variants of the \brndm algorithm,
 we note that their performance is almost the same, and the algorithm works
 significantly better than \textsc{QuasiSorted} variants, but obviously
 worse than the blind greedy variant. There is a consistent, though small,
 difference between the variants that do not force lower bounds first and
-the other two variants of the \textsc{BlindRandom} (see Figure \ref{fig:blind_rbr_variants}).
+the other two variants of the \brndm (see \cref{fig:blind_rbr_variants}).
 
 
 
@@ -763,14 +707,14 @@ and our blind algorithms, which have at least cubic complexity in the number of 
 are infeasible for such $n$.
 
 
-We also tested higher dimensions and show the results for the best algorithm, \textsc{BlindGreedy},
-in dimensions 2, 3 and 4 in the plot \ref{fig:blind_greedy_dimensions}.
+We also tested higher dimensions and show the results for the best algorithm, \bgrdy,
+in dimensions 2, 3 and 4 in \cref{fig:blind_greedy_dimensions}.
 We can see that already in dimension 4, it produces a graph with roughly $\frac{1}{2}\binom{n}{2}$
 edges for $700$ points, which clearly shows some degrading for higher dimensions. Still,
 we remark that the WSPD spanner remains worse also in the higher-dimensional setup.
 
-The plot in Figure \ref{fig:spanner_eps_dependence}
-compares the \textsc{BlindGreedy} and \textsc{Greedy} algorithms
+The plot in \cref{fig:spanner_eps_dependence}
+compares the \bgrdy and \textsc{Greedy} algorithms
 on \textbf{uniform} point sets for different choices of $\eps$. We can see that dependence on $\eps$
 is approximately the same for both algorithms. Since it is not cleary seen from the picture, we also note 
 that the ratio of the number of edges decreases for
@@ -779,23 +723,67 @@ for $\eps = 2$ the blind greedy spanner contains almost 6 times more edges than 
 while for $\eps = 1/32$ the ratio is 2.6
 
 Summing up, we can conclude from the experiments that 
- the \textsc{BlindGreedy} algorithm performs rather well, but also \textsc{BlindRandom}
+ the \bgrdy algorithm performs rather well, but also \brndm
 algorithm reduces the amount of computed distances substantially, especially if we enforce having non-zero lower bounds
 first. 
 If the goal is to reduce the number of distance computations, these method seem to be more suitable than a WSPD spanner.
 Since the linear spanner size of WSPDs does not show up in the experiments because of the relatively small values of $n$
 tested, the experiments are not conclusive regarding the asymptotic size of the blind spanners.
 Another noteworthy fact is that quasi-sorted variants produce spanners which are much closer to the complete graph
-(\textsc{BlindQuasiSortedGreedy} is worse, requiring all the edges). It would seem plausible that, if we have
+(\bqsgrdy is worse, requiring all the edges). It would seem plausible that, if we have
 access to approximate value of the distance, we could exploit this in the spanner construction, but we could not
 find a working heuristic.
 
 
 
-We also ran experiments on a more realistic data set.
+We also ran experiments on two more realistic data sets,
+namely the persistence diagrams of the shapes 
+from  the McGill shape benchmark \cite{zhang2005mcgill}. 
+More precisely, we generated two sets of diagrams,
+\dtype{original} and \dtype{perturbed}. The \dtype{original}
+diagrams were computed on the points of the 450 original
+point clouds from the shape dataset; we only looked
+at dimension 0, since the diagrams in this dimension are the largest.
+We also added random noise to points of the original shapes,
+and computed persistence diagrams in dimension 0 of these modified
+shape; these diagrams form the \dtype{perturbed} dataset.
+Persistence diagrams were computed with \libraryname{DIPHA}
+library.
 
-We also generate real persistence diagrams of the shapes from  the McGill shape benchmark \cite{zhang2005mcgill}, 
-to which we add some random noise. 
+
+
+Results of \bgrdy algorithm on the whole \dtype{original} dataset 
+for different values of $\eps$ and $q$ are summarized in \cref{tbl:mcgill_original_blind_greedy_spanner};
+\grdy algorithm is used as baseline. Our experiments in Euclidean setting
+demonstrate that other variants of blind algorithms are not competitive,
+so we do not present them. The first thing to note is that for higher values of $q$
+any advantage of our algorithm disappears. However, the cardinality of the \grdy
+spanner is also increasing; for instance, if we want to achieve 10 \% accuracy,
+then even the \grdy spanner is almost half of the complete graph.
+We can offer the following explanation. For higher values of $q$,
+long edges of an optimal matching play a more important role
+than shorter ones; as $q$ tends to $\infty$, Wasserstein distance
+approaches bottleneck distance $\btdist$, which depends on the longest
+edge only. If all diagrams come from the same dataset,
+then there is a large fraction of pairs of diagrams whose optimal matchings
+have approximately the same length. This fact means that we are in the case
+of high doubling dimension, being close to a clique, and there is no hope
+of getting a small spanner. On the other hand, computation of $\btdist$ in practice
+requires significantly less time than computation of $\wsdist{q}$, and the case
+of $\wsdist{1}$ and $\wsdist{2}$ is of practical importance.
+
+
+
+
+We plot the sparseness of the spanners obtained by \grdy
+and \bgrdy algorithms in \cref{fig:spanner_sparseness_mcgill_perturbed}
+for different values of $\eps$, always using the $W_1$ distance.
+We can see
+
+
+
+
+
 
 
 \section{Approximate nearest neighbors}
@@ -957,7 +945,7 @@ the distance of $p_j$ to $q$.
 \caption{First two steps of the ANN algorithm. First $p_1$ is 
 chosen as the current candidate, and we must compute $\dist(p_2, q)$. After that the algorithm will not compute
 distance to any of the points inside the heavily shaded ball or outside the lightly shaded ball that are centered at $p_2$, because their lower bounds allow us to discard them. Note that the point $p_5$, which
-is closer to $q$ than $p_1$, also will not be a candidate, and at least one of the points $p_6,p_7,p_8,p_9$ in the annulus between the dashed and solid circle, which are further from $q$ than $p_5$, will be chosen as $c$. This shows that in our algorithm the distance from the candidate to $q$ can drop \textit{slower} than in the bruteforce algorithm, thus Theorem \ref{thm:ann_bound} does not immediately follow from standard backwards analysis. The small black ball between the dashed circle and the solid circle has radius $v_1 \eps / (1 + \eps)$; it is the ball that we use in the packing argument, because it is smaller than any of the lightly shaded balls that correspond to points like $p_2$ and $p_4$, that is, the points that do not improve $v$.}
+is closer to $q$ than $p_1$, also will not be a candidate, and at least one of the points $p_6,p_7,p_8,p_9$ in the annulus between the dashed and solid circle, which are further from $q$ than $p_5$, will be chosen as $c$. This shows that in our algorithm the distance from the candidate to $q$ can drop \textit{slower} than in the bruteforce algorithm, thus \cref{thm:ann_bound} does not immediately follow from standard backwards analysis. The small black ball between the dashed circle and the solid circle has radius $v_1 \eps / (1 + \eps)$; it is the ball that we use in the packing argument, because it is smaller than any of the lightly shaded balls that correspond to points like $p_2$ and $p_4$, that is, the points that do not improve $v$.}
 \label{fig:ann_illustration}
 \end{figure}
 
