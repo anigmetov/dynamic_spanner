@@ -204,7 +204,7 @@ The \emph{greedy spanner}(\cite{althofer1993sparse}) is a simple algorithm to co
 
 The greedy spanner is guaranteed (\cite{althofer1993sparse}) to return a spanner of size $O(n)$
 (for constant doubling dimension and fixed $\eps>0$); in experimental study \cite{farshi2009experimental}
-it was also shown to return the sparsest graph. However, it clearly
+it was also shown to return the sparsest graph.  However, it clearly
 has to compute all $\binom{n}{2}$ pairwise distances in the sorting step;
 this means that in our cost model, the greedy spanner has the worst possible
 performance.
@@ -434,7 +434,7 @@ In order to test the \textsc{BlindQuasiSorted} algorithms we multiply the true d
     \label{fig:blind_greedy_dimensions}
 \end{figure}
 
-
+\ignore{
 \begin{figure}[ht!]
     \begin{centering}
 \begin{tikzpicture}
@@ -460,7 +460,7 @@ In order to test the \textsc{BlindQuasiSorted} algorithms we multiply the true d
     \caption{Comparison of the four variants of \brndm algorithm.}
     \label{fig:blind_rbr_variants}
 \end{figure}
-
+}
 
 
 \begin{figure}[ht!]
@@ -489,7 +489,6 @@ In order to test the \textsc{BlindQuasiSorted} algorithms we multiply the true d
     \begin{axis}[xlabel=\# Diagrams,ylabel=\# Edges / \# Diagrams,
         legend pos=outer north east]
 
-
         \addplot+ table [x=n_points, y=ratio_greedy_dim_0_eps_02_q_1, col sep=comma] {\expDistDataPath mcgill_perturbed_blind_greedy.csv};
         \addlegendentry{Greedy, $\eps = 0.2$}
 
@@ -502,12 +501,10 @@ In order to test the \textsc{BlindQuasiSorted} algorithms we multiply the true d
         \addplot+ table [x=n_points, y=ratio_blind_greedy_dim_0_eps_05_q_1, col sep=comma] {\expDistDataPath mcgill_perturbed_blind_greedy.csv};
         \addlegendentry{Blind greedy, $\eps = 0.5$}
 
-
 \end{axis}
 \end{tikzpicture}
 \end{centering}
-    \caption{Ratio \# edges / \# diagrams for blind greedy spanner 
-    algorithm. The plot is for 0-dimensional diagrams of perturbed McGill data
+    \caption{Ratio \# edges /  \# diagrams for  \bgrdy spanner. The plot is for 0-dimensional diagrams of perturbed McGill data
     $\eps = 0.1, 0.2, 0.5$ with $W_1$ distance.}
     \label{fig:spanner_ratio_mcgill_perturbed}
 \end{figure}
@@ -541,8 +538,7 @@ In order to test the \textsc{BlindQuasiSorted} algorithms we multiply the true d
 \end{axis}
 \end{tikzpicture}
 \end{centering}
-    \caption{Ratio \# edges / \# all distances for blind greedy spanner 
-    algorithm. The plot is for 0-dimensional diagrams of perturbed McGill data
+    \caption{Sparseness of \bgrdy spanner algorithm. The plot is for 0-dimensional diagrams of perturbed McGill data
     $\eps = 0.1, 0.2, 0.5$ with $W_1$ distance.}
     \label{fig:spanner_sparseness_mcgill_perturbed}
 \end{figure}
@@ -550,19 +546,19 @@ In order to test the \textsc{BlindQuasiSorted} algorithms we multiply the true d
 
 
 \begin{table}\centering
-    \ra{1.3}
+    \ra{1.2}
     \begin{tabular}{@{}rrrcrrcrr@{}}\toprule
                           & \multicolumn{2}{c}{$q=1$} & \phantom{abc} & \multicolumn{2}{c}{$q=2$} & \phantom{abc} & \multicolumn{2}{c}{$q=3$}\\
                           \cmidrule{2-3} \cmidrule{5-6} \cmidrule{8-9}
                           & Greedy & Blind greedy && Greedy & Blind greedy && Greedy & Blind greedy \\ \midrule
 $\eps = 0.1$\\
-\#edges                    & 12755 & 28350         && 32606 & 72933      &&  41875  & 78977 \\
+%\#edges                    & 12755 & 28350         && 32606 & 72933      &&  41875  & 78977 \\
 \% of distances computed   & 13.63 & 28.06         && 32.27 & 72.19      &&   41.45  & 78.17 \\
 $\eps = 0.2$\\
-\#edges                    & 6314 & 19518         && 13560 & 44282       &&  20335  & 52482 \\
+%\#edges                    & 6314 & 19518         && 13560 & 44282       &&  20335  & 52482 \\
 \% of distances computed   & 6.25 & 19.32         && 13.42 & 43.83       &&   20.13  & 51.95 \\
 $\eps = 0.5$\\
-\#edges                    & 2263 & 10414         && 3411 & 20143        &&  4705  & 27154 \\
+%\#edges                    & 2263 & 10414         && 3411 & 20143        &&  4705  & 27154 \\
 \% of distances computed   & 2.24 & 10.3          && 3.38 & 19.94        &&   4.66  & 26.88 \\
 \bottomrule
 \end{tabular}
@@ -587,6 +583,7 @@ We tested the algorithm for $\eps \in \Set{0.01, 0.1, 0.2, 0.5}$ on the followin
 \end{enumerate}
 In all experiments the algorithms that we tested compared in the same way,
 so we only present results for the \textbf{uniform} point set in dimension 2.
+
 
 \cref{fig:spanner_sparseness}
 shows the number of edges of the spanner for various variants of 
@@ -633,7 +630,7 @@ we note that their performance is almost the same, and the algorithm works
 significantly better than \textsc{QuasiSorted} variants, but obviously
 worse than the blind greedy variant. There is a consistent, though small,
 difference between the variants that do not force lower bounds first and
-the other two variants of the \brndm (see \cref{fig:blind_rbr_variants}).
+the other two variants of the \brndm. \ignore{ (see \cref{fig:blind_rbr_variants}). }
 
 
 
@@ -665,8 +662,9 @@ smaller values of $\eps$:
 for $\eps = 2$ the blind greedy spanner contains almost 6 times more edges than the greedy spanner,
 while for $\eps = 1/32$ the ratio is 2.6
 
-Summing up, we can conclude from the experiments that 
- the \bgrdy algorithm performs rather well, but also \brndm
+
+\ignore{
+Summing up, the \bgrdy algorithm is the best algorithm for our model, but also \brndm
 algorithm reduces the amount of computed distances substantially, especially if we enforce having non-zero lower bounds
 first. 
 If the goal is to reduce the number of distance computations, these method seem to be more suitable than a WSPD spanner.
@@ -676,11 +674,21 @@ Another noteworthy fact is that quasi-sorted variants produce spanners which are
 (\bqsgrdy is worse, requiring all the edges). It would seem plausible that, if we have
 access to approximate value of the distance, we could exploit this in the spanner construction, but we could not
 find a working heuristic.
+}
+
+From these experiments we conclude that the algorithm with the highest chance
+of saving a significant amount of distance computations on real data, like large
+persistence diagrams, is \bgrdy. Even though \brdnm also substantially reduces
+the number of computed distances, its performance is significantly worse;
+other algorithms that we tested do not produce sparse spanners.
+While it would seem plausible that access to approximate value of the distance 
+could be exploited in the spanner construction, 
+we could not find a working heuristic; \bqsgrdy and \bqsshaker produce extremely
+dense spanners.
 
 
-
-We also ran experiments on two more realistic data sets,
-namely the persistence diagrams of the shapes 
+Finally, we ran experiments on two realistic data sets,
+namely the persistence diagrams of the shapes
 from  the McGill shape benchmark \cite{zhang2005mcgill}. 
 More precisely, we generated two sets of diagrams,
 \dtype{original} and \dtype{perturbed}. The \dtype{original}
@@ -689,7 +697,7 @@ point clouds from the shape dataset; we only looked
 at dimension 0, since the diagrams in this dimension are the largest.
 We also added random noise to points of the original shapes,
 and computed persistence diagrams in dimension 0 of these modified
-shape; these diagrams form the \dtype{perturbed} dataset.
+shapes; these diagrams form the \dtype{perturbed} dataset.
 Persistence diagrams were computed with \libraryname{DIPHA}
 library.
 
@@ -697,24 +705,25 @@ library.
 
 Results of \bgrdy algorithm on the whole \dtype{original} dataset 
 for different values of $\eps$ and $q$ are summarized in \cref{tbl:mcgill_original_blind_greedy_spanner};
-\grdy algorithm is used as baseline. Our experiments in Euclidean setting
-demonstrate that other variants of blind algorithms are not competitive,
-so we do not present them. The first thing to note is that for higher values of $q$
+\grdy algorithm is used as baseline\footnote{Of course, in the columns of \grdy algorithm
+we give its sparseness, i.e. number of edges divided by the number of all distances;
+the percent of computed distances is always 100.}.  The first thing to note is that for higher values of $q$
 any advantage of our algorithm disappears. However, the cardinality of the \grdy
 spanner is also increasing; for instance, if we want to achieve 10 \% accuracy,
 then even the \grdy spanner is almost half of the complete graph.
-We can offer the following explanation. For higher values of $q$,
-long edges of an optimal matching play a more important role
+We can offer the following explanation, assuming the reader is familiar
+with the definition of $\wsdist{q}$. For higher values of $q$,
+longer edges of an optimal matching play a more important role
 than shorter ones; as $q$ tends to $\infty$, Wasserstein distance
 approaches bottleneck distance $\btdist$, which depends on the longest
 edge only. If all diagrams come from the same dataset,
-then there is a large fraction of pairs of diagrams whose optimal matchings
-have approximately the same length. This fact means that we are in the case
+then there is a large number of pairs of diagrams whose optimal matchings
+have the longest edges of approximately the same length. This fact means that we are in the case
 of high doubling dimension, being close to a clique, and there is no hope
-of getting a small spanner. On the other hand, computation of $\btdist$ in practice
+of getting a small spanner. \ignore{On the other hand, computation of $\btdist$ in practice
 requires significantly less time than computation of $\wsdist{q}$, and the case
-of $\wsdist{1}$ and $\wsdist{2}$ is of practical importance.
-For $wsdist{1}$ we observe more encouraging figures, like avoiding 70 \% of distance
+of $\wsdist{1}$ and $\wsdist{2}$ is of practical importance.}
+For $\wsdist{1}$ we observe more encouraging figures, like avoiding 70 \% of distance
 computations for $\eps = 0.1$; if we are happy with a 1.5 approximation, than we
 reduce the number of distances computed by a factor of 10.
 
@@ -723,24 +732,12 @@ reduce the number of distances computed by a factor of 10.
 In order to see the growth of the spanner size, we use the \dtype{perturbed}
 dataset.  We plot the sparseness of the spanners obtained by \grdy
 and \bgrdy algorithms in \cref{fig:spanner_sparseness_mcgill_perturbed}
-for different values of $\eps$, always using the $W_1$ distance.
+for different values of $\eps$, always using the $\wsdist{1}$ distance.
 As expected, the ratio of computed distances decreases as the number of diagrams
 grows. In \cref{fig:spanner_ratio_mcgill_perturbed} we show
-the growth of the spanner size relative to the number of diagrams. 
+the growth of the spanner size relative to the number of diagrams.
 For $\eps = 0.5$ the \bgrdy spanner starts to stabilize (i.e., demonstrates
-linear growth) for larger values of $n$, while for $\eps = 0.2$
-this 
-
-Linear
-growth of \grdy spanner can be seen distinctly for $\eps = 0.5$ (the plot
-is almost constant), while for $\eps = 0.2$ even the \grdy algorithm
-stabilizes 
-
-
-
-
-
-
+linear growth) for larger values of $n$.
 
 \section{Approximate nearest neighbors}
 \label{sec:ann}
@@ -826,6 +823,90 @@ from triangle inequality.
     If $(\metricspace, \dist)$ is a doubling space, then, for any fixed $\eps > 0$ the
     algorithm computes $O(\log n)$ distances $\dist(p_i, q)$ in expectation.
 \end{theorem}
+
+The proof is given in the appendix.
+
+\section{Experiments on approximate nearest neighbors}
+
+In order to experimentally evaluate the performance of our algorithm,
+we generate random point sets and random query points, and for each query point
+run the algorithm 10 times. The average number of distances to the query point
+that were actually computed is the measure that we are interested in.
+We average the results over 10 different instances of the point
+set and query point in order to see the trend clearer; thus
+each point on the plots in this section is the result of averaging of 100 runs
+of the code (10 instances, 10 random permutations per instance).
+
+\begin{figure}[ht]
+    \includegraphics[width=0.7\textwidth]{\expDistFigPath log_dependency_constant_ratio.png}
+    \caption{Ratio $\log(\mbox{computed distances}) / n$ for ANN algorithm. Data is for uniformly distributed
+    points.}
+    \label{fig:ann_const_ratio}
+\end{figure}
+
+\begin{figure}[ht]
+    \includegraphics[width=0.7\textwidth]{\expDistFigPath ann_computed_distances_dimension_dep.png}
+    \caption{Number of computed distances for different dimensions. Points are chosen uniformly, $\eps = 0.01$.}
+    \label{fig:ann_dimension_dependence}
+\end{figure}
+
+
+We used the following methods of generating random points:
+\begin{enumerate}
+    \item Uniform. Points are sampled uniformly at random from the unit cube in $\RR^d$.
+    \item Normal. Points are sampled from the normal distribution.
+\end{enumerate}
+Query points were sampled from the uniform distribution on the cube $[-10, 10]^d$
+and from the normal distribution centered at the origin with scale 100,
+thus we get query points that are "inside" the point set and also "outside".
+We sample data in dimensions up to 20 and for $\eps \in \Set{0.001, 0.005, 0.01, 0.05, 0.1}$,
+the maximal number of points is $30,000$.
+
+In order to empirically verify the upper bound $O(\log n)$,
+we plot the number of computed distances divided
+by the logarithm of the number of points in \cref{fig:ann_const_ratio} (for $d = 2$).
+We see that this ratio, though fluctuating a lot, remains in the interval $[1,4]$. This not just confirms
+the theoretical upper bound, but also shows that the algorithm in the low-dimensional case
+really computes only a very small number of distances to the query point.
+As expected, in high dimensions the algorithm does not perform as well.
+In \cref{fig:ann_dimension_dependence} we plot the average number of computed distances
+for $d = 2, 5, 10$. While for $d = 2$ the growth is hardly noticeable, for $d = 10$
+the sublinearity of the growth becomes clear only when the number of points is relatively large,
+approaching 30000.
+
+\section{Conclusion and future work}
+\label{sec:conclusion}
+%
+We have introduced a new cost model for the analysis of algorithms
+for metric spaces that fits the situation that computing an individual distance
+is more costly than other types of primitive operations.
+Our theoretical and experimental results are under the usual assumption
+that the metric space has a low doubling dimension.
+However, in our motivating example of collections of persistence diagrams
+or Reeb graphs, this assumption does not hold. For instance,
+the space of persistence diagrams has an infinite doubling dimension.
+Nevertheless, realistic data sets are usually not just a random sample
+in that infinite-dimensional space, but have structures
+(e.g. clusters of close-by diagrams) which should be favorable for our approach.
+
+On the theoretical side, the obvious next question is whether our strategy
+for blind spanners yields a linear spanner in expectation. 
+Our experiments are not conclusive enough in this respect to make this conjecture yet.
+However, it has been brought to our attention\footnote{Yusu Wang, personal communication}
+that the size of the blind spanner is bounded by the \emph{weight} of the WSPD
+which is the sum of the  cardinalities of all pairs in a WSPD.
+The weight of a WSPD can be quadratic, but preliminary
+experimental evaluation on worst-case examples do not show such a quadratic
+behavior. Therefore, we postpone the theoretical analysis of the spanner construction
+to an extended version of this article.
+
+The existence of a $2$-approximation algorithm did not help us to significantly
+reduce the number of exact distance computations, although it seems obvious
+that knowing the all approximate distances is useful.
+We pose the question what heuristic could make more use of this feature.
+
+\appendix
+\section{Proof of \cref{thm:ann_bound}}
 
 Towards the proof, we will use the following geometric lemma which
 can be summarized as follows: if $\dist(p_i,q)$ is computed in the algorithm,
@@ -919,6 +1000,7 @@ is closer to $q$ than $p_1$, also will not be a candidate, and at least one of t
 
 
 
+
 The algorithm computes $r_i$ by assumption and updates
 all lower bounds. For $p_j$, it sets $a_j\gets \max (a_j,|\dist(p_i,p_j)-r_i|)$.
 If $\dist(p_i,p_j)\geq (1+\frac{1}{1+\eps})r_i$, it follows that 
@@ -946,27 +1028,23 @@ Among the points $p_k,\ldots,p_\ell$ with $1\leq k< \ell\leq n$, the algorithm c
 distances to $q$.
 \end{lemma}
 \begin{proof}
-By the first part of Lemma~\ref{lem:bound_lemma}, every point in $p_k,\ldots,p_\ell$
+By the first part of \cref{lem:bound_lemma}, every point in $p_k,\ldots,p_\ell$
 whose distance to $q$ is queried lies in the ball of radius $(1+\frac{1}{1+\eps})v_k=\frac{2+\eps}{1+\eps} v_k$
 around $c_k$. Moreover, if the distance of two points $p_i$ and $p_j$ with $k\leq i<j\leq\ell$
-is computed, the second part of Lemma~\ref{lem:bound_lemma} implies that $\dist(p_i,p_j)> \frac{\eps}{1+\eps}r_i\geq \frac{\eps}{1+\eps}v_\ell$.
+is computed, the second part of \cref{lem:bound_lemma} implies that $\dist(p_i,p_j)> \frac{\eps}{1+\eps}r_i\geq \frac{\eps}{1+\eps}v_\ell$.
 Hence, all points in $p_k,\ldots,p_\ell$ for which the algorithm computes the distance
-have a pairwise distance of at least $\frac{\eps}{1+\eps}v_\ell$. The statement follows by applying Lemma~\ref{lem:packing_lemma}.
+have a pairwise distance of at least $\frac{\eps}{1+\eps}v_\ell$. The statement follows by applying \cref{lem:packing_lemma}.
 \end{proof}
 
 A consequence of the lemma is that as long as a candidate $c$ is fixed in the algorithm,
 the number of computed distances is a constant (since $v_k=v_\ell$). 
-This means that to prove Theorem~\ref{thm:ann_bound}, it would suffice to show
+This means that to prove \cref{thm:ann_bound}, it would suffice to show
 that the candidate changes only a logarithmic number of times in expectation.
 While we have not found a simple proof for this claim, we can prove the statement with a slight variant of
 that argument.
 
 
-
-
-
-
-\begin{proof} (of Theorem~\ref{thm:ann_bound})
+\begin{proof} (of \cref{thm:ann_bound})
 %
 In the sequence $p_1,\ldots,p_n$, let $p_k$ be a point 
 such that $r_i<r_k$ for all $1\leq i\leq k-1$. We call an element
@@ -987,7 +1065,7 @@ Now, let $p_k$, $p_\ell$ be two consecutive minima in the sequence
 (we also allow that $\ell=n+1$ if $k$ is the last minimum in the sequence).
 Note that $v_{\ell-1}\geq r_k$ because each $v_j$ is equal to $r_i$ for
 some $i\leq j$, and in the sequence $r_1,\ldots,r_{\ell-1}$, $r_k$
-is minimal by construction. Using Lemma~\ref{lem:sequence_lemma},
+is minimal by construction. Using \cref{lem:sequence_lemma},
 the number of distance computations among the points
 $p_k,\ldots,p_{\ell-1}$ is at most
 \[
@@ -997,8 +1075,8 @@ Since $p_1,\ldots,p_n$ decomposes into $O(\log n)$ such sequences in expectation
 \end{proof}
 
 We point out that the proof fails for $\eps=0$ because in that case, we cannot exclude an $\eps$-ball
-of close-by points as in the second part of Lemma~\ref{lem:bound_lemma}, and the packing argument fails.
-Indeed, as the example in Figure~\ref{fig:exact_bad_example} shows, there are point sets where the expected number
+of close-by points as in the second part of \cref{lem:bound_lemma}, and the packing argument fails.
+Indeed, as the example in \cref{fig:exact_bad_example} shows, there are point sets where the expected number
 of distance computations for exact nearest neighbor is linear.
 
 
@@ -1007,86 +1085,3 @@ Finally, we remark that a fast $2$-approximation algorithm for $\dist$ would lea
 optimization: compute a $2$-approximation of $\dist(p_i,q)$ for all $1\leq i\leq n$
 and let $m$ denote the minimal approximate distance encountered. Then, we can discard all points
 whose approximate distance is larger than $2m$, and run the above algorithm on the remaining points.
-
-\section{Experiments on approximate nearest neighbors}
-
-In order to experimentally evaluate the performance of our algorithm,
-we generate random point sets and random query points, and for each query point
-run the algorithm 10 times. The average number of distances to the query point
-that were actually computed is the measure that we are interested in.
-We average the results over 10 different instances of the point
-set and query point in order to see the trend clearer; thus
-each point on the plots in this section is the result of averaging of 100 runs
-of the code (10 instances, 10 random permutations per instance).
-
-\begin{figure}[ht]
-    \includegraphics[width=0.7\textwidth]{\expDistFigPath log_dependency_constant_ratio.png}
-    \caption{Ratio $\log(\mbox{computed distances}) / n$ for ANN algorithm. Data is for uniformly distributed
-    points.}
-    \label{fig:ann_const_ratio}
-\end{figure}
-
-\begin{figure}[ht]
-    \includegraphics[width=0.7\textwidth]{\expDistFigPath ann_computed_distances_dimension_dep.png}
-    \caption{Number of computed distances for different dimensions. Points are chosen uniformly, $\eps = 0.01$.}
-    \label{fig:ann_dimension_dependence}
-\end{figure}
-
-
-We used the following methods of generating random points:
-\begin{enumerate}
-    \item Uniform. Points are sampled uniformly at random from the unit cube in $\RR^d$.
-    \item Normal. Points are sampled from the normal distribution.
-\end{enumerate}
-Query points were sampled from the uniform distribution on the cube $[-10, 10]^d$
-and from the normal distribution centered at the origin with scale 100,
-thus we get query points that are "inside" the point set and also "outside".
-We sample data in dimensions up to 20 and for $\eps \in \Set{0.001, 0.005, 0.01, 0.05, 0.1}$,
-the maximal number of points is $30,000$.
-
-In order to empirically verify the upper bound $O(\log n)$,
-we plot the number of computed distances divided
-by the logarithm of the number of points in figure \ref{fig:ann_const_ratio} (for $d = 2$).
-We see that this ratio, though fluctuating a lot, remains in the interval $[1,4]$. This not just confirms
-the theoretical upper bound, but also shows that the algorithm in the low-dimensional case
-really computes only a very small number of distances to the query point.
-As expected, in high dimensions the algorithm does not perform as well.
-In Figure \ref{fig:ann_dimension_dependence} we plot the average number of computed distances
-for $d = 2, 5, 10$. While for $d = 2$ the growth is hardly noticeable, for $d = 10$
-the sublinearity of the growth becomes clear only when the number of points is relatively large,
-approaching 30000.
-
-\section{Conclusion and future work}
-\label{sec:conclusion}
-%
-We have introduced a new cost model for the analysis of algorithms
-for metric spaces that fits the situation that computing an individual distance
-is more costly than other types of primitive operations.
-Our theoretical and experimental results are under the usual assumption
-that the metric space has a low doubling dimension.
-However, in our motivating example of collections of persistence diagrams
-or Reeb graphs, this assumption does not hold. For instance,
-the space of persistence diagrams has an infinite doubling dimension.
-Nevertheless, realistic data sets are usually not just a random sample
-in that infinite-dimensional space, but have structures
-(e.g. clusters of close-by diagrams) which should be favorable for our approach
-We plan to consider the quality of our algorithms for persistence diagrams
-as future work.
-
-On the theoretical side, the obvious next question is whether our strategy
-for blind spanners yields a linear spanner in expectation. 
-Our experiments are not conclusive enough in this respect to make this conjecture yet.
-However, it has been brought to our attention\footnote{Yusu Wang, personal communication}
-that the size of the blind spanner is bounded by the \emph{weight} of the WSPD
-which is the sum of the  cardinalities of all pairs in a WSPD.
-The weight of a WSPD can be quadratic, but preliminary
-experimental evaluation on worst-case examples do not show such a quadratic
-behavior. Therefore, we postpone the theoretical analysis of the spanner construction
-to an extended version of this article.
-
-The existence of a $2$-approximation algorithm did not help us to significantly
-reduce the number of exact distance computations, although it seems obvious
-that knowing the all approximate distances is useful.
-We pose the question what heuristic could make more use of this feature.
-
-
