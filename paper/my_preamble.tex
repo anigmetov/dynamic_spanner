@@ -1,4 +1,3 @@
-% AMS packages
 \usepackage{amsmath}%
 \usepackage{amssymb}%
 \usepackage{amsfonts}
@@ -33,14 +32,13 @@
 
 
 % copied from hera paper - check
-\usepackage[ruled,noend,noline]{algorithm2e}
-\usepackage{subcaption}
+%\usepackage{subcaption}
 
-\newtheorem{theorem}{Theorem}
-\newtheorem{lemma}[theorem]{Lemma}
-\newtheorem{proposition}[theorem]{Proposition}
-\newtheorem{corollary}[theorem]{Corollary}
-\newtheorem{definition}[theorem]{Definition}
+%\newtheorem{theorem}{Theorem}
+%\newtheorem{lemma}[theorem]{Lemma}
+%\newtheorem{proposition}[theorem]{Proposition}
+%\newtheorem{corollary}[theorem]{Corollary}
+%\newtheorem{definition}[theorem]{Definition}
 
 
 % copied from expensive distances paper
@@ -128,14 +126,9 @@
 \newcommand{\yaxis}{$y$\nobreakdash-axis\xspace}
 \newcommand{\xaxis}{$x$\nobreakdash-axis\xspace}
 
+\newcommand{\algname}[1]{{\textsc{#1}}\xspace}
 
 % Hera stuff
-
-\renewcommand{\algorithmcfname}{ALGORITHM}
-
-\newcommand{\nnd}{\mathcal{D}}
-
-\newcommand{\opt}{o}
 
 \newcommand{\ignore}[1]{}
 
@@ -207,58 +200,4 @@
 \newcommand{\wsdist}[1]{{W_{#1}}}
 
 % expensive distances stuff
-\def \expDistFigPath {data/expensive_distances/pics/}
-\def \expDistDataPath {data/expensive_distances/}
-\newcommand{\ra}[1]{\renewcommand{\arraystretch}{#1}}
-
-\renewcommand{\S}{\mathbb{S}}
-\newcommand{\dappr}{\tilde{d}}
-\newcommand{\orient}{O}
-\newcommand{\cpro}{\Pi}
-
-\newcommand{\metricspace}{\mathcal{M}}
-\newcommand{\approxmetric}{\gamma}
-\newcommand{\parent}{\mathrm{par}}
-\newcommand{\point}{p}
-\newcommand{\level}{\ell}
-\newcommand{\diam}{\mathrm{diam}}
-\newcommand{\pointset}{P}
-\newcommand{\distspace}{\mathcal{M}}
-\newcommand{\dist}{\delta}
-\newcommand{\adist}{\gamma}
-\newcommand{\complexity}{C_{\dist}}
-\newcommand{\doublingdimension}{\Delta}
-
-\newcommand{\myparagraph}[1]{\textbf{#1.}}
-
-\def\marrow{\marginpar[\hfill$\longrightarrow$]{$\longleftarrow$}}
-\def\michael#1{\textcolor{red}{\textsc{Michael says: }{\marrow\sf #1}}}
-
-
-
-
-% matching distance stuff
-
-\newcommand{\poset}{{\mathcal{P}}}
-\newcommand{\pleq}{\preceq}
-
-\DeclareMathOperator{\push}{{push}}
-\newcommand{\adiag}{{\Delta}}
-\newcommand{\myline}{\ell}
-\newcommand{\weight}{w}
-\newcommand{\module}{{\mathfrak{M}}}
-
-\newcommand{\lambdat}{\tilde{\lambda}}
-\newcommand{\gammat}{\tilde{\gamma}}
-\newcommand{\atilde}{\tilde{a}}
-\newcommand{\mut}{\tilde{\mu}}
-
-\newcommand{\amax}{a_{\max}}
-\newcommand{\gmax}{\gamma_{\max}}
-\newcommand{\amin}{a_{\min}}
-\newcommand{\gmin}{\gamma_{\min}}
-\newcommand{\dela}{\Delta{a}}
-\newcommand{\delg}{\Delta{\gamma}}
-
-\newcommand\wpush[2]{{\pi_{#1}({#2})}}
-
+\input{my_preamble_exp_dist.tex}
