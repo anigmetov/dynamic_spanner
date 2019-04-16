@@ -205,6 +205,12 @@ if __name__ == "__main__":
     qs = [1, 2, 3]
 
     fnames = ["mcgill/dist_matrix_mcgill_original_no_parallel_q_{}_dim_{}.txt".format(q, dim) for q in qs for dim in dims]
+    # np.random.seed()
+    # random.seed()
+    # n_pointses = [ i for i in range(100, 4000, 200)]
+    # dims = [0, 1, 2]
+    # qs = [1, 2]
+    # fnames = ["dist_matrix_q_{}_dim_{}.txt".format(q, dim) for q in qs for dim in dims]
     epsilons = [0.0001, 0.0005, 0.001, 0.005, 0.01, 0.1, 0.5]
     n_attempts = 20
 

@@ -749,9 +749,9 @@ public:
         std::uniform_real_distribution<double> dis(1.0, approximation_factor);
 
 
-#pragma omp parallel
+//#pragma omp parallel
         {
-#pragma omp for schedule(dynamic)
+//#pragma omp for schedule(dynamic)
             for (int i = 0; i < m_num_points; ++i) {
                 for (int j = i + 1; j < m_num_points; ++j) {
                     auto& info_ij = m_matrix[i][j];

@@ -4,3 +4,9 @@ n_pts = 448
 ELAPSED TIME = 26702449 ms = 26.702449 sec for q = 1, dim = 2, delta = 0.01
 ELAPSED TIME = 47298193 ms = 47.298193 sec for q = 2, dim = 2, delta = 0.01
 ELAPSED TIME = 140999746 ms = 140.999746 sec for q = 3, dim = 2, delta = 0.01
+Read 450 diagrams
+n_pts = 450
+
+ELAPSED TIME = 4009998310 ms = 4009.99831 sec for q = 1, dim = 0, delta = 0.01
+ELAPSED TIME = 5322967661 ms = 5322.967661 sec for q = 2, dim = 0, delta = 0.01
+ELAPSED TIME = 16951261503 ms = 16951.261503 sec for q = 3, dim = 0, delta = 0.01

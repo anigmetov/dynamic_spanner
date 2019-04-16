@@ -8,6 +8,7 @@
 #include <iostream>
 #include <algorithm>
 #include <random>
+#include <chrono>
 
 #include "cover_tree/cover_tree.h"
 #include "cover_tree/wspd.h"
@@ -458,7 +459,12 @@ int main(int argc, char** argv)
 
     {
         DynamicSpannerR greedy_spanner(dist_matrix);
+        auto begin_greedy = std::chrono::steady_clock::now();
         greedy_spanner.construct_greedy_eps_spanner(eps);
+        auto end_greedy = std::chrono::steady_clock::now();
+        auto dur_greedy = std::chrono::duration_cast<std::chrono::microseconds>(end_greedy - begin_greedy).count();
+        console->info("greedy_time = {} microseconds", dur_greedy);
+        exp_logger->info("greedy_time = {} microseconds", dur_greedy);
         console->info("{};{}", dist_name, greedy_spanner.get_statistics());
         exp_logger->info("{};{}", dist_name, greedy_spanner.get_statistics());
         console->flush();
@@ -513,12 +519,17 @@ int main(int argc, char** argv)
 
     {
         DynamicSpannerR blind_greedy_spanner(dist_matrix);
+        auto begin_blind_greedy = std::chrono::steady_clock::now();
         blind_greedy_spanner.construct_blind_greedy_eps_spanner(eps);
+        auto end_blind_greedy = std::chrono::steady_clock::now();
+        auto dur_blind_greedy = std::chrono::duration_cast<std::chrono::microseconds>(end_blind_greedy - begin_blind_greedy).count();
+        console->info("blind_greedy_time = {} microseconds", dur_blind_greedy);
+        exp_logger->info("blind_greedy_time = {} microseconds", dur_blind_greedy);
         console->info("{};{}", dist_name, blind_greedy_spanner.get_statistics());
         exp_logger->info("{};{}", dist_name, blind_greedy_spanner.get_statistics());
         exp_logger->flush();
         console->flush();
-        blind_greedy_spanner.check_ratio(eps);
+        //blind_greedy_spanner.check_ratio(eps);
     }
 
 //    {
