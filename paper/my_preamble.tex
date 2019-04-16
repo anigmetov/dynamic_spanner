@@ -1,0 +1,203 @@
+\usepackage{amsmath}%
+\usepackage{amssymb}%
+\usepackage{amsfonts}
+\usepackage{amsthm}
+
+\usepackage{enumerate}
+\usepackage{booktabs}
+\usepackage{nccmath}
+\usepackage{diagbox}
+\usepackage{url}
+\usepackage{xspace}
+\usepackage{mathbbol}
+\usepackage{comment}
+\usepackage{braket}
+\usepackage{mathptmx}
+
+% graphics
+\usepackage{tikz}
+\usepackage{pgf}
+\usepackage{graphicx}
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.14}
+\usepackage{pgfplotstable}
+\usetikzlibrary{patterns}
+\usetikzlibrary{external}
+\usepackage{epsfig}
+\usepackage{wrapfig}
+\usepackage{color}
+\usepackage{floatflt}
+
+\usetikzlibrary{arrows}
+
+
+% copied from hera paper - check
+%\usepackage{subcaption}
+
+%\newtheorem{theorem}{Theorem}
+%\newtheorem{lemma}[theorem]{Lemma}
+%\newtheorem{proposition}[theorem]{Proposition}
+%\newtheorem{corollary}[theorem]{Corollary}
+%\newtheorem{definition}[theorem]{Definition}
+
+
+% copied from expensive distances paper
+%
+\usepackage{algorithm}
+\usepackage[noend]{algpseudocode}
+
+
+
+
+% disable ugly latex defaults
+\renewcommand{\leq}{\leqslant}
+\renewcommand{\geq}{\geqslant}
+\renewcommand{\epsilon}{\varepsilon}
+\renewcommand{\phi}{\varphi}
+\newcommand{\eps}{\varepsilon}
+
+% hyphen in math mode
+\mathchardef\mhyphen="2D
+
+% function restriction
+\newcommand\restr[2]{{% we make the whole thing an ordinary symbol
+  \left.\kern-\nulldelimiterspace % automatically resize the bar with \right
+  #1 % the function
+  \vphantom{\big|} % pretend it's a little taller at normal size
+  \right|_{#2} % this is the delimiter
+  }}
+
+% natural transformation arrow
+\newcommand{\naturalto}{%
+  \mathrel{\vbox{\offinterlineskip
+    \mathsurround=0pt
+    \ialign{\hfil##\hfil\cr
+      \normalfont\scalebox{1.2}{.}\cr
+%      \noalign{\kern-.05ex}
+      $\longrightarrow$\cr}
+  }}%
+}
+
+% do not use DeclareMathOperator - subscript issue
+\newcommand{\Hom}{\mathrm{Hom}}
+
+% to not annoy me
+\newcommand{\Alpha}{A}
+\newcommand{\Beta}{B}
+\newcommand{\Epsilon}{E}
+
+% common rings/fields/etc
+\newcommand{\NN}{\mathbb{N}}
+\newcommand{\ZZ}{\mathbb{Z}}
+\newcommand{\ZnZ}{\mathbb{Z}/n\mathbb{Z}}
+\newcommand{\QQ}{\mathbb{Q}}
+\newcommand{\RR}{\mathbb{R}}
+\newcommand{\CC}{\mathbb{C}}
+\newcommand{\HH}{\mathbb{H}}
+\newcommand{\Fp}{\mathbb{F}_p}
+
+\newcommand{\hence}{\implies}
+\newcommand{\ergo}{\implies}
+
+% gothic letters
+\newcommand{\pig}{\mathfrak{p}}
+\newcommand{\aig}{\mathfrak{a}}
+\newcommand{\qig}{\mathfrak{q}}
+\newcommand{\mig}{\mathfrak{m}}
+\newcommand{\nilrad}{\mathfrak{N}}
+
+\DeclareMathOperator*{\argmin}{arg\,min}
+\DeclareMathOperator*{\argmax}{arg\,max}
+\DeclareMathOperator*{\tr}{tr}
+\DeclareMathOperator*{\rk}{rank}
+\DeclareMathOperator*{\im}{im}
+\DeclareMathOperator*{\epi}{epi}
+% \char command is already defined
+\DeclareMathOperator*{\fchar}{char}
+
+
+\theoremstyle{definition}
+\newtheorem{mythm}{Theorem}
+\newtheorem{mylem}{Lemma}
+\newtheorem{mycor}{Corollary}
+\newtheorem{myprop}{Proposition}
+\newtheorem{mydef}{Definition}
+
+\newcommand{\yaxis}{$y$\nobreakdash-axis\xspace}
+\newcommand{\xaxis}{$x$\nobreakdash-axis\xspace}
+
+\newcommand{\algname}[1]{{\textsc{#1}}\xspace}
+
+% Hera stuff
+
+\newcommand{\ignore}[1]{}
+
+\newcommand{\dtype}[1]{{\textit{\small #1}}}
+
+\newcommand{\libraryname}[1]{{\textsc{#1}}\xspace}
+
+\newcommand{\hera}{\libraryname{Hera}}
+\newcommand{\Hera}{\libraryname{Hera}}
+\newcommand{\dionisus}{\libraryname{Dionysus}}
+\newcommand{\Dionisus}{\libraryname{Dionysus}}
+
+%\numberwithin{equation}{section}
+%\numberwithin{figure}{section}
+
+%\newcommand{\Remark}[1]     {{\small {\sf [[#1]]}}}
+
+%%% pgfplots %%%
+%\tikzexternalize
+
+\pgfplotsset
+{
+    tick label style={font=\footnotesize},
+    legend style    ={font=\footnotesize},
+    label style     ={font=\footnotesize},
+    tickwidth       =2pt,
+    ylabel near ticks,
+    xlabel near ticks,
+    legend style     ={draw=none},
+    legend cell align=right,
+    legend plot pos  =right,
+    /pgfplots/narrow area legend/.style=
+    {
+        legend image code/.code={ \draw[#1] (0cm,-0.06cm) rectangle (0.6cm,0.06cm); }
+    },
+    /pgfplots/short line legend/.style=
+    {
+        legend image code/.code={ \draw[#1] (0cm,0cm) rectangle (0.6cm,0cm); }
+    },
+}
+
+\pgfplotscreateplotcyclelist{filled-color}
+{
+    every mark/.append style={solid,fill=blue!80!white},    mark=*          \\%
+    every mark/.append style={solid,fill=red!80!white},     mark=square*    \\%
+    every mark/.append style={solid,fill=orange!80!white},  mark=pentagon*  \\%
+    every mark/.append style={solid,fill=green},            mark=diamond*   \\%
+    every mark/.append style={solid,fill=black},            mark=triangle*  \\%
+}
+
+\newcommand{\addaveraged}[2][]
+           {\addplot+[#1,error bars/.cd, y dir=both,y explicit] table[x index=0, y index=1, y error index=2] {#2};}
+
+\pgfplotsset{
+    geommark/.style={black,mark options={solid,fill=red!80!white},mark=square*},
+    nongeommark/.style={black,mark options={solid,fill=blue!80!white},mark=*},
+    dionmark/.style={black,mark options={solid,fill=orange!80!white},mark=pentagon*},
+    greentrianglemark/.style={black,mark options={solid,fill=green!80!white},mark=triangle*},
+    browndiamondmark/.style={black,mark options={solid,fill=brown!80!white},mark=diamond*}
+}
+
+
+% all distances
+% interleaving
+\newcommand{\intdist}{{D_I}}
+% bottleneck
+\newcommand{\btdist}{{W_\infty}}
+% Wasserstein of order q (parameter)
+\newcommand{\wsdist}[1]{{W_{#1}}}
+
+% expensive distances stuff
+\input{my_preamble_exp_dist.tex}

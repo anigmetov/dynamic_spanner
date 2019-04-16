@@ -292,6 +292,71 @@ from
        n_points * (n_points -1 ) / 2 as max_edges
 FROM public.spanner_results_wasserstein_mcgill t
 where t.spanner_method = 'greedy-non-blind'
+and  input_file not like '%orig%'
+group by dim, n_points, epsilon, q ) t_gnb
+full outer join (SELECT dim, n_points, epsilon, q as q, 
+       avg(n_edges) as n_edges
+FROM public.spanner_results_wasserstein_mcgill t
+where t.spanner_method = 'blind-greedy'
+group by dim, n_points, epsilon, q ) t_bg on (t_gnb.dim = t_bg.dim and t_gnb.n_points = t_bg.n_points and t_gnb.q = t_bg.q and t_gnb.epsilon = t_bg.epsilon)
+full outer join 
+(SELECT dim, n_points, epsilon, q as q, 
+       avg(n_edges) as n_edges
+FROM public.spanner_results_wasserstein_mcgill t
+where t.spanner_method = 'blind-quasi-sorted-greedy'
+group by dim, n_points, epsilon, q ) t_qsg on (t_gnb.dim = t_qsg.dim and t_gnb.n_points = t_qsg.n_points and t_gnb.q = t_qsg.q and t_gnb.epsilon = t_qsg.epsilon)
+full outer join 
+(SELECT dim, n_points, epsilon, q as q, 
+       avg(n_edges) as n_edges
+FROM public.spanner_results_wasserstein_mcgill t
+where t.spanner_method = 'blind-quasi-sorted-shaker'
+group by dim, n_points, epsilon, q ) t_qss on (t_gnb.dim = t_qss.dim and t_gnb.n_points = t_qss.n_points and t_gnb.q = t_qss.q and t_gnb.epsilon = t_qss.epsilon)
+full outer join 
+(SELECT dim, n_points, epsilon, q as q, 
+       avg(n_edges) as n_edges
+FROM public.spanner_results_wasserstein_mcgill t
+where t.spanner_method = 'blind-random-bad-ratio-connect-first-lower-bound-first'
+group by dim, n_points, epsilon, q ) t_rbr_cf_lb on (t_gnb.dim = t_rbr_cf_lb.dim and t_gnb.n_points = t_rbr_cf_lb.n_points and t_gnb.q = t_rbr_cf_lb.q and t_gnb.epsilon = t_rbr_cf_lb.epsilon)
+full outer join select coalesce(t_gnb.dim, t_bg.dim) as dim, 
+coalesce(t_gnb.n_points,  t_bg.n_points) as n_points,
+coalesce(t_gnb.epsilon, t_bg.epsilon) as epsilon, 
+coalesce(t_gnb.q, t_bg.q) as q, 
+    --t_gnb.n_edges  as edges_greedy, 
+    --t_bg.n_edges as edges_blind_greedy, 
+    --t_wspd.n_edges as edges_wspd,
+    --t_qsg.n_edges as edges_quasi_sorted_greedy,
+    --t_qss.n_edges as edges_quasi_sorted_shaker,
+    --t_rbr.n_edges as edges_blind_random,
+    --t_rbr_cf.n_edges as edges_blind_random_connect_first,
+    --t_rbr_lb.n_edges as edges_blind_random_lower_bound_first,
+    --t_rbr_cf_lb.n_edges as edges_blind_random_connect_first_lower_bound_first,
+
+    t_gnb.n_edges / t_gnb.n_points as ratio_greedy, 
+    t_bg.n_edges / t_gnb.n_points as ratio_blind_greedy, 
+    --t_qsg.n_edges / t_gnb.n_points as ratio_quasi_sorted_greedy,
+    --t_qss.n_edges / t_gnb.n_points as ratio_quasi_sorted_shaker,
+    --t_rbr.n_edges / t_gnb.n_points as ratio_blind_random,
+    --t_rbr_cf.n_edges / t_gnb.n_points as ratio_blind_random_connect_first,
+    t_rbr_lb.n_edges / t_gnb.n_points as ratio_blind_random_lower_bound_first,
+    --t_rbr_cf_lb.n_edges / t_gnb.n_points as ratio_blind_random_connect_first_lower_bound_first,
+
+    t_gnb.n_edges / t_gnb.max_edges as sparseness_greedy, 
+    t_bg.n_edges / t_gnb.max_edges as sparseness_blind_greedy, 
+    --t_qsg.n_edges / t_gnb.max_edges as sparseness_quasi_sorted_greedy,
+    --t_qss.n_edges / t_gnb.max_edges  as sparseness_quasi_sorted_shaker,
+    --t_rbr.n_edges / t_gnb.max_edges  as sparseness_blind_random,
+    --t_rbr_cf.n_edges / t_gnb.max_edges  as sparseness_blind_random_connect_first,
+    t_rbr_lb.n_edges / t_gnb.max_edges  as sparseness_blind_random_lower_bound_first
+    --, t_rbr_cf_lb.n_edges / t_gnb.max_edges  as sparseness_blind_random_connect_first_lower_bound_first
+
+    
+from 
+(SELECT dim, n_points, epsilon, q as q, 
+       avg(n_edges) as n_edges,
+       n_points * (n_points -1 ) / 2 as max_edges
+FROM public.spanner_results_wasserstein_mcgill t
+where t.spanner_method = 'greedy-non-blind'
+and  input_file not like '%orig%'
 group by dim, n_points, epsilon, q ) t_gnb
 full outer join (SELECT dim, n_points, epsilon, q as q, 
        avg(n_edges) as n_edges
@@ -340,3 +405,814 @@ and t_gnb.q = 1
 --and t_gnb.n_points > 200
 and abs(t_rbr.epsilon - 0.2) < 0.0001
 order by 3, 1, 4, 2
+
+(SELECT dim, n_points, epsilon, q as q, 
+       avg(n_edges) as n_edges
+FROM public.spanner_results_wasserstein_mcgill t
+where t.spanner_method = 'blind-random-bad-ratio-connect-first'
+group by dim, n_points, epsilon, q ) t_rbr_cf on (t_gnb.dim = t_rbr_cf.dim and t_gnb.n_points = t_rbr_cf.n_points and t_gnb.q = t_rbr_cf.q and t_gnb.epsilon = t_rbr_cf.epsilon)
+full outer join 
+(SELECT dim, n_points, epsilon, q as q, 
+       avg(n_edges) as n_edges
+FROM public.spanner_results_wasserstein_mcgill t
+where t.spanner_method = 'blind-random-bad-ratio-lower-bound-first'
+group by dim, n_points, epsilon, q ) t_rbr_lb on (t_gnb.dim = t_rbr_lb.dim and t_gnb.n_points = t_rbr_lb.n_points and t_gnb.q = t_rbr_lb.q and t_gnb.epsilon = t_rbr_lb.epsilon)
+full outer join 
+(SELECT dim, n_points, epsilon, q as q, 
+       avg(n_edges) as n_edges
+FROM public.spanner_results_wasserstein_mcgill t
+where t.spanner_method = 'blind-random-bad-ratio'
+group by dim, n_points, epsilon, q ) t_rbr on (t_gnb.dim = t_rbr.dim and t_gnb.n_points = t_rbr.n_points and t_gnb.q = t_rbr.q and t_gnb.epsilon = t_rbr.epsilon)
+where 1 = 1
+  and t_gnb.dim =  0
+and t_gnb.q = 1
+--and t_gnb.n_points > 200
+and abs(t_rbr.epsilon - 0.2) < 0.0001
+order by 3, 1, 4, 2
+
+
+select *
+from spanner_results_wasserstein_mcgill
+where input_file like '%orig%'
+and dim = 0
+and n_points = 450
+--and q = 1
+and abs(epsilon - 0.2) < 0.00001
+and spanner_method in ('blind-greedy', 'blind-quasi-sorted', 'greedy-non-blind', 'blind-random-bad-ratio')
+order by q, spanner_method, epsilon
+
+
+
+
+with t as (SELECT tt.*, n_points * (n_points - 1) / 2 as max_edges
+           FROM public.spanner_results_wasserstein_mcgill tt
+           where 1 = 1
+             and input_file not like '%orig%'
+             and dim in (0, 1)
+             and q in (1, 2, 3))
+select coalesce(t_gnb.dim, t_bg.dim)           as dim,
+       coalesce(t_gnb.n_points, t_bg.n_points) as n_points,
+       coalesce(t_gnb.epsilon, t_bg.epsilon)   as epsilon,
+       coalesce(t_gnb.q, t_bg.q)               as q,
+    --t_gnb.n_edges  as edges_greedy,
+    --t_bg.n_edges as edges_blind_greedy,
+    --t_wspd.n_edges as edges_wspd,
+    --t_qsg.n_edges as edges_quasi_sorted_greedy,
+    --t_qss.n_edges as edges_quasi_sorted_shaker,
+    --t_rbr.n_edges as edges_blind_random,
+    --t_rbr_cf.n_edges as edges_blind_random_connect_first,
+    --t_rbr_lb.n_edges as edges_blind_random_lower_bound_first,
+    --t_rbr_cf_lb.n_edges as edges_blind_random_connect_first_lower_bound_first,
+
+       t_gnb.n_edges / t_gnb.n_points          as ratio_greedy,
+       t_bg.n_edges / t_gnb.n_points           as ratio_blind_greedy,
+    --t_qsg.n_edges / t_gnb.n_points as ratio_quasi_sorted_greedy,
+    --t_qss.n_edges / t_gnb.n_points as ratio_quasi_sorted_shaker,
+    --t_rbr.n_edges / t_gnb.n_points as ratio_blind_random,
+    --t_rbr_cf.n_edges / t_gnb.n_points as ratio_blind_random_connect_first,
+       t_rbr_lb.n_edges / t_gnb.n_points       as ratio_blind_random_lower_bound_first,
+    --t_rbr_cf_lb.n_edges / t_gnb.n_points as ratio_blind_random_connect_first_lower_bound_first,
+
+       t_gnb.n_edges / t_gnb.max_edges         as sparseness_greedy,
+       t_bg.n_edges / t_gnb.max_edges          as sparseness_blind_greedy,
+       t_bg.n_edges / t_gnb.n_edges            as blind_non_blind_ratio,
+       
+    --t_qsg.n_edges / t_gnb.max_edges as sparseness_quasi_sorted_greedy,
+    --t_qss.n_edges / t_gnb.max_edges  as sparseness_quasi_sorted_shaker,
+    --t_rbr.n_edges / t_gnb.max_edges  as sparseness_blind_random,
+    --t_rbr_cf.n_edges / t_gnb.max_edges  as sparseness_blind_random_connect_first,
+       t_rbr_lb.n_edges / t_gnb.max_edges      as sparseness_blind_random_lower_bound_first
+    --, t_rbr_cf_lb.n_edges / t_gnb.max_edges  as sparseness_blind_random_connect_first_lower_bound_first
+
+
+from (SELECT dim, n_points, epsilon, q as q, avg(n_edges) as n_edges, n_points * (n_points - 1) / 2 as max_edges
+      FROM t
+      where t.spanner_method = 'greedy-non-blind'
+      group by dim, n_points, epsilon, q) t_gnb full
+       outer join (SELECT dim, n_points, epsilon, q as q, avg(n_edges) as n_edges
+                   FROM t
+                   where t.spanner_method = 'blind-greedy'
+                   group by dim, n_points, epsilon, q) t_bg
+         on (t_gnb.dim = t_bg.dim and t_gnb.n_points = t_bg.n_points and t_gnb.q = t_bg.q and
+             t_gnb.epsilon = t_bg.epsilon) full
+       outer join (SELECT dim, n_points, epsilon, q as q, avg(n_edges) as n_edges
+                   FROM t
+                   where t.spanner_method = 'blind-quasi-sorted-greedy'
+                   group by dim, n_points, epsilon, q) t_qsg
+         on (t_gnb.dim = t_qsg.dim and t_gnb.n_points = t_qsg.n_points and t_gnb.q = t_qsg.q and
+             t_gnb.epsilon = t_qsg.epsilon) full
+       outer join (SELECT dim, n_points, epsilon, q as q, avg(n_edges) as n_edges
+                   FROM t
+                   where t.spanner_method = 'blind-quasi-sorted-shaker'
+                   group by dim, n_points, epsilon, q) t_qss
+         on (t_gnb.dim = t_qss.dim and t_gnb.n_points = t_qss.n_points and t_gnb.q = t_qss.q and
+             t_gnb.epsilon = t_qss.epsilon) full
+       outer join (SELECT dim, n_points, epsilon, q as q, avg(n_edges) as n_edges
+                   FROM public.spanner_results_wasserstein_mcgill t
+                   where t.spanner_method = 'blind-random-bad-ratio-connect-first-lower-bound-first'
+                   group by dim, n_points, epsilon, q) t_rbr_cf_lb
+         on (t_gnb.dim = t_rbr_cf_lb.dim and t_gnb.n_points = t_rbr_cf_lb.n_points and t_gnb.q = t_rbr_cf_lb.q and
+             t_gnb.epsilon = t_rbr_cf_lb.epsilon) full
+       outer join (SELECT dim, n_points, epsilon, q as q, avg(n_edges) as n_edges
+                   FROM t
+                   where t.spanner_method = 'blind-random-bad-ratio-connect-first'
+                   group by dim, n_points, epsilon, q) t_rbr_cf
+         on (t_gnb.dim = t_rbr_cf.dim and t_gnb.n_points = t_rbr_cf.n_points and t_gnb.q = t_rbr_cf.q and
+             t_gnb.epsilon = t_rbr_cf.epsilon) full
+       outer join (SELECT dim, n_points, epsilon, q as q, avg(n_edges) as n_edges
+                   FROM t
+                   where t.spanner_method = 'blind-random-bad-ratio-lower-bound-first'
+                   group by dim, n_points, epsilon, q) t_rbr_lb
+         on (t_gnb.dim = t_rbr_lb.dim and t_gnb.n_points = t_rbr_lb.n_points and t_gnb.q = t_rbr_lb.q and
+             t_gnb.epsilon = t_rbr_lb.epsilon) full
+       outer join (SELECT dim, n_points, epsilon, q as q, avg(n_edges) as n_edges
+                   FROM t
+                   where t.spanner_method = 'blind-random-bad-ratio'
+                   group by dim, n_points, epsilon, q) t_rbr
+         on (t_gnb.dim = t_rbr.dim and t_gnb.n_points = t_rbr.n_points and t_gnb.q = t_rbr.q and
+             t_gnb.epsilon = t_rbr.epsilon)
+where 1 = 1
+order by 3, 1, 4, 2
+
+with 
+t_dim_0_eps_01_q_1 as (
+with t as (SELECT tt.*, n_points * (n_points - 1) / 2 as max_edges
+           FROM public.spanner_results_wasserstein_mcgill tt
+           where 1 = 1
+             and input_file not like '%orig%'
+             and dim = 0
+             and q  = 1
+             and abs(epsilon - 0.1) < 0.001
+
+             )
+select t_gnb.n_points as n_points,
+       t_gnb.n_edges / t_gnb.n_points          as ratio_greedy,
+       t_bg.n_edges / t_gnb.n_points           as ratio_blind_greedy,
+       t_gnb.n_edges / t_gnb.max_edges         as sparseness_greedy,
+       t_bg.n_edges / t_gnb.max_edges          as sparseness_blind_greedy,
+       t_bg.n_edges / t_gnb.n_edges            as blind_non_blind_ratio
+       
+from (SELECT dim, n_points, epsilon, q as q, avg(n_edges) as n_edges, n_points * (n_points - 1) / 2 as max_edges
+      FROM t
+      where t.spanner_method = 'greedy-non-blind'
+      group by dim, n_points, epsilon, q) t_gnb join (SELECT dim, n_points, epsilon, q as q, avg(n_edges) as n_edges
+                   FROM t
+                   where t.spanner_method = 'blind-greedy'
+                   group by dim, n_points, epsilon, q) t_bg
+         on (t_gnb.dim = t_bg.dim and t_gnb.n_points = t_bg.n_points and t_gnb.q = t_bg.q and
+             t_gnb.epsilon = t_bg.epsilon)
+),
+t_dim_0_eps_02_q_1 as (
+with t as (SELECT tt.*, n_points * (n_points - 1) / 2 as max_edges
+           FROM public.spanner_results_wasserstein_mcgill tt
+           where 1 = 1
+             and input_file not like '%orig%'
+             and dim = 0
+             and q  = 1
+             and abs(epsilon - 0.2) < 0.001
+
+             )
+select t_gnb.n_points as n_points,
+       t_gnb.n_edges / t_gnb.n_points          as ratio_greedy,
+       t_bg.n_edges / t_gnb.n_points           as ratio_blind_greedy,
+       t_gnb.n_edges / t_gnb.max_edges         as sparseness_greedy,
+       t_bg.n_edges / t_gnb.max_edges          as sparseness_blind_greedy,
+       t_bg.n_edges / t_gnb.n_edges            as blind_non_blind_ratio
+       
+from (SELECT dim, n_points, epsilon, q as q, avg(n_edges) as n_edges, n_points * (n_points - 1) / 2 as max_edges
+      FROM t
+      where t.spanner_method = 'greedy-non-blind'
+      group by dim, n_points, epsilon, q) t_gnb join (SELECT dim, n_points, epsilon, q as q, avg(n_edges) as n_edges
+                   FROM t
+                   where t.spanner_method = 'blind-greedy'
+                   group by dim, n_points, epsilon, q) t_bg
+         on (t_gnb.dim = t_bg.dim and t_gnb.n_points = t_bg.n_points and t_gnb.q = t_bg.q and
+             t_gnb.epsilon = t_bg.epsilon)
+)
+
+,
+
+t_dim_0_eps_05_q_1 as (
+with t as (SELECT tt.*, n_points * (n_points - 1) / 2 as max_edges
+           FROM public.spanner_results_wasserstein_mcgill tt
+           where 1 = 1
+             and input_file not like '%orig%'
+             and dim = 0
+             and q  = 1
+             and abs(epsilon - 0.5) < 0.001
+
+             )
+select t_gnb.n_points as n_points,
+       t_gnb.n_edges / t_gnb.n_points          as ratio_greedy,
+       t_bg.n_edges / t_gnb.n_points           as ratio_blind_greedy,
+       t_gnb.n_edges / t_gnb.max_edges         as sparseness_greedy,
+       t_bg.n_edges / t_gnb.max_edges          as sparseness_blind_greedy,
+       t_bg.n_edges / t_gnb.n_edges            as blind_non_blind_ratio
+       
+from (SELECT dim, n_points, epsilon, q as q, avg(n_edges) as n_edges, n_points * (n_points - 1) / 2 as max_edges
+      FROM t
+      where t.spanner_method = 'greedy-non-blind'
+      group by dim, n_points, epsilon, q) t_gnb join (SELECT dim, n_points, epsilon, q as q, avg(n_edges) as n_edges
+                   FROM t
+                   where t.spanner_method = 'blind-greedy'
+                   group by dim, n_points, epsilon, q) t_bg
+         on (t_gnb.dim = t_bg.dim and t_gnb.n_points = t_bg.n_points and t_gnb.q = t_bg.q and
+             t_gnb.epsilon = t_bg.epsilon)
+)
+
+-- q = 2
+,
+t_dim_0_eps_01_q_2 as (
+with t as (SELECT tt.*, n_points * (n_points - 1) / 2 as max_edges
+           FROM public.spanner_results_wasserstein_mcgill tt
+           where 1 = 1
+             and input_file not like '%orig%'
+             and dim = 0
+             and q  = 2
+             and abs(epsilon - 0.1) < 0.001
+
+             )
+select t_gnb.n_points as n_points,
+       t_gnb.n_edges / t_gnb.n_points          as ratio_greedy,
+       t_bg.n_edges / t_gnb.n_points           as ratio_blind_greedy,
+       t_gnb.n_edges / t_gnb.max_edges         as sparseness_greedy,
+       t_bg.n_edges / t_gnb.max_edges          as sparseness_blind_greedy,
+       t_bg.n_edges / t_gnb.n_edges            as blind_non_blind_ratio
+       
+from (SELECT dim, n_points, epsilon, q as q, avg(n_edges) as n_edges, n_points * (n_points - 1) / 2 as max_edges
+      FROM t
+      where t.spanner_method = 'greedy-non-blind'
+      group by dim, n_points, epsilon, q) t_gnb join (SELECT dim, n_points, epsilon, q as q, avg(n_edges) as n_edges
+                   FROM t
+                   where t.spanner_method = 'blind-greedy'
+                   group by dim, n_points, epsilon, q) t_bg
+         on (t_gnb.dim = t_bg.dim and t_gnb.n_points = t_bg.n_points and t_gnb.q = t_bg.q and
+             t_gnb.epsilon = t_bg.epsilon)
+),
+t_dim_0_eps_02_q_2 as (
+with t as (SELECT tt.*, n_points * (n_points - 1) / 2 as max_edges
+           FROM public.spanner_results_wasserstein_mcgill tt
+           where 1 = 1
+             and input_file not like '%orig%'
+             and dim = 0
+             and q  = 2
+             and abs(epsilon - 0.2) < 0.001
+
+             )
+select t_gnb.n_points as n_points,
+       t_gnb.n_edges / t_gnb.n_points          as ratio_greedy,
+       t_bg.n_edges / t_gnb.n_points           as ratio_blind_greedy,
+       t_gnb.n_edges / t_gnb.max_edges         as sparseness_greedy,
+       t_bg.n_edges / t_gnb.max_edges          as sparseness_blind_greedy,
+       t_bg.n_edges / t_gnb.n_edges            as blind_non_blind_ratio
+       
+from (SELECT dim, n_points, epsilon, q as q, avg(n_edges) as n_edges, n_points * (n_points - 1) / 2 as max_edges
+      FROM t
+      where t.spanner_method = 'greedy-non-blind'
+      group by dim, n_points, epsilon, q) t_gnb join (SELECT dim, n_points, epsilon, q as q, avg(n_edges) as n_edges
+                   FROM t
+                   where t.spanner_method = 'blind-greedy'
+                   group by dim, n_points, epsilon, q) t_bg
+         on (t_gnb.dim = t_bg.dim and t_gnb.n_points = t_bg.n_points and t_gnb.q = t_bg.q and
+             t_gnb.epsilon = t_bg.epsilon)
+)
+
+,
+
+t_dim_0_eps_05_q_2 as (
+with t as (SELECT tt.*, n_points * (n_points - 1) / 2 as max_edges
+           FROM public.spanner_results_wasserstein_mcgill tt
+           where 1 = 1
+             and input_file not like '%orig%'
+             and dim = 0
+             and q  = 2
+             and abs(epsilon - 0.5) < 0.001
+
+             )
+select t_gnb.n_points as n_points,
+       t_gnb.n_edges / t_gnb.n_points          as ratio_greedy,
+       t_bg.n_edges / t_gnb.n_points           as ratio_blind_greedy,
+       t_gnb.n_edges / t_gnb.max_edges         as sparseness_greedy,
+       t_bg.n_edges / t_gnb.max_edges          as sparseness_blind_greedy,
+       t_bg.n_edges / t_gnb.n_edges            as blind_non_blind_ratio
+       
+from (SELECT dim, n_points, epsilon, q as q, avg(n_edges) as n_edges, n_points * (n_points - 1) / 2 as max_edges
+      FROM t
+      where t.spanner_method = 'greedy-non-blind'
+      group by dim, n_points, epsilon, q) t_gnb join (SELECT dim, n_points, epsilon, q as q, avg(n_edges) as n_edges
+                   FROM t
+                   where t.spanner_method = 'blind-greedy'
+                   group by dim, n_points, epsilon, q) t_bg
+         on (t_gnb.dim = t_bg.dim and t_gnb.n_points = t_bg.n_points and t_gnb.q = t_bg.q and
+             t_gnb.epsilon = t_bg.epsilon)
+)
+
+,
+-- q = 3
+
+t_dim_0_eps_01_q_3 as (
+with t as (SELECT tt.*, n_points * (n_points - 1) / 2 as max_edges
+           FROM public.spanner_results_wasserstein_mcgill tt
+           where 1 = 1
+             and input_file not like '%orig%'
+             and dim = 0
+             and q = 3
+             and abs(epsilon - 0.1) < 0.001
+
+             )
+select t_gnb.n_points as n_points,
+       t_gnb.n_edges / t_gnb.n_points          as ratio_greedy,
+       t_bg.n_edges / t_gnb.n_points           as ratio_blind_greedy,
+       t_gnb.n_edges / t_gnb.max_edges         as sparseness_greedy,
+       t_bg.n_edges / t_gnb.max_edges          as sparseness_blind_greedy,
+       t_bg.n_edges / t_gnb.n_edges            as blind_non_blind_ratio
+       
+from (SELECT dim, n_points, epsilon, q as q, avg(n_edges) as n_edges, n_points * (n_points - 1) / 2 as max_edges
+      FROM t
+      where t.spanner_method = 'greedy-non-blind'
+      group by dim, n_points, epsilon, q) t_gnb join (SELECT dim, n_points, epsilon, q as q, avg(n_edges) as n_edges
+                   FROM t
+                   where t.spanner_method = 'blind-greedy'
+                   group by dim, n_points, epsilon, q) t_bg
+         on (t_gnb.dim = t_bg.dim and t_gnb.n_points = t_bg.n_points and t_gnb.q = t_bg.q and
+             t_gnb.epsilon = t_bg.epsilon)
+),
+t_dim_0_eps_02_q_3 as (
+with t as (SELECT tt.*, n_points * (n_points - 1) / 2 as max_edges
+           FROM public.spanner_results_wasserstein_mcgill tt
+           where 1 = 1
+             and input_file not like '%orig%'
+             and dim = 0
+             and q = 3
+             and abs(epsilon - 0.2) < 0.001
+
+             )
+select t_gnb.n_points as n_points,
+       t_gnb.n_edges / t_gnb.n_points          as ratio_greedy,
+       t_bg.n_edges / t_gnb.n_points           as ratio_blind_greedy,
+       t_gnb.n_edges / t_gnb.max_edges         as sparseness_greedy,
+       t_bg.n_edges / t_gnb.max_edges          as sparseness_blind_greedy,
+       t_bg.n_edges / t_gnb.n_edges            as blind_non_blind_ratio
+       
+from (SELECT dim, n_points, epsilon, q as q, avg(n_edges) as n_edges, n_points * (n_points - 1) / 2 as max_edges
+      FROM t
+      where t.spanner_method = 'greedy-non-blind'
+      group by dim, n_points, epsilon, q) t_gnb join (SELECT dim, n_points, epsilon, q as q, avg(n_edges) as n_edges
+                   FROM t
+                   where t.spanner_method = 'blind-greedy'
+                   group by dim, n_points, epsilon, q) t_bg
+         on (t_gnb.dim = t_bg.dim and t_gnb.n_points = t_bg.n_points and t_gnb.q = t_bg.q and
+             t_gnb.epsilon = t_bg.epsilon)
+)
+
+,
+
+t_dim_0_eps_05_q_3 as (
+with t as (SELECT tt.*, n_points * (n_points - 1) / 2 as max_edges
+           FROM public.spanner_results_wasserstein_mcgill tt
+           where 1 = 1
+             and input_file not like '%orig%'
+             and dim = 0
+             and q = 3
+             and abs(epsilon - 0.5) < 0.001
+
+             )
+select t_gnb.n_points as n_points,
+       t_gnb.n_edges / t_gnb.n_points          as ratio_greedy,
+       t_bg.n_edges / t_gnb.n_points           as ratio_blind_greedy,
+       t_gnb.n_edges / t_gnb.max_edges         as sparseness_greedy,
+       t_bg.n_edges / t_gnb.max_edges          as sparseness_blind_greedy,
+       t_bg.n_edges / t_gnb.n_edges            as blind_non_blind_ratio
+       
+from (SELECT dim, n_points, epsilon, q as q, avg(n_edges) as n_edges, n_points * (n_points - 1) / 2 as max_edges
+      FROM t
+      where t.spanner_method = 'greedy-non-blind'
+      group by dim, n_points, epsilon, q) t_gnb join (SELECT dim, n_points, epsilon, q as q, avg(n_edges) as n_edges
+                   FROM t
+                   where t.spanner_method = 'blind-greedy'
+                   group by dim, n_points, epsilon, q) t_bg
+         on (t_gnb.dim = t_bg.dim and t_gnb.n_points = t_bg.n_points and t_gnb.q = t_bg.q and
+             t_gnb.epsilon = t_bg.epsilon)
+)
+
+select t_dim_0_eps_01_q_1.n_points, 
+
+        -- q = 1
+       t_dim_0_eps_01_q_1.ratio_greedy as ratio_greedy_dim_0_eps_01_q_1,
+       t_dim_0_eps_01_q_1.ratio_blind_greedy as ratio_blind_greedy_dim_0_eps_01_q_1,
+       t_dim_0_eps_01_q_1.sparseness_greedy as sparseness_greedy_dim_0_eps_01_q_1,
+       t_dim_0_eps_01_q_1.sparseness_blind_greedy as sparseness_blind_greedy_dim_0_eps_01_q_1,
+       t_dim_0_eps_01_q_1.blind_non_blind_ratio as blind_non_blind_ratio_dim_0_eps_01_q_1,
+
+
+       t_dim_0_eps_02_q_1.ratio_greedy as ratio_greedy_dim_0_eps_02_q_1,
+       t_dim_0_eps_02_q_1.ratio_blind_greedy as ratio_blind_greedy_dim_0_eps_02_q_1,
+       t_dim_0_eps_02_q_1.sparseness_greedy as sparseness_greedy_dim_0_eps_02_q_1,
+       t_dim_0_eps_02_q_1.sparseness_blind_greedy as sparseness_blind_greedy_dim_0_eps_02_q_1,
+       t_dim_0_eps_02_q_1.blind_non_blind_ratio as blind_non_blind_ratio_dim_0_eps_02_q_1,
+
+       t_dim_0_eps_05_q_1.ratio_greedy as ratio_greedy_dim_0_eps_05_q_1,
+       t_dim_0_eps_05_q_1.ratio_blind_greedy as ratio_blind_greedy_dim_0_eps_05_q_1,
+       t_dim_0_eps_05_q_1.sparseness_greedy as sparseness_greedy_dim_0_eps_05_q_1,
+       t_dim_0_eps_05_q_1.sparseness_blind_greedy as sparseness_blind_greedy_dim_0_eps_05_q_1,
+       t_dim_0_eps_05_q_1.blind_non_blind_ratio as blind_non_blind_ratio_dim_0_eps_05_q_1,
+
+        -- q = 2
+       t_dim_0_eps_01_q_2.ratio_greedy as ratio_greedy_dim_0_eps_01_q_2,
+       t_dim_0_eps_01_q_2.ratio_blind_greedy as ratio_blind_greedy_dim_0_eps_01_q_2,
+       t_dim_0_eps_01_q_2.sparseness_greedy as sparseness_greedy_dim_0_eps_01_q_2,
+       t_dim_0_eps_01_q_2.sparseness_blind_greedy as sparseness_blind_greedy_dim_0_eps_01_q_2,
+       t_dim_0_eps_01_q_2.blind_non_blind_ratio as blind_non_blind_ratio_dim_0_eps_01_q_2,
+
+
+       t_dim_0_eps_02_q_2.ratio_greedy as ratio_greedy_dim_0_eps_02_q_2,
+       t_dim_0_eps_02_q_2.ratio_blind_greedy as ratio_blind_greedy_dim_0_eps_02_q_2,
+       t_dim_0_eps_02_q_2.sparseness_greedy as sparseness_greedy_dim_0_eps_02_q_2,
+       t_dim_0_eps_02_q_2.sparseness_blind_greedy as sparseness_blind_greedy_dim_0_eps_02_q_2,
+       t_dim_0_eps_02_q_2.blind_non_blind_ratio as blind_non_blind_ratio_dim_0_eps_02_q_2,
+
+       t_dim_0_eps_05_q_2.ratio_greedy as ratio_greedy_dim_0_eps_05_q_2,
+       t_dim_0_eps_05_q_2.ratio_blind_greedy as ratio_blind_greedy_dim_0_eps_05_q_2,
+       t_dim_0_eps_05_q_2.sparseness_greedy as sparseness_greedy_dim_0_eps_05_q_2,
+       t_dim_0_eps_05_q_2.sparseness_blind_greedy as sparseness_blind_greedy_dim_0_eps_05_q_2,
+       t_dim_0_eps_05_q_2.blind_non_blind_ratio as blind_non_blind_ratio_dim_0_eps_05_q_2,
+
+        -- q = 3
+        
+       t_dim_0_eps_01_q_3.ratio_greedy as ratio_greedy_dim_0_eps_01_q_3,
+       t_dim_0_eps_01_q_3.ratio_blind_greedy as ratio_blind_greedy_dim_0_eps_01_q_3,
+       t_dim_0_eps_01_q_3.sparseness_greedy as sparseness_greedy_dim_0_eps_01_q_3,
+       t_dim_0_eps_01_q_3.sparseness_blind_greedy as sparseness_blind_greedy_dim_0_eps_01_q_3,
+       t_dim_0_eps_01_q_3.blind_non_blind_ratio as blind_non_blind_ratio_dim_0_eps_01_q_3,
+
+
+       t_dim_0_eps_02_q_3.ratio_greedy as ratio_greedy_dim_0_eps_02_q_3,
+       t_dim_0_eps_02_q_3.ratio_blind_greedy as ratio_blind_greedy_dim_0_eps_02_q_3,
+       t_dim_0_eps_02_q_3.sparseness_greedy as sparseness_greedy_dim_0_eps_02_q_3,
+       t_dim_0_eps_02_q_3.sparseness_blind_greedy as sparseness_blind_greedy_dim_0_eps_02_q_3,
+       t_dim_0_eps_02_q_3.blind_non_blind_ratio as blind_non_blind_ratio_dim_0_eps_02_q_3,
+
+       t_dim_0_eps_05_q_3.ratio_greedy as ratio_greedy_dim_0_eps_05_q_3,
+       t_dim_0_eps_05_q_3.ratio_blind_greedy as ratio_blind_greedy_dim_0_eps_05_q_3,
+       t_dim_0_eps_05_q_3.sparseness_greedy as sparseness_greedy_dim_0_eps_05_q_3,
+       t_dim_0_eps_05_q_3.sparseness_blind_greedy as sparseness_blind_greedy_dim_0_eps_05_q_3,
+       t_dim_0_eps_05_q_3.blind_non_blind_ratio as blind_non_blind_ratio_dim_0_eps_05_q_3
+       
+
+
+from t_dim_0_eps_01_q_1 join t_dim_0_eps_02_q_1 on (t_dim_0_eps_01_q_1.n_points = t_dim_0_eps_02_q_1.n_points)
+                        join t_dim_0_eps_05_q_1 on (t_dim_0_eps_01_q_1.n_points = t_dim_0_eps_05_q_1.n_points)
+
+                        join t_dim_0_eps_01_q_2 on (t_dim_0_eps_01_q_1.n_points = t_dim_0_eps_01_q_2.n_points)
+                        join t_dim_0_eps_02_q_2 on (t_dim_0_eps_01_q_1.n_points = t_dim_0_eps_02_q_2.n_points)
+                        join t_dim_0_eps_05_q_2 on (t_dim_0_eps_01_q_1.n_points = t_dim_0_eps_05_q_2.n_points)
+
+                        left join t_dim_0_eps_01_q_3 on (t_dim_0_eps_01_q_1.n_points = t_dim_0_eps_01_q_3.n_points)
+                        left join t_dim_0_eps_02_q_3 on (t_dim_0_eps_01_q_1.n_points = t_dim_0_eps_02_q_3.n_points)
+                        left join t_dim_0_eps_05_q_3 on (t_dim_0_eps_01_q_1.n_points = t_dim_0_eps_05_q_3.n_points)
+
+
+order by 1
+
+
+
+
+
+
+with 
+t_dim_0_eps_01_q_1 as (
+with t as (SELECT tt.*, n_points * (n_points - 1) / 2 as max_edges
+           FROM public.spanner_results_wasserstein_mcgill tt
+           where 1 = 1
+             and input_file like '%no_par%'
+             and dim = 0
+             and q  = 1
+             and abs(epsilon - 0.1) < 0.001
+
+             )
+select t_gnb.n_points as n_points,
+       t_gnb.n_edges / t_gnb.n_points          as ratio_greedy,
+       t_bg.n_edges / t_gnb.n_points           as ratio_blind_greedy,
+       t_gnb.n_edges / t_gnb.max_edges         as sparseness_greedy,
+       t_bg.n_edges / t_gnb.max_edges          as sparseness_blind_greedy,
+       t_bg.n_edges / t_gnb.n_edges            as blind_non_blind_ratio
+       
+from (SELECT dim, n_points, epsilon, q as q, avg(n_edges) as n_edges, n_points * (n_points - 1) / 2 as max_edges
+      FROM t
+      where t.spanner_method = 'greedy-non-blind'
+      group by dim, n_points, epsilon, q) t_gnb join (SELECT dim, n_points, epsilon, q as q, avg(n_edges) as n_edges
+                   FROM t
+                   where t.spanner_method = 'blind-greedy'
+                   group by dim, n_points, epsilon, q) t_bg
+         on (t_gnb.dim = t_bg.dim and t_gnb.n_points = t_bg.n_points and t_gnb.q = t_bg.q and
+             t_gnb.epsilon = t_bg.epsilon)
+),
+t_dim_0_eps_02_q_1 as (
+with t as (SELECT tt.*, n_points * (n_points - 1) / 2 as max_edges
+           FROM public.spanner_results_wasserstein_mcgill tt
+           where 1 = 1
+             and input_file like '%no_par%'
+             and dim = 0
+             and q  = 1
+             and abs(epsilon - 0.2) < 0.001
+
+             )
+select t_gnb.n_points as n_points,
+       t_gnb.n_edges / t_gnb.n_points          as ratio_greedy,
+       t_bg.n_edges / t_gnb.n_points           as ratio_blind_greedy,
+       t_gnb.n_edges / t_gnb.max_edges         as sparseness_greedy,
+       t_bg.n_edges / t_gnb.max_edges          as sparseness_blind_greedy,
+       t_bg.n_edges / t_gnb.n_edges            as blind_non_blind_ratio
+       
+from (SELECT dim, n_points, epsilon, q as q, avg(n_edges) as n_edges, n_points * (n_points - 1) / 2 as max_edges
+      FROM t
+      where t.spanner_method = 'greedy-non-blind'
+      group by dim, n_points, epsilon, q) t_gnb join (SELECT dim, n_points, epsilon, q as q, avg(n_edges) as n_edges
+                   FROM t
+                   where t.spanner_method = 'blind-greedy'
+                   group by dim, n_points, epsilon, q) t_bg
+         on (t_gnb.dim = t_bg.dim and t_gnb.n_points = t_bg.n_points and t_gnb.q = t_bg.q and
+             t_gnb.epsilon = t_bg.epsilon)
+)
+
+,
+
+t_dim_0_eps_05_q_1 as (
+with t as (SELECT tt.*, n_points * (n_points - 1) / 2 as max_edges
+           FROM public.spanner_results_wasserstein_mcgill tt
+           where 1 = 1
+             and input_file like '%no_par%'
+             and dim = 0
+             and q  = 1
+             and abs(epsilon - 0.5) < 0.001
+
+             )
+select t_gnb.n_points as n_points,
+       t_gnb.n_edges / t_gnb.n_points          as ratio_greedy,
+       t_bg.n_edges / t_gnb.n_points           as ratio_blind_greedy,
+       t_gnb.n_edges / t_gnb.max_edges         as sparseness_greedy,
+       t_bg.n_edges / t_gnb.max_edges          as sparseness_blind_greedy,
+       t_bg.n_edges / t_gnb.n_edges            as blind_non_blind_ratio
+       
+from (SELECT dim, n_points, epsilon, q as q, avg(n_edges) as n_edges, n_points * (n_points - 1) / 2 as max_edges
+      FROM t
+      where t.spanner_method = 'greedy-non-blind'
+      group by dim, n_points, epsilon, q) t_gnb join (SELECT dim, n_points, epsilon, q as q, avg(n_edges) as n_edges
+                   FROM t
+                   where t.spanner_method = 'blind-greedy'
+                   group by dim, n_points, epsilon, q) t_bg
+         on (t_gnb.dim = t_bg.dim and t_gnb.n_points = t_bg.n_points and t_gnb.q = t_bg.q and
+             t_gnb.epsilon = t_bg.epsilon)
+)
+
+-- q = 2
+,
+t_dim_0_eps_01_q_2 as (
+with t as (SELECT tt.*, n_points * (n_points - 1) / 2 as max_edges
+           FROM public.spanner_results_wasserstein_mcgill tt
+           where 1 = 1
+             and input_file like '%no_par%'
+             and dim = 0
+             and q  = 2
+             and abs(epsilon - 0.1) < 0.001
+
+             )
+select t_gnb.n_points as n_points,
+       t_gnb.n_edges / t_gnb.n_points          as ratio_greedy,
+       t_bg.n_edges / t_gnb.n_points           as ratio_blind_greedy,
+       t_gnb.n_edges / t_gnb.max_edges         as sparseness_greedy,
+       t_bg.n_edges / t_gnb.max_edges          as sparseness_blind_greedy,
+       t_bg.n_edges / t_gnb.n_edges            as blind_non_blind_ratio
+       
+from (SELECT dim, n_points, epsilon, q as q, avg(n_edges) as n_edges, n_points * (n_points - 1) / 2 as max_edges
+      FROM t
+      where t.spanner_method = 'greedy-non-blind'
+      group by dim, n_points, epsilon, q) t_gnb join (SELECT dim, n_points, epsilon, q as q, avg(n_edges) as n_edges
+                   FROM t
+                   where t.spanner_method = 'blind-greedy'
+                   group by dim, n_points, epsilon, q) t_bg
+         on (t_gnb.dim = t_bg.dim and t_gnb.n_points = t_bg.n_points and t_gnb.q = t_bg.q and
+             t_gnb.epsilon = t_bg.epsilon)
+),
+t_dim_0_eps_02_q_2 as (
+with t as (SELECT tt.*, n_points * (n_points - 1) / 2 as max_edges
+           FROM public.spanner_results_wasserstein_mcgill tt
+           where 1 = 1
+             and input_file like '%no_par%'
+             and dim = 0
+             and q  = 2
+             and abs(epsilon - 0.2) < 0.001
+
+             )
+select t_gnb.n_points as n_points,
+       t_gnb.n_edges / t_gnb.n_points          as ratio_greedy,
+       t_bg.n_edges / t_gnb.n_points           as ratio_blind_greedy,
+       t_gnb.n_edges / t_gnb.max_edges         as sparseness_greedy,
+       t_bg.n_edges / t_gnb.max_edges          as sparseness_blind_greedy,
+       t_bg.n_edges / t_gnb.n_edges            as blind_non_blind_ratio
+       
+from (SELECT dim, n_points, epsilon, q as q, avg(n_edges) as n_edges, n_points * (n_points - 1) / 2 as max_edges
+      FROM t
+      where t.spanner_method = 'greedy-non-blind'
+      group by dim, n_points, epsilon, q) t_gnb join (SELECT dim, n_points, epsilon, q as q, avg(n_edges) as n_edges
+                   FROM t
+                   where t.spanner_method = 'blind-greedy'
+                   group by dim, n_points, epsilon, q) t_bg
+         on (t_gnb.dim = t_bg.dim and t_gnb.n_points = t_bg.n_points and t_gnb.q = t_bg.q and
+             t_gnb.epsilon = t_bg.epsilon)
+)
+
+,
+
+t_dim_0_eps_05_q_2 as (
+with t as (SELECT tt.*, n_points * (n_points - 1) / 2 as max_edges
+           FROM public.spanner_results_wasserstein_mcgill tt
+           where 1 = 1
+             and input_file like '%no_par%'
+             and dim = 0
+             and q  = 2
+             and abs(epsilon - 0.5) < 0.001
+
+             )
+select t_gnb.n_points as n_points,
+       t_gnb.n_edges / t_gnb.n_points          as ratio_greedy,
+       t_bg.n_edges / t_gnb.n_points           as ratio_blind_greedy,
+       t_gnb.n_edges / t_gnb.max_edges         as sparseness_greedy,
+       t_bg.n_edges / t_gnb.max_edges          as sparseness_blind_greedy,
+       t_bg.n_edges / t_gnb.n_edges            as blind_non_blind_ratio
+       
+from (SELECT dim, n_points, epsilon, q as q, avg(n_edges) as n_edges, n_points * (n_points - 1) / 2 as max_edges
+      FROM t
+      where t.spanner_method = 'greedy-non-blind'
+      group by dim, n_points, epsilon, q) t_gnb join (SELECT dim, n_points, epsilon, q as q, avg(n_edges) as n_edges
+                   FROM t
+                   where t.spanner_method = 'blind-greedy'
+                   group by dim, n_points, epsilon, q) t_bg
+         on (t_gnb.dim = t_bg.dim and t_gnb.n_points = t_bg.n_points and t_gnb.q = t_bg.q and
+             t_gnb.epsilon = t_bg.epsilon)
+)
+
+,
+-- q = 3
+
+t_dim_0_eps_01_q_3 as (
+with t as (SELECT tt.*, n_points * (n_points - 1) / 2 as max_edges
+           FROM public.spanner_results_wasserstein_mcgill tt
+           where 1 = 1
+             and input_file like '%no_par%'
+             and dim = 0
+             and q = 3
+             and abs(epsilon - 0.1) < 0.001
+
+             )
+select t_gnb.n_points as n_points,
+       t_gnb.n_edges / t_gnb.n_points          as ratio_greedy,
+       t_bg.n_edges / t_gnb.n_points           as ratio_blind_greedy,
+       t_gnb.n_edges / t_gnb.max_edges         as sparseness_greedy,
+       t_bg.n_edges / t_gnb.max_edges          as sparseness_blind_greedy,
+       t_bg.n_edges / t_gnb.n_edges            as blind_non_blind_ratio
+       
+from (SELECT dim, n_points, epsilon, q as q, avg(n_edges) as n_edges, n_points * (n_points - 1) / 2 as max_edges
+      FROM t
+      where t.spanner_method = 'greedy-non-blind'
+      group by dim, n_points, epsilon, q) t_gnb join (SELECT dim, n_points, epsilon, q as q, avg(n_edges) as n_edges
+                   FROM t
+                   where t.spanner_method = 'blind-greedy'
+                   group by dim, n_points, epsilon, q) t_bg
+         on (t_gnb.dim = t_bg.dim and t_gnb.n_points = t_bg.n_points and t_gnb.q = t_bg.q and
+             t_gnb.epsilon = t_bg.epsilon)
+),
+t_dim_0_eps_02_q_3 as (
+with t as (SELECT tt.*, n_points * (n_points - 1) / 2 as max_edges
+           FROM public.spanner_results_wasserstein_mcgill tt
+           where 1 = 1
+             and input_file like '%no_par%'
+             and dim = 0
+             and q = 3
+             and abs(epsilon - 0.2) < 0.001
+
+             )
+select t_gnb.n_points as n_points,
+       t_gnb.n_edges / t_gnb.n_points          as ratio_greedy,
+       t_bg.n_edges / t_gnb.n_points           as ratio_blind_greedy,
+       t_gnb.n_edges / t_gnb.max_edges         as sparseness_greedy,
+       t_bg.n_edges / t_gnb.max_edges          as sparseness_blind_greedy,
+       t_bg.n_edges / t_gnb.n_edges            as blind_non_blind_ratio
+       
+from (SELECT dim, n_points, epsilon, q as q, avg(n_edges) as n_edges, n_points * (n_points - 1) / 2 as max_edges
+      FROM t
+      where t.spanner_method = 'greedy-non-blind'
+      group by dim, n_points, epsilon, q) t_gnb join (SELECT dim, n_points, epsilon, q as q, avg(n_edges) as n_edges
+                   FROM t
+                   where t.spanner_method = 'blind-greedy'
+                   group by dim, n_points, epsilon, q) t_bg
+         on (t_gnb.dim = t_bg.dim and t_gnb.n_points = t_bg.n_points and t_gnb.q = t_bg.q and
+             t_gnb.epsilon = t_bg.epsilon)
+)
+
+,
+
+t_dim_0_eps_05_q_3 as (
+with t as (SELECT tt.*, n_points * (n_points - 1) / 2 as max_edges
+           FROM public.spanner_results_wasserstein_mcgill tt
+           where 1 = 1
+             and input_file like '%no_par%'
+             and dim = 0
+             and q = 3
+             and abs(epsilon - 0.5) < 0.001
+
+             )
+select t_gnb.n_points as n_points,
+       t_gnb.n_edges / t_gnb.n_points          as ratio_greedy,
+       t_bg.n_edges / t_gnb.n_points           as ratio_blind_greedy,
+       t_gnb.n_edges / t_gnb.max_edges         as sparseness_greedy,
+       t_bg.n_edges / t_gnb.max_edges          as sparseness_blind_greedy,
+       t_bg.n_edges / t_gnb.n_edges            as blind_non_blind_ratio
+       
+from (SELECT dim, n_points, epsilon, q as q, avg(n_edges) as n_edges, n_points * (n_points - 1) / 2 as max_edges
+      FROM t
+      where t.spanner_method = 'greedy-non-blind'
+      group by dim, n_points, epsilon, q) t_gnb join (SELECT dim, n_points, epsilon, q as q, avg(n_edges) as n_edges
+                   FROM t
+                   where t.spanner_method = 'blind-greedy'
+                   group by dim, n_points, epsilon, q) t_bg
+         on (t_gnb.dim = t_bg.dim and t_gnb.n_points = t_bg.n_points and t_gnb.q = t_bg.q and
+             t_gnb.epsilon = t_bg.epsilon)
+)
+
+
+select t_dim_0_eps_01_q_1.n_points, 
+
+        -- q = 1
+       t_dim_0_eps_01_q_1.ratio_greedy as ratio_greedy_dim_0_eps_01_q_1,
+       t_dim_0_eps_01_q_1.ratio_blind_greedy as ratio_blind_greedy_dim_0_eps_01_q_1,
+       t_dim_0_eps_01_q_1.sparseness_greedy as sparseness_greedy_dim_0_eps_01_q_1,
+       t_dim_0_eps_01_q_1.sparseness_blind_greedy as sparseness_blind_greedy_dim_0_eps_01_q_1,
+       t_dim_0_eps_01_q_1.blind_non_blind_ratio as blind_non_blind_ratio_dim_0_eps_01_q_1,
+
+
+       t_dim_0_eps_02_q_1.ratio_greedy as ratio_greedy_dim_0_eps_02_q_1,
+       t_dim_0_eps_02_q_1.ratio_blind_greedy as ratio_blind_greedy_dim_0_eps_02_q_1,
+       t_dim_0_eps_02_q_1.sparseness_greedy as sparseness_greedy_dim_0_eps_02_q_1,
+       t_dim_0_eps_02_q_1.sparseness_blind_greedy as sparseness_blind_greedy_dim_0_eps_02_q_1,
+       t_dim_0_eps_02_q_1.blind_non_blind_ratio as blind_non_blind_ratio_dim_0_eps_02_q_1,
+
+       t_dim_0_eps_05_q_1.ratio_greedy as ratio_greedy_dim_0_eps_05_q_1,
+       t_dim_0_eps_05_q_1.ratio_blind_greedy as ratio_blind_greedy_dim_0_eps_05_q_1,
+       t_dim_0_eps_05_q_1.sparseness_greedy as sparseness_greedy_dim_0_eps_05_q_1,
+       t_dim_0_eps_05_q_1.sparseness_blind_greedy as sparseness_blind_greedy_dim_0_eps_05_q_1,
+       t_dim_0_eps_05_q_1.blind_non_blind_ratio as blind_non_blind_ratio_dim_0_eps_05_q_1,
+
+        -- q = 2
+       t_dim_0_eps_01_q_2.ratio_greedy as ratio_greedy_dim_0_eps_01_q_2,
+       t_dim_0_eps_01_q_2.ratio_blind_greedy as ratio_blind_greedy_dim_0_eps_01_q_2,
+       t_dim_0_eps_01_q_2.sparseness_greedy as sparseness_greedy_dim_0_eps_01_q_2,
+       t_dim_0_eps_01_q_2.sparseness_blind_greedy as sparseness_blind_greedy_dim_0_eps_01_q_2,
+       t_dim_0_eps_01_q_2.blind_non_blind_ratio as blind_non_blind_ratio_dim_0_eps_01_q_2,
+
+
+       t_dim_0_eps_02_q_2.ratio_greedy as ratio_greedy_dim_0_eps_02_q_2,
+       t_dim_0_eps_02_q_2.ratio_blind_greedy as ratio_blind_greedy_dim_0_eps_02_q_2,
+       t_dim_0_eps_02_q_2.sparseness_greedy as sparseness_greedy_dim_0_eps_02_q_2,
+       t_dim_0_eps_02_q_2.sparseness_blind_greedy as sparseness_blind_greedy_dim_0_eps_02_q_2,
+       t_dim_0_eps_02_q_2.blind_non_blind_ratio as blind_non_blind_ratio_dim_0_eps_02_q_2,
+
+       t_dim_0_eps_05_q_2.ratio_greedy as ratio_greedy_dim_0_eps_05_q_2,
+       t_dim_0_eps_05_q_2.ratio_blind_greedy as ratio_blind_greedy_dim_0_eps_05_q_2,
+       t_dim_0_eps_05_q_2.sparseness_greedy as sparseness_greedy_dim_0_eps_05_q_2,
+       t_dim_0_eps_05_q_2.sparseness_blind_greedy as sparseness_blind_greedy_dim_0_eps_05_q_2,
+       t_dim_0_eps_05_q_2.blind_non_blind_ratio as blind_non_blind_ratio_dim_0_eps_05_q_2,
+
+        -- q = 3
+       t_dim_0_eps_01_q_3.ratio_greedy as ratio_greedy_dim_0_eps_01_q_3,
+       t_dim_0_eps_01_q_3.ratio_blind_greedy as ratio_blind_greedy_dim_0_eps_01_q_3,
+       t_dim_0_eps_01_q_3.sparseness_greedy as sparseness_greedy_dim_0_eps_01_q_3,
+       t_dim_0_eps_01_q_3.sparseness_blind_greedy as sparseness_blind_greedy_dim_0_eps_01_q_3,
+       t_dim_0_eps_01_q_3.blind_non_blind_ratio as blind_non_blind_ratio_dim_0_eps_01_q_3,
+
+
+       t_dim_0_eps_02_q_3.ratio_greedy as ratio_greedy_dim_0_eps_02_q_3,
+       t_dim_0_eps_02_q_3.ratio_blind_greedy as ratio_blind_greedy_dim_0_eps_02_q_3,
+       t_dim_0_eps_02_q_3.sparseness_greedy as sparseness_greedy_dim_0_eps_02_q_3,
+       t_dim_0_eps_02_q_3.sparseness_blind_greedy as sparseness_blind_greedy_dim_0_eps_02_q_3,
+       t_dim_0_eps_02_q_3.blind_non_blind_ratio as blind_non_blind_ratio_dim_0_eps_02_q_3,
+
+       t_dim_0_eps_05_q_3.ratio_greedy as ratio_greedy_dim_0_eps_05_q_3,
+       t_dim_0_eps_05_q_3.ratio_blind_greedy as ratio_blind_greedy_dim_0_eps_05_q_3,
+       t_dim_0_eps_05_q_3.sparseness_greedy as sparseness_greedy_dim_0_eps_05_q_3,
+       t_dim_0_eps_05_q_3.sparseness_blind_greedy as sparseness_blind_greedy_dim_0_eps_05_q_3,
+       t_dim_0_eps_05_q_3.blind_non_blind_ratio as blind_non_blind_ratio_dim_0_eps_05_q_3
+
+
+from t_dim_0_eps_01_q_1 join t_dim_0_eps_02_q_1 on (t_dim_0_eps_01_q_1.n_points = t_dim_0_eps_02_q_1.n_points)
+                        join t_dim_0_eps_05_q_1 on (t_dim_0_eps_01_q_1.n_points = t_dim_0_eps_05_q_1.n_points)
+
+                        join t_dim_0_eps_01_q_2 on (t_dim_0_eps_01_q_1.n_points = t_dim_0_eps_01_q_2.n_points)
+                        join t_dim_0_eps_02_q_2 on (t_dim_0_eps_01_q_1.n_points = t_dim_0_eps_02_q_2.n_points)
+                        join t_dim_0_eps_05_q_2 on (t_dim_0_eps_01_q_1.n_points = t_dim_0_eps_05_q_2.n_points)
+
+                        left join t_dim_0_eps_01_q_3 on (t_dim_0_eps_01_q_1.n_points = t_dim_0_eps_01_q_3.n_points)
+                        left join t_dim_0_eps_02_q_3 on (t_dim_0_eps_01_q_1.n_points = t_dim_0_eps_02_q_3.n_points)
+                        left join t_dim_0_eps_05_q_3 on (t_dim_0_eps_01_q_1.n_points = t_dim_0_eps_05_q_3.n_points)
+
+order by 1

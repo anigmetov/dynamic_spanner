@@ -24,7 +24,13 @@ from '/home/narn/hdd_data/code/dynamic_spanner/python_version/spanner_experiment
 truncate table public.spanner_results_wasserstein_mcgill
 copy  public.spanner_results_wasserstein_mcgill(
             input_file, spanner_method, epsilon, n_points,  n_edges, sparseness, n_edges_to_n_points_ratio)
-from '/home/narn/hdd_data/code/dynamic_spanner/data_files/spanner_mcgill_diagram_experiment_log.csv' delimiter ';' csv;         
+from '/home/narn/hdd_data/code/dynamic_spanner/data_files/blind_spanner_mcgill_original_results_450_max.txt' delimiter ';' csv;         
+
+
+copy  public.spanner_results_wasserstein_mcgill(
+            input_file, spanner_method, epsilon, n_points,  n_edges, sparseness, n_edges_to_n_points_ratio)
+from '/home/narn/hdd_data/code/dynamic_spanner/data_files/mcgill_original_correct_results_450_all.txt' delimiter ';' csv;         
+
 
 update  public.spanner_results_wasserstein_mcgill
 set q = case

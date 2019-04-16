@@ -1,0 +1,66 @@
+\documentclass[a4paper,UKenglish,cleveref, autoref]{lipics-v2019}
+
+\bibliographystyle{plainurl}% the mandatory bibstyle
+
+\input{my_preamble.tex}
+
+\title{Metric Spaces with Expensive Distances}
+\titlerunning{Metric Spaces with Expensive Distances}
+% uncomment for LIPICS 
+\author{Anonymous Authors}{Anon}{}{}{}
+%\author{Michael Kerber}{TU Graz}{kerber@tugraz.at}{https://orcid.org/0000-0002-8030-9299}{Supported by Austrian Science Fund (FWF) grant number P 29984-N35}
+%\author{Arnur Nigmetov}{TU Graz}{nigmetov@tugraz.at}{}{}
+%\authorrunning{M. Kerber and A. Nigmetov}
+\authorrunning{Anonymous Authors}
+
+\keywords{metric spaces, doubling dimension, spanners, approximate nearest neighbor}
+\ccsdesc[500]{Theory of computation~Random search heuristics}
+\ccsdesc[500]{Theory of computation~Random search heuristics}
+%% \category{dummy}
+
+% \category{dummy}
+
+%\Copyright{Michael Kerber and Arnur Nigmetov}
+\Copyright{Anonymous Authors}
+% END uncomment for LIPICS
+
+
+\def \expDistFigPath {pics/}
+\def \expDistDataPath {./}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+In algorithms for finite metric spaces, it is common
+to assume that the distance between two points
+can be computed in constant time, and complexity
+bounds are expressed only in terms of the number
+of points of the metric space.
+We introduce a different model where we assume
+that the computation of a single distance is
+an expensive operation and consequently, the goal is
+to minimize the number of such distance queries.
+This model is motivated by metric spaces
+that appear in the context of topological data analysis.
+
+We consider two standard operations on metric spaces,
+namely the construction of a $1+\eps$-spanner
+and the computation of an approximate nearest
+neighbor for a given query point.
+In both cases, we partially explore the metric space
+through distance queries and infer lower and upper bounds
+for yet unexplored distances through triangle inequality.
+For spanners, we evaluate several exploration strategies
+through extensive experimental evaluation.
+For approximate nearest neighbors, we prove that our
+strategy returns an approximate nearest neighbor
+after a logarithmic number of distance queries.
+\end{abstract}
+
+\input{expensive-distances-main.tex}
+
+\bibliography{bib}
+
+
+\end{document}
