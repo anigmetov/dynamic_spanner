@@ -73,16 +73,19 @@ public:
 
     size_t m_num_points;
     Matrix m_matrix;
+    MatrixReal m_distance_timings_matrix;
     double m_min_dist;
     double m_max_dist;
     std::mt19937 m_twister;
     double m_epsilon { 0.0 };
+    double m_time_elapsed { 0.0 };
     std::string m_strategy;
 
 public:
 
-    DynamicSpanner(const MatrixReal& distance_matrix)
+    DynamicSpanner(const MatrixReal& distance_matrix, const MatrixReal& distance_timings_matrix)
             :
+            m_distance_timings_matrix(distance_timings_matrix),
             m_min_dist(std::numeric_limits<double>::max()),
             m_max_dist(0.0),
             m_twister(std::random_device()())
@@ -442,6 +445,7 @@ public:
         info.upper_bound = info.lower_bound = info.distance;
         info_mirror.upper_bound = info_mirror.lower_bound = info.distance;
         update_bounds_using_distance(i, j);
+        m_time_elapsed += m_distance_timings_matrix[i][j];
         return info.distance;
     }
 
@@ -466,6 +470,11 @@ public:
             }
         }
         return result;
+    }
+
+    double get_microseconds_to_compute_distances() const
+    {
+        return m_time_elapsed;
     }
 
     size_t get_number_of_requested_distances() const

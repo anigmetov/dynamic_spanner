@@ -139,7 +139,7 @@ bool read_distance_matrix(MatrixR& distance_matrix, double& max_distance, double
     return true;
 }
 
-bool read_distance_matrix_mcgill(MatrixR& distance_matrix, double& max_distance, double& min_distance, const std::string& fname, std::vector<int>::size_type n_samples)
+bool read_distance_matrix_mcgill_and_sample(MatrixR& distance_matrix, double& max_distance, double& min_distance, const std::string& fname, std::vector<int>::size_type n_samples)
 {
     std::ifstream matr_file(fname);
     if (not matr_file.good()) {
@@ -199,6 +199,53 @@ bool read_distance_matrix_mcgill(MatrixR& distance_matrix, double& max_distance,
 
     return true;
 }
+
+bool read_distance_matrix_mcgill(MatrixR& distance_matrix, double& max_distance, double& min_distance, const std::string& fname)
+{
+    std::ifstream matr_file(fname);
+    if (not matr_file.good()) {
+        std::cerr << "Cannot read matrix from file " << fname << std::endl;
+        return false;
+    }
+
+    int n_points;
+
+    matr_file >> n_points;
+
+    distance_matrix = MatrixR(n_points, std::vector<double>(n_points, 0.0));
+
+    for (size_t i = 0; i < n_points; ++i) {
+        for (size_t j = 0; j < n_points; ++j) {
+            matr_file >> distance_matrix[i][j];
+        }
+    }
+
+    for (size_t i = 0; i < n_points; ++i) {
+        for (size_t j = i; j < n_points; ++j) {
+            if (i == j)
+                assert(distance_matrix[i][j] == 0.0);
+            else
+                assert(distance_matrix[i][j] == distance_matrix[j][i]);
+        }
+    }
+
+    min_distance = std::numeric_limits<double>::max();
+    max_distance = -1.0;
+
+    for(size_t i = 0; i < n_points; ++i) {
+        for(size_t j = 0; j < n_points; ++j) {
+            max_distance = std::max(distance_matrix[i][j], max_distance);
+            if (i != j) {
+                min_distance = std::min(distance_matrix[i][j], min_distance);
+            }
+        }
+    }
+
+    assert(0.0 < min_distance and min_distance <= max_distance);
+
+    return true;
+}
+
 
 
 bool read_distance_matrix_and_queries(MatrixR& distance_matrix, MatrixR& queries, double& max_distance, double& min_distance, const std::string& fname)
@@ -328,19 +375,25 @@ int main(int argc, char** argv)
     spanner.construct_blind_random_eps_spanner(eps);
     std::cout << "sparseness: " << spanner.get_fraction_of_computed_distances() << std::endl;
 #else
-    MatrixR dist_matrix, queries;
+    MatrixR dist_matrix, dist_matrix_timings, queries;
     double max_dist = -1.0;
     double min_dist = std::numeric_limits<double>::max();
 
+    double max_dist_time = -1.0;
+    double min_dist_time = std::numeric_limits<double>::max();
+
+
     if (argc < 4) {
         std::cout << "Usage: " << argv[0]
-                  << " input_name epsilon is_point [n_samples] [logname]"
+                  << " input_name input_timing_name epsilon is_point [n_samples] [logname]"
                   << std::endl;
         return 0;
     }
 
     int arg_idx = 1;
     std::string dist_name = argv[arg_idx++];
+
+    std::string dist_timing_name = argv[arg_idx++];
 
     double eps = atof(argv[arg_idx++]);
     console->info("Reading from file {}, epsilon = {}", argv[1], argv[2]);
@@ -349,16 +402,17 @@ int main(int argc, char** argv)
     std::string is_input_dm = argv[arg_idx++];
     bool is_input_dist_matrix = is_input_dm == "y" or is_input_dm == "Y" or is_input_dm == "d" or is_input_dm == "D";
 
-    std::vector<int>::size_type n_samples = (argc > arg_idx) ? atoi(argv[arg_idx++]) : 0;
-
     std::string log_name  = (argc > arg_idx) ? argv[arg_idx++] : "experiment_log.txt";
-    console->info("log_name = {}, epsilon = {}, n_samples = {}", log_name, eps, n_samples);
+    console->info("log_name = {}, epsilon = {}", log_name, eps);
     auto exp_logger = spd::basic_logger_st("experiment_logger", log_name);
     exp_logger->set_pattern("%v");
 
     if (is_input_dist_matrix) {
-        console->info("Reading distance matrix");
-        read_distance_matrix_mcgill(dist_matrix, max_dist, min_dist, dist_name, n_samples);
+        console->info("Reading distance matrix {}", dist_name);
+        read_distance_matrix_mcgill(dist_matrix, max_dist, min_dist, dist_name);
+        console->info("Reading distance timing matrix {}", dist_timing_name);
+        read_distance_matrix_mcgill(dist_matrix_timings,
+                max_dist_time, min_dist_time, dist_timing_name);
     } else {
         console->info("Reading points");
         read_points_file(dist_matrix, max_dist, min_dist, dist_name);
@@ -368,8 +422,8 @@ int main(int argc, char** argv)
 
     console->info("dist_matrix size = {}, spread = {} / {} = {}", dist_matrix.size(), max_dist, min_dist, max_dist / min_dist);
 
-    DynamicSpannerR spanner(dist_matrix);
-    DynamicSpannerR ct_spanner(dist_matrix);
+    DynamicSpannerR spanner(dist_matrix, dist_matrix_timings);
+    //DynamicSpannerR ct_spanner(dist_matrix, dist_matrix_timings);
     std::cout << "Spanner initialized" << std::endl;
 
 #if 0
@@ -458,7 +512,7 @@ int main(int argc, char** argv)
 #else
 
     {
-        DynamicSpannerR greedy_spanner(dist_matrix);
+        DynamicSpannerR greedy_spanner(dist_matrix, dist_matrix_timings);
         auto begin_greedy = std::chrono::steady_clock::now();
         greedy_spanner.construct_greedy_eps_spanner(eps);
         auto end_greedy = std::chrono::steady_clock::now();
@@ -518,7 +572,7 @@ int main(int argc, char** argv)
 //    }
 
     {
-        DynamicSpannerR blind_greedy_spanner(dist_matrix);
+        DynamicSpannerR blind_greedy_spanner(dist_matrix, dist_matrix_timings);
         auto begin_blind_greedy = std::chrono::steady_clock::now();
         blind_greedy_spanner.construct_blind_greedy_eps_spanner(eps);
         auto end_blind_greedy = std::chrono::steady_clock::now();
