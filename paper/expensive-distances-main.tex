@@ -402,37 +402,85 @@ In order to test the \textsc{BlindQuasiSorted} algorithms we multiply the true d
 
 
 
-\begin{figure}[ht]
-    \begin{centering}
+\begin{figure}
+\captionsetup[subfigure]{font=footnotesize}
+\centering
+\subcaptionbox{Ratio \# edges / \# points for different variants of spanner 
+            algorithms. The plot is for normally distributed points
+            in dimension 2, $\eps = 0.1$.}[.5\textwidth]{%
 \begin{tikzpicture}
     \begin{axis}[xlabel=\# Points,ylabel=\# Edges / \# Points,
-        legend pos=outer north east]
+        legend pos=north east]
 
+        \addplot+ table [x=n_points, y=ratio_blind_random_lower_bound_first, col sep=comma] {\expDistDataPath all_methods_dim_2_eps_0.1_ratio.csv};
+        \addlegendentry{Blind random, lower bound first}
 
-    \addplot+ table [x=n_points, y=ratio_blind_random_lower_bound_first, col sep=comma] {\expDistDataPath all_methods_dim_2_eps_0.1_ratio.csv};
-    \addlegendentry{Blind random, lower bound first}
+        \addplot+ table [x=n_points, y=ratio_blind_greedy, col sep=comma] {\expDistDataPath all_methods_dim_2_eps_0.1_ratio.csv};
+        \addlegendentry{Blind greedy}
 
-    \addplot+ table [x=n_points, y=ratio_blind_greedy, col sep=comma] {\expDistDataPath all_methods_dim_2_eps_0.1_ratio.csv};
-    \addlegendentry{Blind greedy}
+        \addplot+ table [x=n_points, y=ratio_greedy, col sep=comma] {\expDistDataPath all_methods_dim_2_eps_0.1_ratio.csv};
+        \addlegendentry{Greedy}
 
-    \addplot+ table [x=n_points, y=ratio_greedy, col sep=comma] {\expDistDataPath all_methods_dim_2_eps_0.1_ratio.csv};
-    \addlegendentry{Greedy}
+    \end{axis}
+            \label{fig:spanner_ratio}
+\end{tikzpicture}}%
+\subcaptionbox{Number of edges in the blind greedy and greedy spanners for different values of $\eps$. Data is for 400 normally distributed points in $\RR^2$ and $\RR^3$.}[.5\textwidth]{
+    \begin{tikzpicture}
+            \begin{axis}[xlabel=epsilon,ylabel=\# Edges,
+                legend pos=north east]
 
-\end{axis}
-\end{tikzpicture}
-\end{centering}
-    \caption{Ratio \# edges / \# points for different variants of spanner 
-    algorithms. The plot is for normally distributed points
-    in dimension 2, $\eps = 0.1$.}
-    \label{fig:spanner_ratio}
+            \addplot+ table [x=Epsilon, y=edges_greedy_dim_2, col sep=comma] {\expDistDataPath eps_dep.csv};
+            \addlegendentry{Greedy, dim = 2}
+
+            \addplot+ table [x=Epsilon, y=edges_blind_greedy_dim_2, col sep=comma] {\expDistDataPath eps_dep.csv};
+            \addlegendentry{Blind greedy, dim = 2}
+
+        \end{axis}
+        \label{fig:spanner_eps_dependence}
+    \end{tikzpicture}}
 \end{figure}
 
 
-\begin{figure}[ht!]
-    \includegraphics[width=0.7\textwidth]{\expDistFigPath blind-greedy-dims.png}
-    \caption{Results of blind greedy spanner for different dimensions.}
-    \label{fig:blind_greedy_dimensions}
-\end{figure}
+%\begin{figure}[ht]
+%    \begin{minipage}{0.45\textwidth}
+%        \begin{tikzpicture}
+%            \begin{axis}[xlabel=\# Points,ylabel=\# Edges / \# Points,
+%                legend pos=north east]
+
+%                \addplot+ table [x=n_points, y=ratio_blind_random_lower_bound_first, col sep=comma] {\expDistDataPath all_methods_dim_2_eps_0.1_ratio.csv};
+%                \addlegendentry{Blind random, lower bound first}
+
+%                \addplot+ table [x=n_points, y=ratio_blind_greedy, col sep=comma] {\expDistDataPath all_methods_dim_2_eps_0.1_ratio.csv};
+%                \addlegendentry{Blind greedy}
+
+%                \addplot+ table [x=n_points, y=ratio_greedy, col sep=comma] {\expDistDataPath all_methods_dim_2_eps_0.1_ratio.csv};
+%                \addlegendentry{Greedy}
+
+%            \end{axis}
+%        \end{tikzpicture}
+%            \caption{Ratio \# edges / \# points for different variants of spanner 
+%            algorithms. The plot is for normally distributed points
+%            in dimension 2, $\eps = 0.1$.}
+%            \label{fig:spanner_ratio}
+%    \end{minipage}
+%    \begin{minipage}{0.45\textwidth}
+%        \begin{tikzpicture}
+%            \begin{axis}[xlabel=epsilon,ylabel=\# Edges,
+%                legend pos=north east]
+
+%            \addplot+ table [x=Epsilon, y=edges_greedy_dim_2, col sep=comma] {\expDistDataPath eps_dep.csv};
+%            \addlegendentry{Greedy, dim = 2}
+
+%            \addplot+ table [x=Epsilon, y=edges_blind_greedy_dim_2, col sep=comma] {\expDistDataPath eps_dep.csv};
+%            \addlegendentry{Blind greedy, dim = 2}
+
+%        \end{axis}
+%        \end{tikzpicture}
+%        \caption{Number of edges in the blind greedy and greedy spanners for different values of $\eps$. Data is for 400 normally distributed points in $\RR^2$ and $\RR^3$.}
+%        \label{fig:spanner_eps_dependence}
+%   \end{minipage}
+%\end{figure}
+
 
 \ignore{
 \begin{figure}[ht!]
@@ -465,21 +513,10 @@ In order to test the \textsc{BlindQuasiSorted} algorithms we multiply the true d
 
 \begin{figure}[ht!]
     \begin{centering}
-\begin{tikzpicture}
-    \begin{axis}[xlabel=epsilon,ylabel=\# Edges,
-        legend pos=outer north east]
-
-    \addplot+ table [x=Epsilon, y=edges_greedy_dim_2, col sep=comma] {\expDistDataPath eps_dep.csv};
-    \addlegendentry{Greedy, dim = 2}
-
-    \addplot+ table [x=Epsilon, y=edges_blind_greedy_dim_2, col sep=comma] {\expDistDataPath eps_dep.csv};
-    \addlegendentry{Blind greedy, dim = 2}
-
-\end{axis}
-\end{tikzpicture}
-\end{centering}
-    \caption{Number of edges in the blind greedy and greedy spanners for different values of $\eps$. Data is for 400 normally distributed points in $\RR^2$ and $\RR^3$.}
-    \label{fig:spanner_eps_dependence}
+    \includegraphics[width=0.8\textwidth]{\expDistFigPath blind-greedy-dims.png}
+    \caption{Results of \bgrdy spanner for different dimensions.}
+    \label{fig:blind_greedy_dimensions}
+    \end{centering}
 \end{figure}
 
 
@@ -611,7 +648,7 @@ on which we computed spanners is not large enough to clearly see
 the linear dependence.
 
 
-\begin{table}[]
+\begin{table}[b]
 \begin{tabular}{|l|l|l|}
 \hline
 dimension & \textbf{Greedy (non-blind)} & \textbf{Blind greedy} \\ \hline
@@ -678,7 +715,7 @@ find a working heuristic.
 
 From these experiments we conclude that the algorithm with the highest chance
 of saving a significant amount of distance computations on real data, like large
-persistence diagrams, is \bgrdy. Even though \brdnm also substantially reduces
+persistence diagrams, is \bgrdy. Even though \brndm also substantially reduces
 the number of computed distances, its performance is significantly worse;
 other algorithms that we tested do not produce sparse spanners.
 While it would seem plausible that access to approximate value of the distance 
@@ -838,16 +875,17 @@ each point on the plots in this section is the result of averaging of 100 runs
 of the code (10 instances, 10 random permutations per instance).
 
 \begin{figure}[ht]
-    \includegraphics[width=0.7\textwidth]{\expDistFigPath log_dependency_constant_ratio.png}
-    \caption{Ratio $\log(\mbox{computed distances}) / n$ for ANN algorithm. Data is for uniformly distributed
-    points.}
-    \label{fig:ann_const_ratio}
-\end{figure}
-
-\begin{figure}[ht]
-    \includegraphics[width=0.7\textwidth]{\expDistFigPath ann_computed_distances_dimension_dep.png}
-    \caption{Number of computed distances for different dimensions. Points are chosen uniformly, $\eps = 0.01$.}
-    \label{fig:ann_dimension_dependence}
+    \begin{minipage}{0.45\textwidth}
+        \includegraphics[width=0.9\textwidth]{\expDistFigPath log_dependency_constant_ratio.png}
+        \caption{Ratio $\log(\mbox{computed distances}) / n$ for ANN algorithm. Data is for uniformly distributed
+        points.}
+        \label{fig:ann_const_ratio}
+    \end{minipage}
+    \begin{minipage}{0.45\textwidth}
+        \includegraphics[width=0.9\textwidth]{\expDistFigPath ann_computed_distances_dimension_dep.png}
+        \caption{Number of computed distances for different dimensions. Points are chosen uniformly, $\eps = 0.01$.}
+        \label{fig:ann_dimension_dependence}
+    \end{minipage}
 \end{figure}
 
 

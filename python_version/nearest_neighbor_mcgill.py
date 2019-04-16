@@ -78,7 +78,7 @@ class AnnFinder:
                 self.discard_2(alternative_cand_idx, cand_idx)
                 self.discard_1(cand_idx)
 
-        assert(self.check_nearest_neighbor(self.points[cand_idx], epsilon))
+        # assert(self.check_nearest_neighbor(self.points[cand_idx], epsilon))
 
         return self.points[cand_idx]
 
@@ -200,19 +200,15 @@ def run_experiment_ann(n_points, fname, epsilon, n_attempts):
 
 if __name__ == "__main__":
     np.random.seed(1)
-    n_pointses = [ i for i in range(100, 4000, 200)]
+    n_pointses = [ 420 ]
     dims = [0, 1, 2]
-    qs = [1, 2, 3, 4]
-    fnames = ["dist_matrix_q_{}_dim_{}.txt".format(q, dim) for q in qs for dim in dims]
+    qs = [1, 2, 3]
+
+    fnames = ["mcgill/dist_matrix_mcgill_original_no_parallel_q_{}_dim_{}.txt".format(q, dim) for q in qs for dim in dims]
     epsilons = [0.0001, 0.0005, 0.001, 0.005, 0.01, 0.1, 0.5]
     n_attempts = 20
-    # n_pointses = [ 100 ]
-    # dims = [0]
-    # qs = [1]
-    # epsilons = [0.1]
-    # n_attempts = 2
 
-    results_ann = jl.Parallel(n_jobs=8)(
+    results_ann = jl.Parallel(n_jobs=1)(
         jl.delayed(run_experiment_ann)(n_points, fname, eps, n_attempts)
         for n_points in n_pointses
         for fname in fnames
