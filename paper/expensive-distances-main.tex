@@ -356,15 +356,98 @@ We refer to the former option as \bqsgrdy and to the latter one as \bqsshaker.
 
 
 \section{Experiments on spanners}
-We run experiments on the points sampled from the low-dimensional Euclidean space to investigate
-experimentally the performance of these heuristics. Clearly, for this metric space, our
-cost model is not meaningful since distance comparisons are cheap;
-but we picked this environment for controlled experiments.
-In order to test the \textsc{BlindQuasiSorted} algorithms we multiply the true distance by a factor from $[1,2]$ chosen uniformly.
+
+We performed two types of experiments: on points sampled from a low-dimensional Euclidean
+space and on persistence diagrams with Wasserstein distance.
+Clearly, our model is not meaningful in a Euclidean space, where
+distance computations are cheap.
+However, in this case we can easily check the performance
+of our heuristics on a variety of easily controllable
+data sets.  In order to test the \textsc{BlindQuasiSorted} algorithms, we multiply the true distance by a factor from $[1,2]$ chosen uniformly.
 By \textit{sparseness} of a graph with $n$
 vertices we always mean the number of edges of the graph divided by $\binom{n}{2}$, the number of edges in the complete graph on $n$ edges.
 
-\begin{figure}[ht]
+
+%We run experiments on the points sampled from the low-dimensional Euclidean space to investigate
+%experimentally the performance of these heuristics. Clearly, for this metric space, our
+%cost model is not meaningful since distance comparisons are cheap;
+%but we picked this environment for controlled experiments.
+%In order to test the \textsc{BlindQuasiSorted} algorithms we multiply the true distance by a factor from $[1,2]$ chosen uniformly.
+%By \textit{sparseness} of a graph with $n$
+%vertices we always mean the number of edges of the graph divided by $\binom{n}{2}$, the number of edges in the complete graph on $n$ edges.
+
+We tested the algorithms for $\eps \in \Set{0.01, 0.1, 0.2, 0.5}$ on the following sets of points in dimensions $d = 2,3,4,5$:
+\begin{enumerate}
+    \item In the \textbf{uniform} test set points are sampled uniformly at
+        random from the unit cube in $\mathbb{R}^d$.
+    \item In the \textbf{normal} test set points are sampled from the standard
+        normal distribution in $\mathbb{R}^d$.
+    \item In the \textbf{clustered} test set we first sample cluster centers uniformly 
+        at random from $[0,10000]^d$, and then we add normally distributed noise around
+        each of the centers. The number of clusters is chosen so that each cluster
+        contains 50 points.
+    \item The test set \textbf{exp} consists of points of the form $(2^{\xi_1}, \dots, 2^{xi_d})$,
+        where $\xi_i$'s are i.i.d. random variables with uniform distribution on $[1,25]$.
+\end{enumerate}
+In addition to the standard Euclidean norm on $\RR^n$, we used also $\ell_1$ and $\ell_\infty$ norms.
+In all these experiments the algorithms that we tested compared in the same way,
+so we only present results for the \textbf{uniform} point set in dimension 2.
+
+
+
+\cref{fig:spanner_sparseness}
+shows the number of edges of the spanner for various variants of 
+blind and non-blind spanner constructions.
+Note that for all blind spanner variants, the number of computed distances
+is equal to the spanner size, while for the non-blind greedy spanner,
+this number is always $\binom{n}{2}$ and for WPSD it is lower bounded
+by the size of the spanner.
+We can see that, even though none of the blind spanners produces
+spanners of the same quality as the standard greedy algorithm,
+\bgrdy and all variants of \brndm
+perform significantly better than both variants of \textsc{BlindQuasiSorted}.
+
+\ignore{
+As for different variants of the \brndm algorithm,
+we note that their performance is almost the same, and the algorithm works
+significantly better than \textsc{QuasiSorted} variants, but obviously
+worse than the blind greedy variant. There is a consistent, though small,
+difference between the variants that do not force lower bounds first and
+the other two variants of the \brndm.  (see \cref{fig:blind_rbr_variants}). 
+}
+
+
+
+WSPD spanners performed poorly in our experiments
+on non-clustered data, while the plots in the extensive experimental study \cite{farshi2009experimental}
+show that WSPD spanners are very sparse, outperformed only by the greedy algorithm.
+We implemented two versions of  WSPD: one for the Euclidean case,
+using quadtrees and the algorithm from \cite{hp-book}, and WSPD for general metric
+spaces with cover trees (using the base $\tau=1.3$). 
+They both give similar results, and we can only conclude
+that the advantage of WSPD shows up on larger point sets than the ones we deal with.
+The paper \cite{farshi2009experimental} contains experiments for up to 30000 points,
+and our blind algorithms, which have at least cubic complexity in the number of points,
+are infeasible for such $n$.
+
+
+
+%\ignore{
+%Summing up, the \bgrdy algorithm is the best algorithm for our model, but also \brndm
+%algorithm reduces the amount of computed distances substantially, especially if we enforce having non-zero lower bounds
+%first. 
+%If the goal is to reduce the number of distance computations, these method seem to be more suitable than a WSPD spanner.
+%Since the linear spanner size of WSPDs does not show up in the experiments because of the relatively small values of $n$
+%tested, the experiments are not conclusive regarding the asymptotic size of the blind spanners.
+%Another noteworthy fact is that quasi-sorted variants produce spanners which are much closer to the complete graph
+%(\bqsgrdy is worse, requiring all the edges). It would seem plausible that, if we have
+%access to approximate value of the distance, we could exploit this in the spanner construction, but we could not
+%find a working heuristic.
+%}
+
+
+
+\begin{figure}[!htbp]
     \begin{centering}
 \begin{tikzpicture}
     \begin{axis}[xlabel=\# Points,ylabel=\# Edges,
@@ -402,7 +485,7 @@ vertices we always mean the number of edges of the graph divided by $\binom{n}{2
 \end{figure}
 
 
-\begin{figure}[ht]
+\begin{figure}[!htbp]
         \begin{tikzpicture}
             \begin{axis}[xlabel=\# Points,ylabel=\# Edges / \# Points,
                 legend pos=outer north east]
@@ -425,7 +508,84 @@ vertices we always mean the number of edges of the graph divided by $\binom{n}{2
 \end{figure}
 
 
-\begin{figure}[ht]
+
+From these experiments we conclude that the algorithm with the highest chance
+of saving a significant amount of distance computations on real data is \bgrdy. 
+Even though \brndm also substantially reduces
+the number of computed distances, its performance is significantly worse;
+other algorithms that we tested do not produce sparse spanners.
+While it would seem plausible that access to approximate value of the distance
+could be exploited in the spanner construction,
+we could not find a working heuristic; \bqsgrdy and \bqsshaker produce extremely
+dense spanners.
+
+
+
+The persistence diagrams that we used as
+realistic data sets,
+come from the McGill shape benchmark \cite{zhang2005mcgill}.
+More precisely, we generated two sets of diagrams,
+\dtype{original} and \dtype{perturbed}. The \dtype{original}
+diagrams were computed on the points of the 450 original
+point clouds from the shape dataset; we only looked
+at dimension 0, since the diagrams in this dimension are larger in size.
+We also added random noise to points of the original shapes,
+and computed persistence diagrams in dimension 0 of these modified
+shapes; these diagrams form the \dtype{perturbed} dataset.
+Persistence diagrams were computed with \libraryname{DIPHA}
+library.
+
+
+
+Results of \bgrdy algorithm on the whole \dtype{original} dataset
+for different values of $\eps$ and $q$ are summarized in \cref{tbl:mcgill_original_blind_greedy_spanner_sparseness}
+and in \cref{tbl:mcgill_original_blind_greedy_spanner_timing}.
+\grdy algorithm is used as baseline.  The first thing to note is that for higher values of $q$
+any advantage of our algorithm disappears. However, the cardinality of the \grdy
+spanner is also increasing; for instance, if we want to achieve 10 \% accuracy,
+then even the \grdy spanner is almost half of the complete graph.
+We can offer the following explanation, assuming the reader is familiar
+with the definition of $\wsdist{q}$. For higher values of $q$,
+longer edges of an optimal matching play a more important role
+than shorter ones; as $q$ tends to $\infty$, Wasserstein distance
+approaches bottleneck distance $\btdist$, which depends on the longest
+edge only. If all diagrams come from the same dataset,
+then there is a large number of pairs of diagrams whose optimal matchings
+have the longest edges of approximately the same length. This fact means that we are in the case
+of high doubling dimension, being close to a clique, and there is no hope
+of getting a small spanner. \ignore{On the other hand, computation of $\btdist$ in practice
+requires significantly less time than computation of $\wsdist{q}$, and the case
+of $\wsdist{1}$ and $\wsdist{2}$ is of practical importance.}
+For $\wsdist{1}$ we observe more encouraging figures, like avoiding 70 \% of distance
+computations for $\eps = 0.1$; if we are happy with a 1.5 approximation, then we
+reduce the number of distances computed by a factor of 10.
+
+
+
+We also compare the time that is needed to compute the matrix of all pairwise distances
+naively with the time that is needed to approximate it with \bgrdy spanner.
+The timings are given in \cref{tbl:mcgill_original_blind_greedy_spanner_timing}.
+If one compares the running time with the sparseness results,
+it becomes evident that in this case the overhead of \bgrdy algorithm
+is rather small, compared to the time needed to compute the distances.
+Let us emphasize that the diagrams we have are still rather small, with a typical cardinality
+between 100 and 300 points. Nevertheless, even on this data set \bgrdy spanner
+provides a substantial improvement in terms of real running time.
+
+
+
+In order to see the growth of the spanner size, we use the \dtype{perturbed}
+dataset.  We plot the sparseness of the spanners obtained by \grdy
+and \bgrdy algorithms in \cref{fig:spanner_sparseness_mcgill_perturbed}
+for different values of $\eps$, always using the $\wsdist{1}$ distance.
+As expected, the ratio of computed distances decreases as the number of diagrams
+grows. In \cref{fig:spanner_ratio_mcgill_perturbed} we show
+the growth of the spanner size relative to the number of diagrams.
+For $\eps = 0.5$ the \bgrdy spanner starts to stabilize (i.e., demonstrates
+linear growth) for larger values of $n$.
+
+
+\begin{figure}[!htbp]
     \begin{centering}
 \begin{tikzpicture}
     \begin{axis}[xlabel=\# Diagrams,ylabel=\# Edges / \# Diagrams,
@@ -452,7 +612,7 @@ vertices we always mean the number of edges of the graph divided by $\binom{n}{2
 \end{figure}
 
 
-\begin{figure}[ht]
+\begin{figure}[!htbp]
     \begin{centering}
 \begin{tikzpicture}
     \begin{axis}[xlabel=\# Diagrams,ylabel=\# Edges / \# All distances,
@@ -526,136 +686,6 @@ $\eps = 0.5$    &   4093  &  483  &&  5331  &  1233  &&  16852  &  5146\\
 
 
 
-We tested the algorithms for $\eps \in \Set{0.01, 0.1, 0.2, 0.5}$ on the following sets of points in dimensions $d = 2,3,4,5$:
-\begin{enumerate}
-    \item In the \textbf{uniform} test set points are sampled uniformly at
-        random from the unit cube in $\mathbb{R}^d$.
-    \item In the \textbf{normal} test set points are sampled from the standard
-        normal distribution in $\mathbb{R}^d$.
-    \item In the \textbf{clustered} test set we first sample cluster centers uniformly 
-        at random from $[0,10000]^d$, and then we add normally distributed noise around
-        each of the centers. The number of clusters is chosen so that each cluster
-        contains 50 points.
-    \item The test set \textbf{exp} consists of points of the form $(2^{\xi_1}, \dots, 2^{xi_d})$,
-        where $\xi_i$'s are i.i.d. random variables with uniform distribution on $[1,25]$.
-\end{enumerate}
-In all experiments the algorithms that we tested compared in the same way,
-so we only present results for the \textbf{uniform} point set in dimension 2.
-
-
-\cref{fig:spanner_sparseness}
-shows the number of edges of the spanner for various variants of 
-blind and non-blind spanner constructions.
-Note that for all blind spanner variants, the number of computed distances
-is equal to the spanner size, while for the non-blind greedy spanner,
-this number is always $\binom{n}{2}$ and for WPSD it is lower bounded
-by the size of the spanner.
-We can see that, even though none of the blind spanners produces
-spanners of the same quality as the standard greedy algorithm,
-\bgrdy and all variants of \brndm
-perform significantly better than both variants of \textsc{BlindQuasiSorted}.
-
-
-
-\ignore{
-As for different variants of the \brndm algorithm,
-we note that their performance is almost the same, and the algorithm works
-significantly better than \textsc{QuasiSorted} variants, but obviously
-worse than the blind greedy variant. There is a consistent, though small,
-difference between the variants that do not force lower bounds first and
-the other two variants of the \brndm.  (see \cref{fig:blind_rbr_variants}). 
-}
-
-
-
-WSPD spanners performed poorly in our experiments
-on non-clustered data, while the plots in the extensive experimental study \cite{farshi2009experimental}
-show that WSPD spanners are very sparse, outperformed only by the greedy algorithm.
-We implemented two versions of  WSPD: one for the Euclidean case,
-using quadtrees and the algorithm from \cite{hp-book}, and WSPD for general metric
-spaces with cover trees (using the base $\tau=1.3$). 
-They both give similar results, and we can only conclude
-that the advantage of WSPD shows up on larger point sets than the ones we deal with.
-The paper \cite{farshi2009experimental} contains experiments for up to 30000 points,
-and our blind algorithms, which have at least cubic complexity in the number of points,
-are infeasible for such $n$.
-
-
-
-%\ignore{
-%Summing up, the \bgrdy algorithm is the best algorithm for our model, but also \brndm
-%algorithm reduces the amount of computed distances substantially, especially if we enforce having non-zero lower bounds
-%first. 
-%If the goal is to reduce the number of distance computations, these method seem to be more suitable than a WSPD spanner.
-%Since the linear spanner size of WSPDs does not show up in the experiments because of the relatively small values of $n$
-%tested, the experiments are not conclusive regarding the asymptotic size of the blind spanners.
-%Another noteworthy fact is that quasi-sorted variants produce spanners which are much closer to the complete graph
-%(\bqsgrdy is worse, requiring all the edges). It would seem plausible that, if we have
-%access to approximate value of the distance, we could exploit this in the spanner construction, but we could not
-%find a working heuristic.
-%}
-
-From these experiments we conclude that the algorithm with the highest chance
-of saving a significant amount of distance computations on real data, like large
-persistence diagrams, is \bgrdy. Even though \brndm also substantially reduces
-the number of computed distances, its performance is significantly worse;
-other algorithms that we tested do not produce sparse spanners.
-While it would seem plausible that access to approximate value of the distance 
-could be exploited in the spanner construction, 
-we could not find a working heuristic; \bqsgrdy and \bqsshaker produce extremely
-dense spanners.
-
-
-Finally, we ran experiments on two realistic data sets,
-namely the persistence diagrams of the shapes
-from  the McGill shape benchmark \cite{zhang2005mcgill}. 
-More precisely, we generated two sets of diagrams,
-\dtype{original} and \dtype{perturbed}. The \dtype{original}
-diagrams were computed on the points of the 450 original
-point clouds from the shape dataset; we only looked
-at dimension 0, since the diagrams in this dimension are the largest.
-We also added random noise to points of the original shapes,
-and computed persistence diagrams in dimension 0 of these modified
-shapes; these diagrams form the \dtype{perturbed} dataset.
-Persistence diagrams were computed with \libraryname{DIPHA}
-library.
-
-
-
-Results of \bgrdy algorithm on the whole \dtype{original} dataset 
-for different values of $\eps$ and $q$ are summarized in \cref{tbl:mcgill_original_blind_greedy_spanner_sparseness}
-and in \cref{tbl:mcgill_original_blind_greedy_spanner_timing}.
-\grdy algorithm is used as baseline.  The first thing to note is that for higher values of $q$
-any advantage of our algorithm disappears. However, the cardinality of the \grdy
-spanner is also increasing; for instance, if we want to achieve 10 \% accuracy,
-then even the \grdy spanner is almost half of the complete graph.
-We can offer the following explanation, assuming the reader is familiar
-with the definition of $\wsdist{q}$. For higher values of $q$,
-longer edges of an optimal matching play a more important role
-than shorter ones; as $q$ tends to $\infty$, Wasserstein distance
-approaches bottleneck distance $\btdist$, which depends on the longest
-edge only. If all diagrams come from the same dataset,
-then there is a large number of pairs of diagrams whose optimal matchings
-have the longest edges of approximately the same length. This fact means that we are in the case
-of high doubling dimension, being close to a clique, and there is no hope
-of getting a small spanner. \ignore{On the other hand, computation of $\btdist$ in practice
-requires significantly less time than computation of $\wsdist{q}$, and the case
-of $\wsdist{1}$ and $\wsdist{2}$ is of practical importance.}
-For $\wsdist{1}$ we observe more encouraging figures, like avoiding 70 \% of distance
-computations for $\eps = 0.1$; if we are happy with a 1.5 approximation, then we
-reduce the number of distances computed by a factor of 10.
-
-
-
-In order to see the growth of the spanner size, we use the \dtype{perturbed}
-dataset.  We plot the sparseness of the spanners obtained by \grdy
-and \bgrdy algorithms in \cref{fig:spanner_sparseness_mcgill_perturbed}
-for different values of $\eps$, always using the $\wsdist{1}$ distance.
-As expected, the ratio of computed distances decreases as the number of diagrams
-grows. In \cref{fig:spanner_ratio_mcgill_perturbed} we show
-the growth of the spanner size relative to the number of diagrams.
-For $\eps = 0.5$ the \bgrdy spanner starts to stabilize (i.e., demonstrates
-linear growth) for larger values of $n$.
 
 \section{Approximate nearest neighbors}
 \label{sec:ann}
@@ -742,7 +772,7 @@ from triangle inequality.
     algorithm computes $O(\log n)$ distances $\dist(p_i, q)$ in expectation.
 \end{theorem}
 
-The proof is given in the appendix \cref{sec:proof}.
+The full proof is given in the appendix \cref{sec:proof_ann}.
 
 \section{Experiments on approximate nearest neighbors}
 
