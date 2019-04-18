@@ -1,0 +1,4 @@
+greedy_time = 3926867986 microseconds
+mcgill_orig/dist_matrix_mcgill_original_no_parallel_q_3_dim_0.txt;greedy-non-blind;0.2;450;20335;0.201287;45.1889
+blind_greedy_time = 9694270633 microseconds
+mcgill_orig/dist_matrix_mcgill_original_no_parallel_q_3_dim_0.txt;blind-greedy;0.2;450;54479;0.539263;121.064

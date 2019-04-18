@@ -524,7 +524,7 @@ int main(int argc, char** argv)
         exp_logger->info("{};{}", dist_name, greedy_spanner.get_statistics());
         console->flush();
         exp_logger->flush();
-        greedy_spanner.check_ratio(eps);
+        //greedy_spanner.check_ratio(eps);
     }
 
 //    {
