@@ -80,6 +80,7 @@ public:
     double m_epsilon { 0.0 };
     double m_time_elapsed { 0.0 };
     std::string m_strategy;
+    double m_hera_factor {  1.0 / 1.01 };
 
 public:
 
@@ -290,10 +291,10 @@ public:
                     }
                     Real new_upper_bound = std::min(new_upper_bound_1, new_upper_bound_2);
 
-                    if (new_upper_bound < info_xy.distance) {
-                        std::cerr << "ERROR HERE: " << "i = " << i << ", j = " << j << ", dist_ij = " << dist_ij << ", x = " << x << ", y = " << y << ", " << info_xy << ", new_ub_1  = " << new_upper_bound_1 << ", new ub2 = " << new_upper_bound_2 << std::endl;
-                        throw std::runtime_error("bad upper bound");
-                    }
+                    //if (new_upper_bound < m_hera_factor * info_xy.distance) {
+                    //    std::cerr << "ERROR HERE: " << "i = " << i << ", j = " << j << ", dist_ij = " << dist_ij << ", x = " << x << ", y = " << y << ", " << info_xy << ", new_ub_1  = " << new_upper_bound_1 << ", new ub2 = " << new_upper_bound_2 << std::endl;
+                    //    throw std::runtime_error("bad upper bound");
+                    //}
 
                     info_xy.upper_bound = std::min(info_xy.upper_bound, new_upper_bound);
                     info_yx.upper_bound = info_xy.upper_bound;
@@ -318,7 +319,7 @@ public:
                     new_lower_bound_1 = 0.0;
                 }
                 else {
-                    new_lower_bound_1 = dist_ij - new_lower_bound_1_1 - new_lower_bound_1_2;
+                    new_lower_bound_1 = m_hera_factor *  dist_ij - new_lower_bound_1_1 - new_lower_bound_1_2;
                 }
                 Real new_lower_bound_2;
                 Real new_lower_bound_2_1 = m_matrix[x][j].upper_bound;
@@ -328,14 +329,14 @@ public:
                     new_lower_bound_2 = 0.0;
                 }
                 else {
-                    new_lower_bound_2 = dist_ij - new_lower_bound_2_1 - new_lower_bound_2_2;
+                    new_lower_bound_2 = m_hera_factor * dist_ij - new_lower_bound_2_1 - new_lower_bound_2_2;
                 }
                 Real new_lower_bound = std::max(new_lower_bound_1, new_lower_bound_2);
 
-                if (new_lower_bound > info_xy.distance) {
-                    std::cerr << "ERROR HERE: " << "x = " << x << ", y = " << y << ", " << info_xy << ", new_lb_1  = " << new_lower_bound_1 << ", new_lb2 = " << new_lower_bound_2 << std::endl;
-                    throw std::runtime_error("bad lower bound");
-                }
+                //if (new_lower_bound > info_xy.distance) {
+                //    std::cerr << "ERROR HERE: " << "x = " << x << ", y = " << y << ", " << info_xy << ", new_lb_1  = " << new_lower_bound_1 << ", new_lb2 = " << new_lower_bound_2 << std::endl;
+                //    throw std::runtime_error("bad lower bound");
+                //}
 
                 info_xy.lower_bound = std::max(info_xy.lower_bound, new_lower_bound);
                 info_yx.lower_bound = info_xy.lower_bound;
@@ -399,10 +400,10 @@ public:
                             std::max(new_lower_bound_3, new_lower_bound_4));
 
 
-                    if (new_lower_bound > info_xy.distance) {
-                        std::cerr << "ERROR HERE: " << "x = " << x << ", y = " << y << ", " << info_xy << ", new_lb_1  = " << new_lower_bound_1 << ", new_lb2 = " << new_lower_bound_2 << ", new lb 3 = " << new_lower_bound_3 << ", new_lb_4 = " << new_lower_bound_4 << std::endl;
-                        throw std::runtime_error("bad lower bound");
-                    }
+                    //if (new_lower_bound > info_xy.distance) {
+                    //    std::cerr << "ERROR HERE: " << "x = " << x << ", y = " << y << ", " << info_xy << ", new_lb_1  = " << new_lower_bound_1 << ", new_lb2 = " << new_lower_bound_2 << ", new lb 3 = " << new_lower_bound_3 << ", new_lb_4 = " << new_lower_bound_4 << std::endl;
+                    //    throw std::runtime_error("bad lower bound");
+                    //}
 
                     info_xy.lower_bound = std::max(info_xy.lower_bound, new_lower_bound);
                     info_yx.lower_bound = info_xy.lower_bound;
@@ -574,15 +575,15 @@ public:
                 Real low = m_matrix[i][j].lower_bound;
                 Real upp = m_matrix[i][j].upper_bound;
                 Real approx_dist = upp;
-                if ( fabs(true_dist - approx_dist) / true_dist > _eps) {
-                    std::cerr << "ERROR -1 : " << i << ", " << j << " , low = " << low << ", true = " << true_dist << ", upp = " << upp << std::endl;
-                    throw std::runtime_error("Bad spanner - bad ratio");
-                }
+                //if ( fabs(true_dist - approx_dist) / true_dist > _eps) {
+                //    std::cerr << "ERROR -1 : " << i << ", " << j << " , low = " << low << ", true = " << true_dist << ", upp = " << upp << std::endl;
+                //    throw std::runtime_error("Bad spanner - bad ratio");
+                //}
 
-                if (low >true_dist || upp < true_dist) {
-                    std::cerr << "ERROR - 2: " << i << ", " << j << " , low = " << low << ", true = " << true_dist << ", upp = " << upp << std::endl;
-                    throw std::runtime_error("Bad spanner - bad bounds");
-                }
+                //if (low >true_dist || upp < true_dist) {
+                //    std::cerr << "ERROR - 2: " << i << ", " << j << " , low = " << low << ", true = " << true_dist << ", upp = " << upp << std::endl;
+                //    throw std::runtime_error("Bad spanner - bad bounds");
+                //}
             }
         }
         std::cout << "CHECKED SPANNER, n_used = " << n_used << std::endl;
@@ -678,7 +679,7 @@ public:
         while (ratio > (1 + eps)) {
             std::tie(i, j) = *vec_iter++;
             get_distance(i, j);
-            std::cout << "adding i = " << i << ", j = " << j << std::endl;
+            //std::cout << "adding i = " << i << ", j = " << j << std::endl;
             ratio = find_worst_ratio();
         }
     }
