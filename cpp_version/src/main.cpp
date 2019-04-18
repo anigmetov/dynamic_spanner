@@ -517,6 +517,7 @@ int main(int argc, char** argv)
         greedy_spanner.construct_greedy_eps_spanner(eps);
         auto end_greedy = std::chrono::steady_clock::now();
         auto dur_greedy = std::chrono::duration_cast<std::chrono::microseconds>(end_greedy - begin_greedy).count();
+        dur_greedy += greedy_spanner.get_microseconds_to_compute_distances();
         console->info("greedy_time = {} microseconds", dur_greedy);
         exp_logger->info("greedy_time = {} microseconds", dur_greedy);
         console->info("{};{}", dist_name, greedy_spanner.get_statistics());
@@ -577,6 +578,7 @@ int main(int argc, char** argv)
         blind_greedy_spanner.construct_blind_greedy_eps_spanner(eps);
         auto end_blind_greedy = std::chrono::steady_clock::now();
         auto dur_blind_greedy = std::chrono::duration_cast<std::chrono::microseconds>(end_blind_greedy - begin_blind_greedy).count();
+        dur_blind_greedy += blind_greedy_spanner.get_microseconds_to_compute_distances();
         console->info("blind_greedy_time = {} microseconds", dur_blind_greedy);
         exp_logger->info("blind_greedy_time = {} microseconds", dur_blind_greedy);
         console->info("{};{}", dist_name, blind_greedy_spanner.get_statistics());
