@@ -80,7 +80,7 @@ public:
     double m_epsilon { 0.0 };
     double m_time_elapsed { 0.0 };
     std::string m_strategy;
-    double m_hera_factor {  1.0 / 1.01 };
+    double m_hera_factor {  1.0 / (1.01) };
 
 public:
 
@@ -89,7 +89,8 @@ public:
             m_distance_timings_matrix(distance_timings_matrix),
             m_min_dist(std::numeric_limits<double>::max()),
             m_max_dist(0.0),
-            m_twister(std::random_device()())
+            //m_twister(std::random_device()())
+            m_twister(1)
     {
         m_num_points = distance_matrix.size();
         m_matrix.resize(m_num_points);
@@ -291,10 +292,10 @@ public:
                     }
                     Real new_upper_bound = std::min(new_upper_bound_1, new_upper_bound_2);
 
-                    //if (new_upper_bound < m_hera_factor * info_xy.distance) {
-                    //    std::cerr << "ERROR HERE: " << "i = " << i << ", j = " << j << ", dist_ij = " << dist_ij << ", x = " << x << ", y = " << y << ", " << info_xy << ", new_ub_1  = " << new_upper_bound_1 << ", new ub2 = " << new_upper_bound_2 << std::endl;
-                    //    throw std::runtime_error("bad upper bound");
-                    //}
+                    if (new_upper_bound < m_hera_factor * info_xy.distance) {
+                        std::cerr << "ERROR HERE: " << "i = " << i << ", j = " << j << ", dist_ij = " << dist_ij << ", x = " << x << ", y = " << y << ", " << info_xy << ", new_ub_1  = " << new_upper_bound_1 << ", new ub2 = " << new_upper_bound_2 << std::endl;
+                        throw std::runtime_error("bad upper bound");
+                    }
 
                     info_xy.upper_bound = std::min(info_xy.upper_bound, new_upper_bound);
                     info_yx.upper_bound = info_xy.upper_bound;
@@ -324,7 +325,7 @@ public:
                 Real new_lower_bound_2;
                 Real new_lower_bound_2_1 = m_matrix[x][j].upper_bound;
                 Real new_lower_bound_2_2 = m_matrix[i][y].upper_bound;
-                //std::cout << "Upper bounds xj " <<  new_lower_bound_2_1 << " iy " << new_lower_bound_2_2 << std::endl;
+                //if (x == 52 and y == 98) std::cout << "Upper bounds xj " <<  new_lower_bound_2_1 << " iy " << new_lower_bound_2_2 << std::endl;
                 if (new_lower_bound_2_1 == std::numeric_limits<Real>::max() or new_lower_bound_2_2 == std::numeric_limits<Real>::max()) {
                     new_lower_bound_2 = 0.0;
                 }
@@ -333,10 +334,13 @@ public:
                 }
                 Real new_lower_bound = std::max(new_lower_bound_1, new_lower_bound_2);
 
-                //if (new_lower_bound > info_xy.distance) {
-                //    std::cerr << "ERROR HERE: " << "x = " << x << ", y = " << y << ", " << info_xy << ", new_lb_1  = " << new_lower_bound_1 << ", new_lb2 = " << new_lower_bound_2 << std::endl;
-                //    throw std::runtime_error("bad lower bound");
-                //}
+                if (new_lower_bound > info_xy.distance) {
+                    std::cerr << "ERROR HERE: " << "x = " << x << ", y = " << y << ", " << info_xy << ", new_lb_1  = " << new_lower_bound_1 << ", new_lb2 = " << new_lower_bound_2 << std::endl;
+                    std::cerr << "ERROR HERE: " << "i = " << i << ", j = " << j << ", dist_ij = " << dist_ij <<", with factor: "
+                        << m_hera_factor * dist_ij <<
+                        ", Upper bounds xj " <<  new_lower_bound_2_1 << " iy " << new_lower_bound_2_2 << std::endl;
+                    throw std::runtime_error("bad lower bound");
+                }
 
                 info_xy.lower_bound = std::max(info_xy.lower_bound, new_lower_bound);
                 info_yx.lower_bound = info_xy.lower_bound;
@@ -400,10 +404,12 @@ public:
                             std::max(new_lower_bound_3, new_lower_bound_4));
 
 
-                    //if (new_lower_bound > info_xy.distance) {
-                    //    std::cerr << "ERROR HERE: " << "x = " << x << ", y = " << y << ", " << info_xy << ", new_lb_1  = " << new_lower_bound_1 << ", new_lb2 = " << new_lower_bound_2 << ", new lb 3 = " << new_lower_bound_3 << ", new_lb_4 = " << new_lower_bound_4 << std::endl;
-                    //    throw std::runtime_error("bad lower bound");
-                    //}
+                    if (new_lower_bound > info_xy.distance) {
+                        std::cerr << "ERROR HERE: " << "x = " << x << ", y = " << y << ", " << info_xy << ", new_lb_1  = " << new_lower_bound_1 << ", new_lb2 = " << new_lower_bound_2 << ", new lb 3 = " << new_lower_bound_3 << ", new_lb_4 = " << new_lower_bound_4 << std::endl;
+                        std::cerr << "info_xi = " << m_matrix[x][i] << std::endl;
+                        std::cerr << "info_jy = " << m_matrix[j][y] << std::endl;
+                        throw std::runtime_error("bad lower bound");
+                    }
 
                     info_xy.lower_bound = std::max(info_xy.lower_bound, new_lower_bound);
                     info_yx.lower_bound = info_xy.lower_bound;
@@ -419,7 +425,7 @@ public:
             for(size_t y=0;y<m_num_points;y++) {
                 Pair_of_points_info<Real>& info_xy = m_matrix[x][y];
                 Pair_of_points_info<Real>& info_yx = m_matrix[y][x];
-                assert(info_xy.upper_bound>=info_xy.distance);
+                assert(info_xy.upper_bound>=m_hera_factor * info_xy.distance);
                 assert(info_xy.lower_bound<=info_xy.distance);
                 assert(info_xy.upper_bound==info_yx.upper_bound);
                 assert(info_xy.lower_bound==info_yx.lower_bound);
@@ -443,8 +449,10 @@ public:
         info_mirror.distance_requested = true;
         info.exact_distance_used = true;
         info_mirror.exact_distance_used = true;
-        info.upper_bound = info.lower_bound = info.distance;
-        info_mirror.upper_bound = info_mirror.lower_bound = info.distance;
+        info.upper_bound = info.distance;
+        info.lower_bound = m_hera_factor * info.distance;
+        info_mirror.upper_bound =  info.distance;
+        info_mirror.lower_bound = m_hera_factor * info.distance;
         update_bounds_using_distance(i, j);
         m_time_elapsed += m_distance_timings_matrix[i][j];
         return info.distance;

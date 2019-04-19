@@ -511,21 +511,21 @@ int main(int argc, char** argv)
 
 #else
 
-    {
-        DynamicSpannerR greedy_spanner(dist_matrix, dist_matrix_timings);
-        auto begin_greedy = std::chrono::steady_clock::now();
-        greedy_spanner.construct_greedy_eps_spanner(eps);
-        auto end_greedy = std::chrono::steady_clock::now();
-        auto dur_greedy = std::chrono::duration_cast<std::chrono::microseconds>(end_greedy - begin_greedy).count();
-        dur_greedy += greedy_spanner.get_microseconds_to_compute_distances();
-        console->info("greedy_time = {} microseconds", dur_greedy);
-        exp_logger->info("greedy_time = {} microseconds", dur_greedy);
-        console->info("{};{}", dist_name, greedy_spanner.get_statistics());
-        exp_logger->info("{};{}", dist_name, greedy_spanner.get_statistics());
-        console->flush();
-        exp_logger->flush();
-        //greedy_spanner.check_ratio(eps);
-    }
+    //{
+    //    DynamicSpannerR greedy_spanner(dist_matrix, dist_matrix_timings);
+    //    auto begin_greedy = std::chrono::steady_clock::now();
+    //    greedy_spanner.construct_greedy_eps_spanner(eps);
+    //    auto end_greedy = std::chrono::steady_clock::now();
+    //    auto dur_greedy = std::chrono::duration_cast<std::chrono::microseconds>(end_greedy - begin_greedy).count();
+    //    dur_greedy += greedy_spanner.get_microseconds_to_compute_distances();
+    //    console->info("greedy_time = {} microseconds", dur_greedy);
+    //    exp_logger->info("greedy_time = {} microseconds", dur_greedy);
+    //    console->info("{};{}", dist_name, greedy_spanner.get_statistics());
+    //    exp_logger->info("{};{}", dist_name, greedy_spanner.get_statistics());
+    //    console->flush();
+    //    exp_logger->flush();
+    //    //greedy_spanner.check_ratio(eps);
+    //}
 
 //    {
 //        DynamicSpannerR quasi_greedy_spanner(dist_matrix);
