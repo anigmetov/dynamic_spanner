@@ -292,10 +292,10 @@ public:
                     }
                     Real new_upper_bound = std::min(new_upper_bound_1, new_upper_bound_2);
 
-                    if (new_upper_bound < m_hera_factor * info_xy.distance) {
-                        std::cerr << "ERROR HERE: " << "i = " << i << ", j = " << j << ", dist_ij = " << dist_ij << ", x = " << x << ", y = " << y << ", " << info_xy << ", new_ub_1  = " << new_upper_bound_1 << ", new ub2 = " << new_upper_bound_2 << std::endl;
-                        throw std::runtime_error("bad upper bound");
-                    }
+                    //if (new_upper_bound < m_hera_factor * info_xy.distance) {
+                    //    std::cerr << "ERROR HERE: " << "i = " << i << ", j = " << j << ", dist_ij = " << dist_ij << ", x = " << x << ", y = " << y << ", " << info_xy << ", new_ub_1  = " << new_upper_bound_1 << ", new ub2 = " << new_upper_bound_2 << std::endl;
+                    //    throw std::runtime_error("bad upper bound");
+                    //}
 
                     info_xy.upper_bound = std::min(info_xy.upper_bound, new_upper_bound);
                     info_yx.upper_bound = info_xy.upper_bound;
@@ -334,13 +334,13 @@ public:
                 }
                 Real new_lower_bound = std::max(new_lower_bound_1, new_lower_bound_2);
 
-                if (new_lower_bound > info_xy.distance) {
-                    std::cerr << "ERROR HERE: " << "x = " << x << ", y = " << y << ", " << info_xy << ", new_lb_1  = " << new_lower_bound_1 << ", new_lb2 = " << new_lower_bound_2 << std::endl;
-                    std::cerr << "ERROR HERE: " << "i = " << i << ", j = " << j << ", dist_ij = " << dist_ij <<", with factor: "
-                        << m_hera_factor * dist_ij <<
-                        ", Upper bounds xj " <<  new_lower_bound_2_1 << " iy " << new_lower_bound_2_2 << std::endl;
-                    throw std::runtime_error("bad lower bound");
-                }
+                //if (new_lower_bound > info_xy.distance) {
+                //    std::cerr << "ERROR HERE: " << "x = " << x << ", y = " << y << ", " << info_xy << ", new_lb_1  = " << new_lower_bound_1 << ", new_lb2 = " << new_lower_bound_2 << std::endl;
+                //    std::cerr << "ERROR HERE: " << "i = " << i << ", j = " << j << ", dist_ij = " << dist_ij <<", with factor: "
+                //        << m_hera_factor * dist_ij <<
+                //        ", Upper bounds xj " <<  new_lower_bound_2_1 << " iy " << new_lower_bound_2_2 << std::endl;
+                //    throw std::runtime_error("bad lower bound");
+                //}
 
                 info_xy.lower_bound = std::max(info_xy.lower_bound, new_lower_bound);
                 info_yx.lower_bound = info_xy.lower_bound;
@@ -404,12 +404,12 @@ public:
                             std::max(new_lower_bound_3, new_lower_bound_4));
 
 
-                    if (new_lower_bound > info_xy.distance) {
-                        std::cerr << "ERROR HERE: " << "x = " << x << ", y = " << y << ", " << info_xy << ", new_lb_1  = " << new_lower_bound_1 << ", new_lb2 = " << new_lower_bound_2 << ", new lb 3 = " << new_lower_bound_3 << ", new_lb_4 = " << new_lower_bound_4 << std::endl;
-                        std::cerr << "info_xi = " << m_matrix[x][i] << std::endl;
-                        std::cerr << "info_jy = " << m_matrix[j][y] << std::endl;
-                        throw std::runtime_error("bad lower bound");
-                    }
+                    //if (new_lower_bound > info_xy.distance) {
+                    //    std::cerr << "ERROR HERE: " << "x = " << x << ", y = " << y << ", " << info_xy << ", new_lb_1  = " << new_lower_bound_1 << ", new_lb2 = " << new_lower_bound_2 << ", new lb 3 = " << new_lower_bound_3 << ", new_lb_4 = " << new_lower_bound_4 << std::endl;
+                    //    std::cerr << "info_xi = " << m_matrix[x][i] << std::endl;
+                    //    std::cerr << "info_jy = " << m_matrix[j][y] << std::endl;
+                    //    throw std::runtime_error("bad lower bound");
+                    //}
 
                     info_xy.lower_bound = std::max(info_xy.lower_bound, new_lower_bound);
                     info_yx.lower_bound = info_xy.lower_bound;
@@ -420,7 +420,7 @@ public:
 
 #endif
 
-//#if DEBUG
+#if DEBUG
         for(size_t x=0;x<m_num_points;x++) {
             for(size_t y=0;y<m_num_points;y++) {
                 Pair_of_points_info<Real>& info_xy = m_matrix[x][y];
@@ -431,7 +431,7 @@ public:
                 assert(info_xy.lower_bound==info_yx.lower_bound);
             }
         }
-//#endif
+#endif
 
     }
 
