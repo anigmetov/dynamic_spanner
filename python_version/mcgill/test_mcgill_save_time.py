@@ -40,42 +40,49 @@ def read_mcgill_diagrams(diag_dir_root, dim):
 
 
 def get_distance_tuple(i, j, dgm1, dgm2, q, delta):
-    print("i = %d, j = %d, q = %d, fname1 = %s, fname2 = %s, started computation" % (i, j, q, dgm1.label, dgm2.label))
+    # print("i = %d, j = %d, q = %d, fname1 = %s, fname2 = %s, started computation" % (i, j, q, dgm1.label, dgm2.label))
     start_time = dt.datetime.now()
     res = d.wasserstein_distance(dgm1.dgm_data, dgm2.dgm_data, q=q, delta=delta)
     end_time = dt.datetime.now()
     elapsed_time = (end_time - start_time).microseconds
-    print("i = %d, j = %d, q = %d, fname1 = %s, fname2 = %s, d = %f, finished computation" % (i, j, q, dgm1.label, dgm2.label, res))
+    # print("i = %d, j = %d, q = %d, fname1 = %s, fname2 = %s, d = %f, time = %d microsec, finished computation" % (i, j, q, dgm1.label, dgm2.label, res, elapsed_time))
     return (i, j, elapsed_time, elapsed_time)
     
 
 if __name__ == "__main__":
-    if len(sys.argv) < 2:
-        print("dim\n")
-        exit(0)
-    dim = int(sys.argv[1])
-    delta = 0.01
-    diag_dir_root = '/home/anigmetov/Downloads/mcgill_shape_benchmark_dgms_no_duplicates/'
-    dgms = read_mcgill_diagrams(diag_dir_root, dim)
-    n_pts = len(dgms)
-    print("n_pts = %d\n" % n_pts)
-    total_distances = float(n_pts * (n_pts - 1) / 2)
-    data = np.array(dgms[:])
-    times = {}
-    for q in [1,2,3]:
-        times[q] = 0
-        dist_matr_fname = "dist_timing_matrix_mcgill_original_q_{}_dim_{}.txt".format(q, dim)
-        dist_matrix = np.zeros((n_pts, n_pts))
-        for i in range(n_pts):
-            for j in range(i+1, n_pts):
-                (i, j, wd, et) = get_distance_tuple(i, j, dgms[i], dgms[j], q, delta)
-                dist_matrix[i][j] = wd
-                dist_matrix[j][i] = wd
-                times[q] += et
-        print("ELAPSED TIME = {} ms = {} sec for q = {}, dim = {}, delta = {}".format(times[q], times[q] / 1e6, q, dim, delta))
+    # if len(sys.argv) < 2:
+    #     print("dim\n")
+    #     exit(0)
+    # for dim in [2, 1, 0]:
+    for dim in [0]:
+    # dim = int(sys.argv[1])
+        for delta in [0.5, 0.2, 0.1]:
+        # for delta in [0.5, 0.2, 0.1, 0.01]:
+            if delta == 0.01 and dim == 0:
+                continue
+            diag_dir_root = '/home/anigmetov/Downloads/mcgill_shape_benchmark_dgms_no_duplicates/'
+            dgms = read_mcgill_diagrams(diag_dir_root, dim)
+            n_pts = len(dgms)
+            print("n_pts = %d\n" % n_pts)
+            total_distances = float(n_pts * (n_pts - 1) / 2)
+            data = np.array(dgms[:])
+            times = {}
+            # for q in [1,2,3]:
+            for q in [3]:
 
-        with open(dist_matr_fname, 'w') as dmf:
-            dmf.write("%d\n" % n_pts)
-            for i in range(n_pts):
-                for j in range(0, n_pts):
-                    dmf.write("%f\n" % dist_matrix[i][j])
+                times[q] = 0
+                dist_matr_fname = "dist_timing_matrix_mcgill_original_q_{}_dim_{}_delta_{}.txt".format(q, dim, delta)
+                dist_matrix = np.zeros((n_pts, n_pts))
+                for i in range(n_pts):
+                    for j in range(i+1, n_pts):
+                        (i, j, wd, et) = get_distance_tuple(i, j, dgms[i], dgms[j], q, delta)
+                        dist_matrix[i][j] = wd
+                        dist_matrix[j][i] = wd
+                        times[q] += et
+                print("ELAPSED TIME = {} ms = {} sec for q = {}, dim = {}, delta = {}".format(times[q], times[q] / 1e6, q, dim, delta))
+
+                with open(dist_matr_fname, 'w') as dmf:
+                    dmf.write("%d\n" % n_pts)
+                    for i in range(n_pts):
+                        for j in range(0, n_pts):
+                            dmf.write("%f\n" % dist_matrix[i][j])
