@@ -17,7 +17,7 @@ is at most $(1+\eps)\dist(u,v)$.
 
 The performance of algorithms for these problems depends on the number of points,
 the dimension of the metric space, and the cost $\complexity$ of computing a distance in the metric space.
-It is a common assumption to assume $\complexity$ to be a constant; 
+It is a common assumption to assume $\complexity$ to be a constant.
 There are good reasons for that: the most common case of a metric space
 is $\metricspace=\RR^d$ with $d$ some constant, in which case $\complexity$ can be evaluated in $O(d)=O(1)$ time.
 Even if $d$ is considered non-constant,
@@ -103,7 +103,7 @@ Remarkably, we were not able to improve the quality when knowing initial $2$-app
 We also compare with a spanner construction based on WSPD. Our simple algorithms tend to give much smaller
 spanners on the tested examples. Nevertheless, we leave the question open whether our construction
 yields a spanner of asymptotically linear size. From the practical point of view, our algorithm either
-outperforms naive computation of pairwise distances or runs slighly slower, depending on the approximation
+outperforms naive computation of all pairwise distances or runs slighly slower, depending on the approximation
 quality.
 
 
@@ -366,6 +366,9 @@ spanners of the same quality as the standard greedy algorithm,
 \bgrdy and all variants of \brndm
 perform significantly better than both variants of \textsc{BlindQuasiSorted}.
 
+
+
+
 \ignore{
 As for different variants of the \brndm algorithm,
 we note that their performance is almost the same, and the algorithm works
@@ -444,29 +447,6 @@ are infeasible for such $n$.
 \end{figure}
 
 
-\begin{figure}[!htbp]
-        \begin{tikzpicture}
-            \begin{axis}[xlabel=\# Points,ylabel=\# Edges / \# Points,
-                legend pos=outer north east]
-
-                \addplot+ table [x=n_points, y=ratio_blind_random_lower_bound_first, col sep=comma] {\expDistDataPath all_methods_dim_2_eps_0.1_ratio.csv};
-                \addlegendentry{Blind random, lower bound first}
-
-                \addplot+ table [x=n_points, y=ratio_blind_greedy, col sep=comma] {\expDistDataPath all_methods_dim_2_eps_0.1_ratio.csv};
-                \addlegendentry{Blind greedy}
-
-                \addplot+ table [x=n_points, y=ratio_greedy, col sep=comma] {\expDistDataPath all_methods_dim_2_eps_0.1_ratio.csv};
-                \addlegendentry{Greedy}
-
-            \end{axis}
-        \end{tikzpicture}
-            \caption{Ratio \# edges / \# points for different variants of spanner 
-            algorithms. The plot is for normally distributed points
-            in dimension 2, $\eps = 0.1$.}
-            \label{fig:spanner_ratio}
-\end{figure}
-
-
 
 From these experiments we conclude that the algorithm with the highest chance
 of saving a significant amount of distance computations on real data is \bgrdy. 
@@ -531,8 +511,8 @@ as in \hera. Exact computation is very expensive (see \cite{kerber2017geometry})
 with spanner algorithms we always compute $\wsdist{q}$ with relative error 0.01.
 In order to make the comparison absolutely fair, when we compute a \espanner,
 we compare its timing with the timing of \hera called for each pair of diagrams with relative error $\eps$.
-Let us emphasize that the diagrams we have are rather small, with a typical cardinality
-between 100 and 300 points. Nevertheless, on this data set \bgrdy spanner
+Let us emphasize that the diagrams we have are rather small, with average cardinality
+350 points. Nevertheless, on this data set \bgrdy spanner
 provides a substantial improvement in terms of real running time, by a factor of 2 for $\wsdist{1}$.
 
 
@@ -839,7 +819,6 @@ reasonable for practical application, if pairwise distances are already availabl
 \end{figure}
 
 
-
 \section{Conclusion and future work}
 \label{sec:conclusion}
 %
@@ -856,7 +835,6 @@ in that infinite-dimensional space, but have structures
 (e.g. clusters of close-by diagrams) which should be favourable for our approach.
 
 
-
 In particular, our experiments on real persistence diagrams
 show that the blind spanner can significantly accelerate
 computation of all pairwise distances. We must admit that,
@@ -869,8 +847,6 @@ whether \bgrdy is worth trying.
 The distances that \bgrdy computes would be computed anyway (and can be re-used),
 and the size of the \bgrdy spanner can itself be considered as a piece
 of information about the data set under consideration.
-
-
 
 
 On the theoretical side, the obvious next question is whether our strategy
@@ -897,6 +873,7 @@ We pose the question what heuristic could make more use of this feature.
 In this section we include plots that give more information
 about the behaviour of \bgrdy spanner in Euclidean space.
 
+\ignore{
 \begin{figure}[ht!]
     \begin{centering}
 \begin{tikzpicture}
@@ -922,6 +899,7 @@ about the behaviour of \bgrdy spanner in Euclidean space.
     \caption{Comparison of the four variants of \brndm algorithm.}
     \label{fig:blind_rbr_variants}
 \end{figure}
+}
 
 
 \begin{figure}[ht!]
@@ -941,12 +919,35 @@ about the behaviour of \bgrdy spanner in Euclidean space.
 %the other two variants of the \brndm. \ignore{ (see \cref{fig:blind_rbr_variants}). }
 
 
+\begin{figure}[!htbp]
+        \begin{tikzpicture}
+            \begin{axis}[xlabel=\# Points,ylabel=\# Edges / \# Points,
+                legend pos=outer north east]
+
+                \addplot+ table [x=n_points, y=ratio_blind_random_lower_bound_first, col sep=comma] {\expDistDataPath all_methods_dim_2_eps_0.1_ratio.csv};
+                \addlegendentry{Blind random, lower bound first}
+
+                \addplot+ table [x=n_points, y=ratio_blind_greedy, col sep=comma] {\expDistDataPath all_methods_dim_2_eps_0.1_ratio.csv};
+                \addlegendentry{Blind greedy}
+
+                \addplot+ table [x=n_points, y=ratio_greedy, col sep=comma] {\expDistDataPath all_methods_dim_2_eps_0.1_ratio.csv};
+                \addlegendentry{Greedy}
+
+            \end{axis}
+        \end{tikzpicture}
+            \caption{Ratio \# edges / \# points for different variants of spanner 
+            algorithms. The plot is for normally distributed points
+            in dimension 2, $\eps = 0.1$.}
+            \label{fig:spanner_ratio}
+\end{figure}
+
+
 
 \cref{fig:spanner_ratio} shows the ratio of the number of edges to the number of points.
 The ideal behavior is demonstrated by the non-blind greedy spanner,
 for which this ratio stays practically constant, confirming the linear growth.
 None of the blind algorithms seems to have this property, but among them
-the blind greedy spanner is the best one. If we assume that the number of edges
+the \bgrdy spanner is the best one. If we assume that the number of edges
 is proportional to $n^\alpha$, then we can try to estimate $\alpha$ by 
 linear regression (after taking $\log$).  We give in \cref{tbl:regr_coeff_spanner}
 the estimated exponents $\alpha$ for \bgrdy and standard
@@ -970,15 +971,16 @@ on the number of points. The data is for $\eps = 0.1$ and for uniform points.}
 \label{tbl:regr_coeff_spanner}
 \end{table}
 
-We also tested higher dimensions and show the results
-in dimensions 2, 3 and 4 in \cref{fig:blind_greedy_dimensions}.
-We can see that already in dimension 4, it produces a graph with roughly $\frac{1}{2}\binom{n}{2}$
-edges for $700$ points, which clearly shows some degrading for higher dimensions. 
+
+The plot in \cref{fig:blind_greedy_dimensions}
+compares performance of \bgrdy in different dimensions.
+We see that already in dimension 4, it produces a graph with roughly $\frac{1}{2}\binom{n}{2}$
+edges for $700$ points, which clearly shows some degrading for higher dimensions.
 
 
 The plot in \cref{fig:spanner_eps_dependence}
 compares the \bgrdy and \textsc{Greedy} algorithms
-on \textbf{uniform} point sets for different choices of $\eps$. We can see that dependence on $\eps$
+on \textbf{uniform} point sets for different choices of $\eps$. Dependence on $\eps$
 is approximately the same for both algorithms. Since it is not clearly seen from the picture, we also note
 that the ratio of the number of edges decreases for
 smaller values of $\eps$: 
@@ -1002,9 +1004,6 @@ while for $\eps = 1/32$ the ratio is 2.6
         \caption{Number of edges in the blind greedy and greedy spanners for different values of $\eps$. Data is for 400 normally distributed points in $\RR^2$ and $\RR^3$.}
         \label{fig:spanner_eps_dependence}
 \end{figure}
-
-
-
 
 
 \section{Proof of \cref{thm:ann_bound}}
@@ -1031,11 +1030,6 @@ contain at most one point from $P$,
 \end{proof}
 
 
-The following geometric lemma
-can be summarized as follows: if $\dist(p_i,q)$ is computed in the algorithm,
-further distance computations of points very close to $p_i$ or very far from $p_i$
-will be avoided.
-
 \begin{lemma}
 \label{lem:bound_lemma}
 Assume $r_i=\dist(p_i,q)$ is computed in the algorithm, and let $j>i$.
@@ -1046,6 +1040,13 @@ of $p_j$ to $q$.
 the distance of $p_j$ to $q$.
 \end{enumerate}
 \end{lemma}
+
+\cref{lem:bound_lemma}
+can be summarized as follows: if $\dist(p_i,q)$ is computed in the algorithm,
+further distance computations of points very close to $p_i$ or very far from $p_i$
+will be avoided.
+
+
 \begin{proof}
 
 
@@ -1125,9 +1126,6 @@ The small black ball between the dashed circle and the solid circle has radius $
     $\dist(p_i,q)$ allows to exclude the region in the corresponding ball around $p_i$, but all these balls contain only one $p_i$.}
     \label{fig:exact_bad_example}
 \end{figure}
-
-
-
 
 
 The algorithm computes $r_i$ by assumption and updates
