@@ -36,6 +36,7 @@ wasserstein/build/
 *.tgz
 *.tar
 *.bak
+*.vtc
 makeout
 tags
 .idea/

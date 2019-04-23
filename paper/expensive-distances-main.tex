@@ -116,7 +116,7 @@ Our experimental results match the theoretical predictions.
 %We also experimentally evaluate our approach and observe that the approach follows 
 %roughly the theoretical prediction.
 
-\section{Background and Definitions}
+\section{Background}
 %
 \myparagraph{Doubling dimension}
 A metric space is called \textit{doubling} with \textit{doubling constant} $k$,
@@ -166,8 +166,8 @@ has to compute all $\binom{n}{2}$ pairwise distances in the sorting step;
 this means that in our cost model, the greedy spanner has the worst possible
 performance.
 
-On the other hand, spanner constructions based on WSPD\footnote{Well-Separated Pair Decomposition; 
-for convenience we remind the definition in \cref{sec:appendix_background}} only compute
+On the other hand, spanner constructions based on Well-Separated Pair Decomposition\footnote{ 
+for convenience, we remind the definition of WSPD in \cref{sec:appendix_background}} only compute
 $O(n\log n+n \eps^{-d})$ distances 
 to construct a \espanner in doubling dimension $d$.
 The spanner size is $O(n\eps^{-d})$. Assuming $\eps$ and $d$ again as constants,
@@ -451,18 +451,18 @@ are infeasible for such $n$.
 From these experiments we conclude that the algorithm with the highest chance
 of saving a significant amount of distance computations on real data is \bgrdy. 
 Even though \brndm also substantially reduces
-the number of computed distances, its performance is significantly worse;
+the number of computed distances, its performance is worse;
 other algorithms that we tested do not produce sparse spanners.
 While it would seem plausible that access to approximate value of the distance
 could be exploited in the spanner construction,
 we could not find a working heuristic; \bqsgrdy and \bqsshaker produce extremely
-dense spanners.
+dense spanners. More data from experiments in $\RR^n$ can be found in
+\cref{sec:spanners_euclidean_addendum}.
 
 
-
-The persistence diagrams that we used as
-realistic data sets,
-come from the McGill shape benchmark \cite{zhang2005mcgill}.
+The realistic data sets that we used
+are the persistence diagrams
+computed from the McGill shape benchmark \cite{zhang2005mcgill}.
 More precisely, we generated two sets of diagrams,
 \dtype{original} and \dtype{perturbed}. The \dtype{original}
 diagrams were computed on the points of the 450 original
@@ -472,7 +472,7 @@ We also added random noise to points of the original shapes,
 and computed persistence diagrams in dimension 0 of these modified
 shapes; these diagrams form the \dtype{perturbed} dataset.
 Persistence diagrams were computed with \libraryname{DIPHA}
-library.
+library \cite{bauer2014distributed}.
 
 
 
@@ -482,8 +482,8 @@ for different values of $\eps$ and $q$ are presented in \cref{tbl:mcgill_origina
 any advantage of our algorithm disappears. However, the cardinality of the \grdy
 spanner is also increasing; for instance, if we want to achieve 10 \% accuracy,
 then even the \grdy spanner is almost half of the complete graph.
-We can offer the following explanation, assuming the reader is familiar
-with the definition of $\wsdist{q}$. For higher values of $q$,
+We can offer the following explanation\footnote{definition of $\wsdist{q}$ can be found in \cref{sec:appendix_background}}. For higher values of $q$,
+\label{}
 longer edges of an optimal matching play a more important role
 than shorter ones; as $q$ tends to $\infty$, Wasserstein distance
 approaches bottleneck distance $\btdist$, which depends on the longest
@@ -503,13 +503,13 @@ reduce the number of distances computed by a factor of 10.
 We also compare the time that is needed to compute the matrix of all pairwise distances
 naively with the time that is needed to approximate it with \bgrdy spanner.
 The timings are given in \cref{tbl:mcgill_original_blind_greedy_spanner_timing}.
-First of all, we should explain why the timings in brute-force column
+First of all, we should explain why the timings in the brute-force columns
 depend on $\eps$. Wasserstein distance can either be computed exactly,
-by using the Hungarian algorithm, as done in \dionisus, or
-it can be computed with the user-given accuracy using the auction algorithm,
-as in \hera. Exact computation is very expensive (see \cite{kerber2017geometry}), and in our code for experiments
+by using the Hungarian algorithm, or
+it can be computed with the user-given accuracy with the auction algorithm,
+as in \hera. Exact computation is very expensive \cite{kerber2017geometry}, and in our code for experiments
 with spanner algorithms we always compute $\wsdist{q}$ with relative error 0.01.
-In order to make the comparison absolutely fair, when we compute a \espanner,
+To make the comparison absolutely fair, when we compute a \espanner,
 we compare its timing with the timing of \hera called for each pair of diagrams with relative error $\eps$.
 Let us emphasize that the diagrams we have are rather small, with average cardinality
 350 points. Nevertheless, on this data set \bgrdy spanner
@@ -734,8 +734,9 @@ are solving approximate nearest neighbour problem.
 Then we use a standard packing argument for doubling spaces, applied to the large and small balls, to show
 that the number of distance computations that we pay per candidate is constant.
 It remains only to prove that the number of different candidates is $O(\log n)$
-in expectation; there is a technicality that prevents using the standard
-backwards analysis argument verbatim, but it can be adapted.
+in expectation; the standard
+backwards analysis argument cannot be applied verbatim, because of a technicality,
+but it can be adapted.
 The full proof is given in \cref{sec:proof_ann}.
 
 \section{Experiments on approximate nearest neighbours}
@@ -1119,7 +1120,7 @@ The small black ball between the dashed circle and the solid circle has radius $
 
 \begin{figure}[hb!]
     \includegraphics[width=0.7\textwidth]{\expDistFigPath exact_bad_example.png}
-    \caption{Example of point set where exact nearest neighbour search cannot be accelerated by maintaining bounds.
+    \caption{Example of a point set where exact nearest neighbour search cannot be accelerated by maintaining bounds.
     The exact nearest neighbour is the point $p_1$, next point $p_i$ is placed 
     in the curvilinear triange formed by the balls around the query point, $p_2$ and $p_{i-1}$. Even verifying that $p_1$
     is the true nearest neighbour cannot be done without computing all distances $\dist(p_i,q)$. Indeed, every computed
@@ -1261,7 +1262,29 @@ building WSPD spanners in one of our implementations.
 
 
 \myparagraph{Wasserstein Distance}
-A persistence diagram is a multiset of points $(x, y)$ above the diagonal
+Let $\diag$ denote the line in the plane with the equation $y = x$; we call it the diagonal.
+A persistence diagram is a finite multiset of points $(x, y)$ with $x > y$
 $\Delta$ and all points of $\Delta$ with infinite cardinality.
-
-
+The points with $y > x$ are called \textit{off-diagonal} points,
+and points on $\Delta$ are called \textit{diagonal} points.
+The \emph{$q$-Wasserstein distance} is defined as
+\[
+    \wsdist{q}(X,Y) = \left[ \inf_{\eta:X\rightarrow Y} \sum_{x\in X} \|x-\eta(x)\|_\infty^q\right]^{1/q},
+\]
+where $\eta$ ranges over all bijections between $X$ and $Y$.
+Equivalent definition, which is better suited for actual computations,
+is as follows. Let $\pi\colon \RR^2 \to \Delta$ be defined
+as $(x,y) \mapsto (\frac{x+y}{2}, \frac{x+y}{2})$; we refer to $\pi$ as \textit{diagonal
+projection}. Let $\tX$ be the set $(X\setminus \Delta) \cup \pi(Y \setminus \Delta)$
+and $\tY$ be the set $(Y\setminus \Delta) \cup \pi(X \setminus \Delta)$; in plain words,
+to get $\tX$, we add to the off-diagonal points of $X$
+the diagonal projections of the off-diagonal points of $Y$,
+and perform the same operation to get $\tY$. Notice that $\tX$ and $\tY$
+are finite sets of the same cardinality. Let $G$ be a complete bipartite
+graph with vertices $\tX \coprod \tY$, where each vertex from $\tX$
+is connected with each vertex of from $\tY$. If edge $(x,y)$ of $G$
+has at least one of the vertices $x$ or $y$ not on the diagonal,
+then the edge is assigned weight $\ell_{\infty}(x, y)^q$, otherwise
+the edge is assigned weight 0. Wasserstein distance is defined as the $q$-th
+root of the minimal cost of a perfect matching on $G$; in other words,
+in order to find $\wsdist{q}$, one must solve an \textit{assignment problem}.
