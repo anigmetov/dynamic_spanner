@@ -85,4 +85,4 @@ if __name__ == "__main__":
                         for i in range(n_pts):
                             for j in range(0, n_pts):
                                 dmf.write("%f\n" % dist_matrix[i][j])
-                        dmf.write("\n%f seconds\n" % times[q] / 1e6)
+                        dmf.write("\n%f seconds\n" % (times[q] / 1e6))
