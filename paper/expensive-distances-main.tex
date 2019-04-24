@@ -502,9 +502,16 @@ computations for $\eps = 0.1$; for a 1.5 approximation, we
 reduce the number of distances computed by a factor of 10.
 
 
+%We also compare the time that is needed to compute the matrix of all pairwise distances
+%naively with the time that is needed to approximate it with \bgrdy spanner.
+%The timings are given in Table 2. We compared our approach for a fixed
+%$\eps$ with the time to compute all pairwise-distance between the
+%persistence diagrams using \hera, using the same approximation parameter
+%$\eps$.
 
-We also compare the time that is needed to compute the matrix of all pairwise distances
-naively with the time that is needed to approximate it with \bgrdy spanner.
+
+
+
 The timings are given in \cref{tbl:mcgill_original_blind_greedy_spanner_timing}.
 First of all, we should explain why the timings in the brute-force columns
 depend on $\eps$. Wasserstein distance can either be computed exactly,
