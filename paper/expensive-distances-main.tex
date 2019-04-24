@@ -34,13 +34,13 @@ is a point set in $\RR^2$, and the distance between two diagrams
 is determined by a min-cost matching between the point sets.
 If the diagrams have $N$ points, computing this matching requires
 polynomial time in $N$, and $N$ might well be larger than $n$, the number
-of diagrams considered (\cite{cohen2007stability}). For the case of Reeb graphs, the situation is even
+of diagrams considered \cite{cohen2007stability}. For the case of Reeb graphs, the situation is even
 worse: while several metrics on Reeb graphs have been proposed (\cite{bauer2014measuring}, \cite{de2016categorified},
 \cite{di2016edit}),
 not even an constant-factor approximation algorithm is known that runs
 in polynomial time in the size of the graphs.
 Another instance is a collection of high-resolution images
-endowed with the Wasserstein (or Earth Movers) metric (\cite{rubner2000earth}).
+endowed with the Wasserstein (or Earth Movers) metric \cite{rubner2000earth}.
 
 In such situations with expensive distance computations, 
 it makes sense to study a different cost model, where only the number of distance computations
@@ -98,12 +98,12 @@ for each point pair, the set of all computed distances forms the spanner.
 The experimentally most successful exploration strategy that we found is to
 repeatedly query the distance of a pair with the worst ratio of upper and lower bound.
 We call the obtained spanner the \emph{blind greedy spanner}, as opposed to the well-known
-\emph{greedy spanner} that precomputes all pairwise distances and only maintains upper bounds (\cite{althofer1993sparse}).
+\emph{greedy spanner} that precomputes all pairwise distances and only maintains upper bounds \cite{althofer1993sparse}.
 Remarkably, we were not able to improve the quality when knowing initial $2$-approximations of all point pairs.
 We also compare with a spanner construction based on WSPD. Our simple algorithms tend to give much smaller
 spanners on the tested examples. Nevertheless, we leave the question open whether our construction
 yields a spanner of asymptotically linear size. From the practical point of view, our algorithm either
-outperforms naive computation of all pairwise distances or runs slightly slower, depending on the approximation
+runs faster than naive computation of all pairwise distances or runs slightly slower, depending on the approximation
 quality.
 
 
@@ -143,7 +143,7 @@ the shortest path distance $d_{uv}$ of $u$ and $v$ in $G$ satisfies $d_{u,v}\leq
 In other words, the shortest path metric of $G$ is a good approximation of the actual distance for every pair of points.
 Clearly, it is a necessary condition that $G$ is connected, hence every spanner must have at least $n-1$ edges.
 
-The \emph{greedy spanner}(\cite{althofer1993sparse}) is a simple algorithm to compute linear-sized spanners:
+The \emph{greedy spanner} \cite{althofer1993sparse} is a simple algorithm to compute linear-sized spanners:
 \begin{algorithmic}
 \label{alg:greedy_spanner}
 \Function{GreedySpanner}{$P, \eps$}
@@ -159,9 +159,9 @@ The \emph{greedy spanner}(\cite{althofer1993sparse}) is a simple algorithm to co
 \EndFunction
 \end{algorithmic}
 
-The greedy spanner is guaranteed (\cite{althofer1993sparse}) to return a spanner of size $O(n)$
+The greedy spanner is guaranteed \cite{althofer1993sparse} to return a spanner of size $O(n)$
 (for constant doubling dimension and fixed $\eps>0$); in experimental study \cite{farshi2009experimental}
-it was also shown to return the sparsest graph.  However, it clearly
+it was also shown to return the sparsest graph.  However, it
 has to compute all $\binom{n}{2}$ pairwise distances in the sorting step;
 this means that in our cost model, the greedy spanner has the worst possible
 performance.
@@ -317,7 +317,8 @@ We refer to the former option as \bqsgrdy and to the latter one as \bqsshaker.
 \label{sec:experiment_spanners}
 
 We performed two types of experiments: on points sampled from a low-dimensional Euclidean
-space and on persistence diagrams with Wasserstein distance.
+space and on persistence diagrams
+with Wasserstein distance\footnote{definition of $\wsdist{q}$ can be found in \cref{sec:appendix_background}}.
 Clearly, our model is not meaningful in a Euclidean space, where
 distance computations are cheap.
 However, in this case we can easily check the performance
@@ -459,149 +460,6 @@ we could not find a working heuristic; \bqsgrdy and \bqsshaker produce extremely
 dense spanners. More data from experiments in $\RR^n$ can be found in
 \cref{sec:spanners_euclidean_addendum}.
 
-
-The realistic data sets that we used
-are the persistence diagrams
-computed from the McGill shape benchmark \cite{zhang2005mcgill}.
-More precisely, we generated two sets of diagrams,
-\dtype{original} and \dtype{perturbed}. The \dtype{original}
-diagrams were computed on the points of the 450 original
-point clouds from the shape dataset; we only used
-dimension 0, since the diagrams in this dimension are larger in size.
-We also added random noise to points of the original shapes,
-and computed persistence diagrams in dimension 0 of these modified
-shapes; these diagrams form the \dtype{perturbed} dataset.
-Persistence diagrams were computed with the \libraryname{DIPHA}
-library \cite{bauer2014distributed}.
-
-
-
-Sparseness values of \bgrdy spanner on the whole \dtype{original} dataset
-for different values of $\eps$ and $q$ are presented in \cref{tbl:mcgill_original_blind_greedy_spanner_sparseness};
-the \grdy algorithm is used as baseline.  The first thing to note is that for higher values of $q$
-\footnote{definition of $\wsdist{q}$ can be found in \cref{sec:appendix_background}} 
-any advantage of our algorithm disappears. A plausible explanation 
-is that for higher values of $q$, the doubling dimension becomes larger;
-this is confirmed by the increase in the size of the greedy spanner.
-\ignore{
-However, the cardinality of the \grdy
-spanner is also increasing; for instance, if we want to achieve 10 \% accuracy,
-then even the \grdy spanner is almost half of the complete graph.
-longer edges of an optimal matching play a more important role
-than shorter ones; as $q$ tends to $\infty$, Wasserstein distance
-approaches bottleneck distance $\btdist$, which depends on the longest
-edge only. If all diagrams come from the same dataset,
-then there is a large number of pairs of diagrams whose optimal matchings
-have the longest edges of approximately the same length. This fact means that we are in the case
-of high doubling dimension, being close to a clique, and there is no hope
-of getting a small spanner. On the other hand, computation of $\btdist$ in practice
-requires significantly less time than computation of $\wsdist{q}$, and the case
-of $\wsdist{1}$ and $\wsdist{2}$ is of practical importance.}
-For $\wsdist{1}$ we observe more encouraging figures, like avoiding 70 \% of distance
-computations for $\eps = 0.1$; for a 1.5 approximation, we
-reduce the number of distances computed by a factor of 10.
-
-
-%We also compare the time that is needed to compute the matrix of all pairwise distances
-%naively with the time that is needed to approximate it with \bgrdy spanner.
-%The timings are given in Table 2. We compared our approach for a fixed
-%$\eps$ with the time to compute all pairwise-distance between the
-%persistence diagrams using \hera, using the same approximation parameter
-%$\eps$.
-
-
-
-
-The timings are given in \cref{tbl:mcgill_original_blind_greedy_spanner_timing}.
-First of all, we should explain why the timings in the brute-force columns
-depend on $\eps$. Wasserstein distance can either be computed exactly,
-by using the Hungarian algorithm, or
-it can be computed with the user-given accuracy with the auction algorithm,
-as in \hera. Exact computation is very expensive \cite{kerber2017geometry}, and in our code for experiments
-with spanner algorithms we always compute $\wsdist{q}$ with relative error 0.01.
-To make the comparison absolutely fair, when we compute a \espanner,
-we compare its timing with the timing of \hera called for each pair of diagrams with relative error $\eps$.
-Let us emphasize that the diagrams we have are rather small, with average cardinality
-350 points. Nevertheless, on this data set \bgrdy spanner
-provides a substantial improvement in terms of real running time, and we expect this advantage
-to grow for diagrams of larger cardinality.
-
-
-
-In order to see the growth of the spanner size, we use the \dtype{perturbed}
-dataset, drawing from it random samples.
-We plot the sparseness of the spanners obtained by \grdy
-and \bgrdy algorithms in \cref{fig:spanner_sparseness_mcgill_perturbed}
-for different values of $\eps$, always using the $\wsdist{1}$ distance.
-As expected, the ratio of computed distances decreases as the number of diagrams
-grows. In \cref{fig:spanner_ratio_mcgill_perturbed} we show
-the growth of the spanner size relative to the number of diagrams.
-For $\eps = 0.5$ the \bgrdy spanner starts to stabilize (i.e., demonstrates
-linear growth) for larger values of $n$.
-
-
-\begin{figure}[!htbp]
-    \begin{centering}
-\begin{tikzpicture}
-    \begin{axis}[xlabel=\# Diagrams,ylabel=\# Edges / \# Diagrams,
-        legend pos=outer north east]
-
-        \addplot+ table [x=n_points, y=ratio_greedy_dim_0_eps_02_q_1, col sep=comma] {\expDistDataPath mcgill_perturbed_blind_greedy.csv};
-        \addlegendentry{Greedy, $\eps = 0.2$}
-
-        \addplot+ table [x=n_points, y=ratio_blind_greedy_dim_0_eps_02_q_1, col sep=comma] {\expDistDataPath mcgill_perturbed_blind_greedy.csv};
-        \addlegendentry{Blind greedy, $\eps = 0.2$}
-
-        \addplot+ table [x=n_points, y=ratio_greedy_dim_0_eps_05_q_1, col sep=comma] {\expDistDataPath mcgill_perturbed_blind_greedy.csv};
-        \addlegendentry{Greedy, $\eps = 0.5$}
-
-        \addplot+ table [x=n_points, y=ratio_blind_greedy_dim_0_eps_05_q_1, col sep=comma] {\expDistDataPath mcgill_perturbed_blind_greedy.csv};
-        \addlegendentry{Blind greedy, $\eps = 0.5$}
-
-\end{axis}
-\end{tikzpicture}
-\end{centering}
-    \caption{Ratio \# edges /  \# diagrams for  \bgrdy spanner. The plot is for 0-dimensional diagrams of perturbed McGill data
-    $\eps = 0.1, 0.2, 0.5$ with $W_1$ distance.}
-    \label{fig:spanner_ratio_mcgill_perturbed}
-\end{figure}
-
-
-\begin{figure}[!htbp]
-    \begin{centering}
-\begin{tikzpicture}
-    \begin{axis}[xlabel=\# Diagrams,ylabel=\# Edges / \# All distances,
-        legend pos=outer north east]
-
-    \addplot+ table [x=n_points, y=sparseness_greedy_dim_0_eps_01_q_1, col sep=comma] {\expDistDataPath mcgill_perturbed_blind_greedy.csv};
-    \addlegendentry{Greedy, $\eps = 0.1$}
-
-    \addplot+ table [x=n_points, y=sparseness_blind_greedy_dim_0_eps_01_q_1, col sep=comma] {\expDistDataPath mcgill_perturbed_blind_greedy.csv};
-    \addlegendentry{Blind greedy, $\eps = 0.1$}
-
-    \addplot+ table [x=n_points, y=sparseness_greedy_dim_0_eps_02_q_1, col sep=comma] {\expDistDataPath mcgill_perturbed_blind_greedy.csv};
-    \addlegendentry{Greedy, $\eps = 0.2$}
-
-    \addplot+ table [x=n_points, y=sparseness_blind_greedy_dim_0_eps_02_q_1, col sep=comma] {\expDistDataPath mcgill_perturbed_blind_greedy.csv};
-    \addlegendentry{Blind greedy, $\eps = 0.2$}
-
-    \addplot+ table [x=n_points, y=sparseness_greedy_dim_0_eps_05_q_1, col sep=comma] {\expDistDataPath mcgill_perturbed_blind_greedy.csv};
-    \addlegendentry{Greedy, $\eps = 0.5$}
-
-    \addplot+ table [x=n_points, y=sparseness_blind_greedy_dim_0_eps_05_q_1, col sep=comma] {\expDistDataPath mcgill_perturbed_blind_greedy.csv};
-    \addlegendentry{Blind greedy, $\eps = 0.5$}
-
-
-\end{axis}
-\end{tikzpicture}
-\end{centering}
-    \caption{Sparseness of \bgrdy spanner algorithm. The plot is for \dtype{perturbed} persistence diagrams,
-    $\eps = 0.1, 0.2, 0.5$ with $W_1$ distance.}
-    \label{fig:spanner_sparseness_mcgill_perturbed}
-\end{figure}
-
-
-
 \begin{table}\centering
     \ra{1.2}
 \begin{tabular}{@{}rrrcrrcrr@{}}\toprule
@@ -642,6 +500,127 @@ $\eps = 0.5$    &   1744  &  483  &&  2835  &  1233  &&  9418    &  5146\\
     Data is for 450 \dtype{original} persistence diagrams with Wasserstein distance $W_q$, time in seconds.}
 \label{tbl:mcgill_original_blind_greedy_spanner_timing}
 \end{table}
+
+
+
+
+The realistic data sets that we used
+are the persistence diagrams
+computed from the McGill shape benchmark \cite{zhang2005mcgill}.
+More precisely, we generated two sets of diagrams,
+\dtype{original} and \dtype{perturbed}. The \dtype{original}
+diagrams were computed on the points of the 450 original
+point clouds from the shape dataset; we only used
+dimension 0, since the diagrams in this dimension are larger in size.
+We also added random noise to points of the original shapes,
+and computed persistence diagrams in dimension 0 of these modified
+shapes; these diagrams form the \dtype{perturbed} dataset.
+Persistence diagrams were computed with the \libraryname{DIPHA}
+library \cite{bauer2014distributed}. 
+Wasserstein distance between diagrams can either be computed exactly,
+by using the Hungarian algorithm, or
+it can be computed with the user-given accuracy with the auction algorithm.
+Exact computation is very expensive \cite{kerber2017geometry}, 
+and in our experiments we always compute $\wsdist{q}$ using \hera with relative error 0.01.
+
+
+
+Sparseness values of \bgrdy spanner on the whole \dtype{original} dataset
+for different values of $\eps$ and $q$ are presented in \cref{tbl:mcgill_original_blind_greedy_spanner_sparseness};
+the \grdy algorithm is used as baseline.  The first thing to note is that for higher values of $q$
+any advantage of our algorithm disappears. A plausible explanation
+is that for higher values of $q$, the doubling dimension becomes larger;
+this is confirmed by the increase in size of the greedy spanner.
+For $\wsdist{1}$ we observe more encouraging figures, like avoiding 70 \% of distance
+computations for $\eps = 0.1$; for a 1.5 approximation, we
+reduce the number of distances computed by a factor of 10.
+
+
+We also compare the time that is needed to compute the matrix of all pairwise distances
+naively with the time that is needed to approximate it with \bgrdy spanner.
+The timings are given in \cref{tbl:mcgill_original_blind_greedy_spanner_timing}.
+We compared our approach for a fixed
+$\eps$ with the time to compute all pairwise-distance between the
+persistence diagrams using \hera, using the same approximation parameter
+$\eps$. Let us emphasize that the diagrams we have are rather small,
+with average cardinality
+350 points. Nevertheless, on this data set \bgrdy spanner
+provides a substantial improvement in terms of real running time,
+and we expect this advantage to grow for diagrams of larger cardinality.
+
+
+
+In order to see the growth of the spanner size, we use the \dtype{perturbed}
+dataset, drawing from it random samples.
+We plot the sparseness of the spanners obtained by \grdy
+and \bgrdy algorithms in \cref{fig:spanner_sparseness_mcgill_perturbed}
+for different values of $\eps$, always using the $\wsdist{1}$ distance.
+As expected, the ratio of computed distances decreases as the number of diagrams
+grows. In \cref{fig:spanner_ratio_mcgill_perturbed} we show
+the growth of the spanner size relative to the number of diagrams.
+For $\eps = 0.5$ the \bgrdy spanner starts to stabilize (i.e., demonstrates
+linear growth) for larger values of $n$.
+
+
+\begin{figure}[!htbp]
+    \begin{centering}
+\begin{tikzpicture}
+    \begin{axis}[xlabel=\# Diagrams,ylabel=\# Edges / \# All distances,
+        legend pos=outer north east]
+
+    \addplot+ table [x=n_points, y=sparseness_greedy_dim_0_eps_01_q_1, col sep=comma] {\expDistDataPath mcgill_perturbed_blind_greedy.csv};
+    \addlegendentry{Greedy, $\eps = 0.1$}
+
+    \addplot+ table [x=n_points, y=sparseness_blind_greedy_dim_0_eps_01_q_1, col sep=comma] {\expDistDataPath mcgill_perturbed_blind_greedy.csv};
+    \addlegendentry{Blind greedy, $\eps = 0.1$}
+
+    \addplot+ table [x=n_points, y=sparseness_greedy_dim_0_eps_02_q_1, col sep=comma] {\expDistDataPath mcgill_perturbed_blind_greedy.csv};
+    \addlegendentry{Greedy, $\eps = 0.2$}
+
+    \addplot+ table [x=n_points, y=sparseness_blind_greedy_dim_0_eps_02_q_1, col sep=comma] {\expDistDataPath mcgill_perturbed_blind_greedy.csv};
+    \addlegendentry{Blind greedy, $\eps = 0.2$}
+
+    \addplot+ table [x=n_points, y=sparseness_greedy_dim_0_eps_05_q_1, col sep=comma] {\expDistDataPath mcgill_perturbed_blind_greedy.csv};
+    \addlegendentry{Greedy, $\eps = 0.5$}
+
+    \addplot+ table [x=n_points, y=sparseness_blind_greedy_dim_0_eps_05_q_1, col sep=comma] {\expDistDataPath mcgill_perturbed_blind_greedy.csv};
+    \addlegendentry{Blind greedy, $\eps = 0.5$}
+
+
+\end{axis}
+\end{tikzpicture}
+\end{centering}
+    \caption{Sparseness of \bgrdy spanner algorithm. The plot is for \dtype{perturbed} persistence diagrams,
+    $\eps = 0.1, 0.2, 0.5$ with $W_1$ distance.}
+    \label{fig:spanner_sparseness_mcgill_perturbed}
+\end{figure}
+
+\begin{figure}[!htbp]
+    \begin{centering}
+\begin{tikzpicture}
+    \begin{axis}[xlabel=\# Diagrams,ylabel=\# Edges / \# Diagrams,
+        legend pos=outer north east]
+
+        \addplot+ table [x=n_points, y=ratio_greedy_dim_0_eps_02_q_1, col sep=comma] {\expDistDataPath mcgill_perturbed_blind_greedy.csv};
+        \addlegendentry{Greedy, $\eps = 0.2$}
+
+        \addplot+ table [x=n_points, y=ratio_blind_greedy_dim_0_eps_02_q_1, col sep=comma] {\expDistDataPath mcgill_perturbed_blind_greedy.csv};
+        \addlegendentry{Blind greedy, $\eps = 0.2$}
+
+        \addplot+ table [x=n_points, y=ratio_greedy_dim_0_eps_05_q_1, col sep=comma] {\expDistDataPath mcgill_perturbed_blind_greedy.csv};
+        \addlegendentry{Greedy, $\eps = 0.5$}
+
+        \addplot+ table [x=n_points, y=ratio_blind_greedy_dim_0_eps_05_q_1, col sep=comma] {\expDistDataPath mcgill_perturbed_blind_greedy.csv};
+        \addlegendentry{Blind greedy, $\eps = 0.5$}
+
+\end{axis}
+\end{tikzpicture}
+\end{centering}
+    \caption{Ratio \# edges /  \# diagrams for  \bgrdy spanner. The plot is for 0-dimensional diagrams of perturbed McGill data
+    $\eps = 0.1, 0.2, 0.5$ with $W_1$ distance.}
+    \label{fig:spanner_ratio_mcgill_perturbed}
+\end{figure}
+
 
 
 
@@ -914,15 +893,6 @@ about the behaviour of \bgrdy spanner in Euclidean space.
 }
 
 
-\begin{figure}[ht!]
-    \begin{centering}
-    \includegraphics[width=0.8\textwidth]{\expDistFigPath blind-greedy-dims.png}
-    \caption{Results of \bgrdy spanner for different dimensions.}
-    \label{fig:blind_greedy_dimensions}
-    \end{centering}
-\end{figure}
-
-
 %As for different variants of the \brndm algorithm,
 %we note that their performance is almost the same, and the algorithm works
 %significantly better than \textsc{QuasiSorted} variants, but obviously
@@ -953,6 +923,13 @@ about the behaviour of \bgrdy spanner in Euclidean space.
             \label{fig:spanner_ratio}
 \end{figure}
 
+\begin{figure}[ht!]
+    \begin{centering}
+    \includegraphics[width=0.8\textwidth]{\expDistFigPath blind-greedy-dims.png}
+    \caption{Results of \bgrdy spanner for different dimensions.}
+    \label{fig:blind_greedy_dimensions}
+    \end{centering}
+\end{figure}
 
 
 \cref{fig:spanner_ratio} shows the ratio of the number of edges to the number of points.
