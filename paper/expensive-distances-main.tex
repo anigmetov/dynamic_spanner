@@ -103,7 +103,7 @@ Remarkably, we were not able to improve the quality when knowing initial $2$-app
 We also compare with a spanner construction based on WSPD. Our simple algorithms tend to give much smaller
 spanners on the tested examples. Nevertheless, we leave the question open whether our construction
 yields a spanner of asymptotically linear size. From the practical point of view, our algorithm either
-outperforms naive computation of all pairwise distances or runs slighly slower, depending on the approximation
+outperforms naive computation of all pairwise distances or runs slightly slower, depending on the approximation
 quality.
 
 
@@ -345,7 +345,7 @@ We tested the algorithms for $\eps \in \Set{0.01, 0.1, 0.2, 0.5}$ on the followi
         at random from $[0,10000]^d$, and then we add normally distributed noise around
         each of the centres. The number of clusters is chosen so that each cluster
         contains 50 points.
-    \item The test set \textbf{exp} consists of points of the form $(2^{\xi_1}, \dots, 2^{xi_d})$,
+    \item The test set \textbf{exp} consists of points of the form $(2^{\xi_1}, \dots, 2^{\xi_d})$,
         where $\xi_i$'s are i.i.d. random variables with uniform distribution on $[1,25]$.
 \end{enumerate}
 In addition to the standard Euclidean norm on $\RR^n$, we used also $\ell_1$ and $\ell_\infty$ norms.
@@ -471,19 +471,22 @@ dimension 0, since the diagrams in this dimension are larger in size.
 We also added random noise to points of the original shapes,
 and computed persistence diagrams in dimension 0 of these modified
 shapes; these diagrams form the \dtype{perturbed} dataset.
-Persistence diagrams were computed with \libraryname{DIPHA}
+Persistence diagrams were computed with the \libraryname{DIPHA}
 library \cite{bauer2014distributed}.
 
 
 
 Sparseness values of \bgrdy spanner on the whole \dtype{original} dataset
 for different values of $\eps$ and $q$ are presented in \cref{tbl:mcgill_original_blind_greedy_spanner_sparseness};
-\grdy algorithm is used as baseline.  The first thing to note is that for higher values of $q$
-any advantage of our algorithm disappears. However, the cardinality of the \grdy
+the \grdy algorithm is used as baseline.  The first thing to note is that for higher values of $q$
+\footnote{definition of $\wsdist{q}$ can be found in \cref{sec:appendix_background}} 
+any advantage of our algorithm disappears. A plausible explanation 
+is that for higher values of $q$, the doubling dimension becomes larger;
+this is confirmed by the increase in the size of the greedy spanner.
+\ignore{
+However, the cardinality of the \grdy
 spanner is also increasing; for instance, if we want to achieve 10 \% accuracy,
 then even the \grdy spanner is almost half of the complete graph.
-We can offer the following explanation\footnote{definition of $\wsdist{q}$ can be found in \cref{sec:appendix_background}}. For higher values of $q$,
-\label{}
 longer edges of an optimal matching play a more important role
 than shorter ones; as $q$ tends to $\infty$, Wasserstein distance
 approaches bottleneck distance $\btdist$, which depends on the longest
@@ -491,11 +494,11 @@ edge only. If all diagrams come from the same dataset,
 then there is a large number of pairs of diagrams whose optimal matchings
 have the longest edges of approximately the same length. This fact means that we are in the case
 of high doubling dimension, being close to a clique, and there is no hope
-of getting a small spanner. \ignore{On the other hand, computation of $\btdist$ in practice
+of getting a small spanner. On the other hand, computation of $\btdist$ in practice
 requires significantly less time than computation of $\wsdist{q}$, and the case
 of $\wsdist{1}$ and $\wsdist{2}$ is of practical importance.}
 For $\wsdist{1}$ we observe more encouraging figures, like avoiding 70 \% of distance
-computations for $\eps = 0.1$; if we are happy with a 1.5 approximation, then we
+computations for $\eps = 0.1$; for a 1.5 approximation, we
 reduce the number of distances computed by a factor of 10.
 
 
@@ -513,7 +516,8 @@ To make the comparison absolutely fair, when we compute a \espanner,
 we compare its timing with the timing of \hera called for each pair of diagrams with relative error $\eps$.
 Let us emphasize that the diagrams we have are rather small, with average cardinality
 350 points. Nevertheless, on this data set \bgrdy spanner
-provides a substantial improvement in terms of real running time, by a factor of 2 for $\wsdist{1}$.
+provides a substantial improvement in terms of real running time, and we expect this advantage
+to grow for diagrams of larger cardinality.
 
 
 
