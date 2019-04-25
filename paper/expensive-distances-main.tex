@@ -81,7 +81,7 @@ operations whenever a new distance has been computed, turning the method useless
 
 \begin{figure}[h]
 \centering
-\includegraphics[width=3.5cm]{\expDistFigPath  intro_example.eps}
+\includegraphics[width=4cm]{\expDistFigPath  intro_example.eps}
 \caption{The compute distances are shown as edges in a graph. Note that the exact distance
 of $p_1$ and $p_2$ is unknown. The shortest path from $p_1$ to $p_2$ has length $9$, which clearly
 constitutes an upper bound on the distance by triangle inequality.
@@ -539,7 +539,7 @@ reduce the number of distances computed by a factor of 10.
 
 \begin{figure}[!htbp]
     \begin{centering}
-\begin{tikzpicture}[scale=0.85]
+\begin{tikzpicture}[scale=0.89]
     \begin{axis}[xlabel=\# Diagrams,ylabel=\# Edges / \# All distances,
         legend pos=outer north east]
 
@@ -600,7 +600,7 @@ linear growth) for larger values of $n$.
 
 \begin{figure}[!htbp]
     \begin{centering}
-\begin{tikzpicture}[scale=0.8]
+\begin{tikzpicture}[scale=0.83]
     \begin{axis}[xlabel=\# Diagrams,ylabel=\# Edges / \# Diagrams,
         legend pos=outer north east]
 
@@ -1278,12 +1278,12 @@ is as follows. Let $\pi\colon \RR^2 \to \Delta$ be defined
 as $(x,y) \mapsto (\frac{x+y}{2}, \frac{x+y}{2})$; we refer to $\pi$ as \textit{diagonal
 projection}. Let $\tX$ be the set $(X\setminus \Delta) \cup \pi(Y \setminus \Delta)$
 and $\tY$ be the set $(Y\setminus \Delta) \cup \pi(X \setminus \Delta)$; in plain words,
-to get $\tX$, we add to the off-diagonal points of $X$
+to obtain $\tX$, we add to the off-diagonal points of $X$
 the diagonal projections of the off-diagonal points of $Y$,
-and perform the same operation to get $\tY$. Notice that $\tX$ and $\tY$
+and perform the same operation to obtain $\tY$. Notice that $\tX$ and $\tY$
 are finite sets of the same cardinality. Let $G$ be a complete bipartite
 graph with vertices $\tX \coprod \tY$, where each vertex from $\tX$
-is connected with each vertex of from $\tY$. If edge $(x,y)$ of $G$
+is connected with each vertex from $\tY$. If edge $(x,y)$ of $G$
 has at least one of the vertices $x$ or $y$ not on the diagonal,
 then the edge is assigned weight $\ell_{\infty}(x, y)^q$, otherwise
 the edge is assigned weight 0. Wasserstein distance is defined as the $q$-th
