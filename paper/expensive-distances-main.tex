@@ -81,7 +81,7 @@ operations whenever a new distance has been computed, turning the method useless
 
 \begin{figure}[h]
 \centering
-\includegraphics[width=6cm]{\expDistFigPath  intro_example.eps}
+\includegraphics[width=3.5cm]{\expDistFigPath  intro_example.eps}
 \caption{The compute distances are shown as edges in a graph. Note that the exact distance
 of $p_1$ and $p_2$ is unknown. The shortest path from $p_1$ to $p_2$ has length $9$, which clearly
 constitutes an upper bound on the distance by triangle inequality.
@@ -535,35 +535,9 @@ computations for $\eps = 0.1$; for a 1.5 approximation, we
 reduce the number of distances computed by a factor of 10.
 
 
-We also compare the time that is needed to compute the matrix of all pairwise distances
-naively with the time that is needed to approximate it with \bgrdy spanner.
-The timings are given in \cref{tbl:mcgill_original_blind_greedy_spanner_timing}.
-We compared our approach for a fixed
-$\eps$ with the time to compute all pairwise-distance between the
-persistence diagrams using \hera, using the same approximation parameter
-$\eps$. Let us emphasize that the diagrams we have are rather small,
-with average cardinality
-350 points. Nevertheless, on this data set \bgrdy spanner
-provides a substantial improvement in terms of real running time,
-and we expect this advantage to grow for diagrams of larger cardinality.
-
-
-
-In order to see the growth of the spanner size, we use the \dtype{perturbed}
-dataset, drawing from it random samples.
-We plot the sparseness of the spanners obtained by \grdy
-and \bgrdy algorithms in \cref{fig:spanner_sparseness_mcgill_perturbed}
-for different values of $\eps$, always using the $\wsdist{1}$ distance.
-As expected, the ratio of computed distances decreases as the number of diagrams
-grows. In \cref{fig:spanner_ratio_mcgill_perturbed} we show
-the growth of the spanner size relative to the number of diagrams.
-For $\eps = 0.5$ the \bgrdy spanner starts to stabilize (i.e., demonstrates
-linear growth) for larger values of $n$.
-
-
 \begin{figure}[!htbp]
     \begin{centering}
-\begin{tikzpicture}
+\begin{tikzpicture}[scale=0.85]
     \begin{axis}[xlabel=\# Diagrams,ylabel=\# Edges / \# All distances,
         legend pos=outer north east]
 
@@ -594,9 +568,37 @@ linear growth) for larger values of $n$.
     \label{fig:spanner_sparseness_mcgill_perturbed}
 \end{figure}
 
+We also compare the time that is needed to compute the matrix of all pairwise distances
+naively with the time that is needed to approximate it with \bgrdy spanner.
+The timings are given in \cref{tbl:mcgill_original_blind_greedy_spanner_timing}.
+We compared our approach for a fixed
+$\eps$ with the time to compute all pairwise-distance between the
+persistence diagrams using \hera, using the same approximation parameter
+$\eps$. Let us emphasize that the diagrams we have are rather small,
+with average cardinality
+350 points. Nevertheless, on this data set \bgrdy spanner
+provides a substantial improvement in terms of real running time,
+and we expect this advantage to grow for diagrams of larger cardinality.
+
+
+
+In order to see the growth of the spanner size, we use the \dtype{perturbed}
+dataset, drawing from it random samples.
+We plot the sparseness of the spanners obtained by \grdy
+and \bgrdy algorithms in \cref{fig:spanner_sparseness_mcgill_perturbed}
+for different values of $\eps$, always using the $\wsdist{1}$ distance.
+As expected, the ratio of computed distances decreases as the number of diagrams
+grows. In \cref{fig:spanner_ratio_mcgill_perturbed} we show
+the growth of the spanner size relative to the number of diagrams.
+For $\eps = 0.5$ the \bgrdy spanner starts to stabilize (i.e., demonstrates
+linear growth) for larger values of $n$.
+
+
+
+
 \begin{figure}[!htbp]
     \begin{centering}
-\begin{tikzpicture}
+\begin{tikzpicture}[scale=0.8]
     \begin{axis}[xlabel=\# Diagrams,ylabel=\# Edges / \# Diagrams,
         legend pos=outer north east]
 
@@ -792,7 +794,7 @@ reasonable for practical application, if pairwise distances are already availabl
 
 \begin{figure}[!htbp]
     \begin{centering}
-\begin{tikzpicture}
+\begin{tikzpicture}[scale=0.8]
     \begin{axis}[xlabel=\# Diagrams,ylabel=\# Computed distances / log(\# Diagrams),
         legend pos=outer north east]
     \addplot+ table [x=n_points, y=avg_ratio_dim_0_q_1_eps_001, col sep=semicolon] {\expDistDataPath ann_mcgill_results.csv};
