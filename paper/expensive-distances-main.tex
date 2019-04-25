@@ -52,9 +52,9 @@ We will restrict to the case of \emph{doubling spaces}, that is, the doubling di
 of $\metricspace$ is bounded by a constant. 
 In that situation, standard constructions from computational geometry provide partial answers:
 Using net-trees~\cite{hm-fast}, we can construct a $\eps$-well-separated pair decomposition (WSPD)~\cite{CK-decomposition} using $O(n\log n)$ distance queries; a WSPD in turn yields
-a {$1+\eps$-spanner} immediately. Net-trees can also be used to compute approximate nearest neighbours
+a {$(1+\eps)$-spanner} immediately. Net-trees can also be used to compute approximate nearest neighbours
 performing $O(\log n)$ distance computations per query point.
-Krauthgamer and Lee \cite{krauthgamer2005black} investigated \textit{black box model},
+Krauthgamer and Lee \cite{krauthgamer2005black} investigated the \textit{black box model},
 and proved that ANN search for $\eps < 2/5$ can be done efficiently (i.e., in polylogarithmic time, with polynomial preprocessing
 and space) if and only if the dimension is $O(\log \log n)$; their bounds count the number of distance computations.
 However, for our relaxed cost model, we pose the question whether simpler constructions achieve
@@ -73,7 +73,7 @@ We propose simple algorithms for spanner construction and approximate nearest ne
 and evaluate them theoretically and experimentally in the defined cost model.
 
 Our algorithms are based on the following simple idea: since distance computations are expensive
-and should be avoided, we try to obtain maximal information out of the distances that have been computed
+and should be avoided, we try to obtain maximal information out of the distances computed
 so far. 
 This information consists of lower and upper bounds for unknown distances, obtained from known distances
 by triangle inequality (see \cref{fig:1st_example}). We remark that updating these bounds involves $\Omega(n^2)$ arithmetic
@@ -99,12 +99,14 @@ The experimentally most successful exploration strategy that we found is to
 repeatedly query the distance of a pair with the worst ratio of upper and lower bound.
 We call the obtained spanner the \emph{blind greedy spanner}, as opposed to the well-known
 \emph{greedy spanner} that precomputes all pairwise distances and only maintains upper bounds \cite{althofer1993sparse}.
+We demonstrate experimentally that on a collection
+of persistence diagrams of moderate size, computing a blind greedy spanner is faster than (approximately)
+computing all $\binom{n}{2}$ distances.
 Remarkably, we were not able to improve the quality when knowing initial $2$-approximations of all point pairs.
-We also compare with a spanner construction based on WSPD. Our simple algorithms tend to give much smaller
-spanners on the tested examples. Nevertheless, we leave the question open whether our construction
-yields a spanner of asymptotically linear size. From the practical point of view, our algorithm either
-runs either faster or slightly slower than naive computation of all pairwise distances, depending on the approximation quality.
-
+We also compare with a spanner construction based on WSPD. Our simple algorithms gives much smaller
+spanners on the tested examples. 
+Nevertheless, we leave the question open whether our construction
+yields a spanner of asymptotically linear size. 
 
 For approximate nearest neighbour, we devise a simple randomized incremental algorithm and show that
 the number of distance queries to find an approximate nearest neighbour is $O(\log n)$ in expectation.
