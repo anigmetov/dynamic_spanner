@@ -511,11 +511,12 @@ computed from the McGill shape benchmark \cite{zhang2005mcgill}.
 More precisely, we generated two sets of diagrams,
 \dtype{original} and \dtype{perturbed}. The \dtype{original}
 diagrams were computed on the points of the 450 original
-point clouds from the shape dataset; we only used
+point clouds from the shape data set; we only used
 persitence in dimension 0, since the diagrams in this dimension are larger in size.
-For the \dtype{perturbed} dataset,
+For the \dtype{perturbed} data set,
 we added random noise to points of the original shapes,
-and computed persistence diagrams in dimension 0 of these modified
+creating 10 modified versions of each of them;
+then we computed persistence diagrams in dimension 0 of these modified
 shapes.
 Persistence diagrams were computed with the \libraryname{DIPHA}
 library \cite{bauer2014distributed}. 
@@ -525,7 +526,7 @@ We restricted to approximate computation because computing the
 Wasserstein distance exactly (using the Hungarian algorithm)
 has been reported to be very expensice~\cite{kerber2017geometry}.
 
-Sparseness values of \bgrdy spanner on the whole \dtype{original} dataset
+Sparseness values of \bgrdy spanner on the whole \dtype{original} data set
 for different values of $\eps$ and $q$ are presented in \cref{tbl:mcgill_original_blind_greedy_spanner_sparseness};
 the \grdy algorithm is used as baseline.  We observe that for higher values of $q$
 the advantage of our algorithm fades away. A plausible explanation
@@ -584,7 +585,7 @@ and we expect this advantage to grow for diagrams of larger cardinality.
 
 
 In order to see the growth of the spanner size, we use the \dtype{perturbed}
-dataset, drawing from it random samples.
+data set, drawing from it random samples.
 We plot the sparseness of the spanners obtained by \grdy
 and \bgrdy algorithms in \cref{fig:spanner_sparseness_mcgill_perturbed}
 for different values of $\eps$, always using the $\wsdist{1}$ distance.
@@ -804,7 +805,7 @@ approaching 30000.
 
 Similar experiments were performed on \dtype{perturbed} data set of persistence
 diagrams, which was described in \cref{sec:experiment_spanners}.
-For a given number $n$, we randomly select $n$ diagrams from the dataset
+For a given number $n$, we randomly select $n$ diagrams from the data set
 and from the remaining diagrams we randomly choose 20 query points.
 In \cref{fig:ann_const_ratio_mcgill} we plot the average ratio of computed
 distances to $\log(n)$ for $\wsdist{1}$ and $\wsdist{2}$ metrics.
