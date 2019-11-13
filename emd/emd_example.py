@@ -12,7 +12,7 @@ def weights(pic_size):
     result = np.asarray(result, dtype=np.float64)
     return result
 
-pic_size = 64
+pic_size = 32
 n_pixels = pic_size * pic_size
 
 a = Image.open("bismarck.jpg")
