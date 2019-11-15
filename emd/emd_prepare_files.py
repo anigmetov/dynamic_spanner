@@ -29,14 +29,14 @@ def prepare_file_lists_for_parallel(im_files, n_procs, file_start):
 
 if __name__ == "__main__":
 
-    random.seed(1)
+    random.seed(42)
 
-    n_categories = 2
-    n_images_per_cat = 4
+    n_categories = 10
+    n_images_per_cat = 20
 
-    n_procs = 4
+    n_procs = 10
+
+    fname_out = "pair_file_nc_%d_i_%d_np_%d" % (n_categories, n_images_per_cat, n_procs)
 
     im_files = read_caltech_file_list(n_categories, n_images_per_cat)
-    prepare_file_lists_for_parallel(im_files, n_procs, 'pair_file')
-
-
+    prepare_file_lists_for_parallel(im_files, n_procs, fname_out)

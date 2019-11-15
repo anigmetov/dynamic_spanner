@@ -14,7 +14,6 @@ def pic_positions(shape):
         for j in range(shape[1]):
             result.append([float(i),float(j)])
     result = np.asarray(result, dtype=np.float64)
-    print("positions =  ", result.shape)
     return result
 
 def load_picture(fname, pic_size = None):
@@ -51,7 +50,7 @@ def compute_from_file(fname_in, fname_out, pic_size):
             fname_a, fname_b, i, j = line.split(' ')
             i = int(i)
             j = int(j)
-            dval, elapsed = compute_distance(fname_a, fname_b)
+            dval, elapsed = compute_distance(fname_a, fname_b, pic_size)
             matrix_file.write("%d\t%d\t%s\t%s\t%f\t%f\n" % (i, j, fname_a, fname_b, dval, elapsed))
 
 
