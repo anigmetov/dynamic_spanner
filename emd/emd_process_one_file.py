@@ -38,7 +38,7 @@ def compute_distance(fname_a, fname_b, pic_size):
     weights_a = load_picture(fname_a, pic_size)
     weights_b = load_picture(fname_b, pic_size)
     start = timer()
-    dval = emd(positions, positions, weights_b, weights_b)
+    dval = emd(positions, positions, weights_a, weights_b)
     end = timer()
     elapsed = end - start
     return (dval, elapsed)
