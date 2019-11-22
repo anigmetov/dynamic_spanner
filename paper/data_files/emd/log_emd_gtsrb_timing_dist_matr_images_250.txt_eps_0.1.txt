@@ -1,0 +1,4 @@
+greedy_time = 126300028040 microseconds
+emd/dist_matr_images_250.txt;greedy-non-blind;0.1;250;6005;0.192932;24.02
+blind_greedy_time = 262770089164 microseconds out of 6.18587e+11, ratio  0.424791 
+emd/dist_matr_images_250.txt;blind-greedy;0.1;250;13192;0.423839;52.768
