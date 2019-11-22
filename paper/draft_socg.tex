@@ -46,14 +46,14 @@ that appear in the context of topological data analysis.
 We consider two standard operations on metric spaces,
 namely the construction of a $(1+\eps)$-spanner
 and the computation of an approximate nearest
-neighbour for a given query point.
+neighbor for a given query point.
 In both cases, we partially explore the metric space
 through distance queries and infer lower and upper bounds
 for yet unexplored distances through triangle inequality.
 For spanners, we evaluate several exploration strategies
 through extensive experimental evaluation.
-For approximate nearest neighbours, we prove that our
-strategy returns an approximate nearest neighbour
+For approximate nearest neighbors, we prove that our
+strategy returns an approximate nearest neighbor
 after a logarithmic number of distance queries.
 \end{abstract}
 
@@ -111,7 +111,7 @@ We will restrict to the case of \emph{doubling spaces}, that is, the doubling di
 of $\metricspace$ is bounded by a constant. 
 In that situation, standard constructions from computational geometry provide partial answers:
 Using net-trees~\cite{hm-fast}, we can construct a $\eps$-well-separated pair decomposition (WSPD)~\cite{CK-decomposition} using $O(n\log n)$ distance queries; a WSPD in turn yields
-a {$(1+\eps)$-spanner} immediately. Net-trees can also be used to compute approximate nearest neighbours
+a {$(1+\eps)$-spanner} immediately. Net-trees can also be used to compute approximate nearest neighbors
 performing $O(\log n)$ distance computations per query point.
 Krauthgamer and Lee \cite{krauthgamer2005black} investigated the \textit{black box model},
 and proved that ANN search for $\eps < 2/5$ can be done efficiently (i.e., in polylogarithmic time, with polynomial preprocessing
@@ -128,7 +128,7 @@ algorithmic tasks on metric spaces, at least in practice.
 
 \myparagraph{Contributions}
 %
-We propose simple algorithms for spanner construction and approximate nearest neighbour search
+We propose simple algorithms for spanner construction and approximate nearest neighbor search
 and evaluate them theoretically and experimentally in the defined cost model.
 
 Our algorithms are based on the following simple idea: since distance computations are expensive
@@ -167,9 +167,9 @@ spanners on the tested examples.
 Nevertheless, we leave the question open whether our construction
 yields a spanner of asymptotically linear size. 
 
-For approximate nearest neighbour, we devise a simple randomized incremental algorithm and show that
+For approximate nearest neighbor, we devise a simple randomized incremental algorithm and show that
 the number of distance queries needed is $O(\log n)$ in expectation.
-Our proof is based on the well-known observation that the nearest neighbour changes $O(\log n)$ times
+Our proof is based on the well-known observation that the nearest neighbor changes $O(\log n)$ times
 in expectation when traversing the sequence of points, combined with a packing argument certifying that
 only a constant number of distances needs to be computed in-between two minima.
 Our experimental results match the theoretical predictions.
@@ -404,7 +404,7 @@ We tested the algorithms for $\eps \in \Set{0.01, 0.1, 0.2, 0.5}$ on the followi
         normal distribution in $\mathbb{R}^d$.
     \item In the \textbf{clustered} test set we first sample cluster centers uniformly 
         at random from $[0,10000]^d$, and then we add normally distributed noise around
-        each of the centres. The number of clusters is chosen so that each cluster
+        each of the centers. The number of clusters is chosen so that each cluster
         contains 50 points.
     \item The test set \textbf{exp} consists of points of the form $(2^{\xi_1}, \dots, 2^{\xi_d})$,
         where $\xi_i$'s are i.i.d. random variables with uniform distribution on $[1,25]$.
@@ -543,7 +543,7 @@ $\eps = 0.5$               & 0.02 &  0.10          && 0.03 & 0.20        &&   0.
 \begin{table}\centering
     \ra{1.2}
     \begin{tabular}{@{}rrrcrrcrr@{}}\toprule
-                          & \multicolumn{2}{c}{$q=1$} & \phantom{abc} & \multicolumn{2}{c}{$q=2$} & \phantom{abc} & \multicolumn{2}{c}{$q=3$}\\
+                          & \multicolumn{2}{c}{$q=1$} & \phantom{c} & \multicolumn{2}{c}{$q=2$} & \phantom{c} & \multicolumn{2}{c}{$q=3$}\\
                           \cmidrule{2-3} \cmidrule{5-6} \cmidrule{8-9}
                           & Brute-force & Blind greedy && Brute-force & Blind greedy && Brute-force & Blind greedy \\ \midrule
 %$\eps = 0.1$    &   4093  &  1266  &&  5331  &  4085  &&  16852  &  13557\\
@@ -560,6 +560,23 @@ $\eps = 0.5$    &   1744  &  483  &&  2835  &  1233  &&  9418    &  5146\\
     Data is for 450 \dtype{original} persistence diagrams with Wasserstein distance $W_q$, time in seconds.}
 \label{tbl:mcgill_original_blind_greedy_spanner_timing}
 \end{table}
+
+\begin{table}\centering
+    \ra{1.2}
+    \begin{tabular}{@{}rrrcrrrc@{}}\toprule
+        & \multicolumn{2}{c}{Sparseness} & \phantom{abc} & \multicolumn{3}{c}{Running time} \\
+        \cmidrule{2-3} \cmidrule{5-7} 
+                & Greedy  & Blind greedy && Brute-force & Blind greedy & Ratio \\ \midrule
+$\eps = 0.1$    &   $0.19$  &  $0.42$    &&  $618,587$   &  $262,770$    & $0.42$   \\
+$\eps = 0.2$    &   $0.11$  &  $0.30$    &&  $618,587$   & $196,309$    & $0.31$   \\
+$\eps = 0.5$    &   $0.04$  &  $0.18$    &&  $618,587$   & $112,995$    & $0.18$   \\
+\bottomrule
+\end{tabular}
+    \caption{Results of \bgrdy algorithm on the dataset of 250 images
+    with Earth Mover Distance, time in seconds.}
+\label{tbl:emd_gtsrb}
+\end{table}
+
 
 
 
@@ -687,9 +704,9 @@ linear growth) for larger values of $n$.
 
 
 
-\section{Approximate nearest neighbours}
+\section{Approximate nearest neighbors}
 \label{sec:ann}
-We consider the standard problem of finding an approximate nearest neighbour: given
+We consider the standard problem of finding an approximate nearest neighbor: given
 $n$ points $P = \Set{p_1, \dots, p_n}$, a query point $q$ and a real number $\eps > 0$,
 find $p_i$ such that $\dist(p_i, q) \leq (1 + \eps) \min_{k} \dist(q, p_k)$. We also use the shorthand notation
 \[
@@ -707,20 +724,20 @@ and consider the points in that order
 we re-index them, so the order is again $p_1, \dots, p_n$).
 During the loop, we maintain lower bounds of each $p_i$
 to the query point $q$, which are initially all set to $0$.
-We also remember the closest neighbour $c$ that we have seen so
+We also remember the closest neighbor $c$ that we have seen so
 far and its distance $v$ to $q$.
 We refer to the point $c$ as the \emph{candidate}.
-We maintain the invariant that $c$ is an approximate nearest neighbour
+We maintain the invariant that $c$ is an approximate nearest neighbor
 to $q$ for the points $\{p_1,\ldots,p_i\}$.
 When reaching the point $p_i$, we check whether the lower
 bound $a_i$ satisfies $a_i\geq \frac{v}{1+\eps}$.
-If so, $c$ remains an approximate nearest neighbour and
+If so, $c$ remains an approximate nearest neighbor and
 we do not query the distance of $p_i$ to $q$.
 Otherwise, we compute $\dist(p_i,q)$ and update the lower bounds
 of all points according to the newly computed distance.
 If $p_i$ is closer to $q$ than $c$, we update $c$ and $v$
 accordingly. At the end of the loop, $c$ is an approximate nearest
-neighbour. The pseudocode follows.
+neighbor. The pseudocode follows.
 
 
 \begin{algorithmic}
@@ -748,7 +765,7 @@ neighbour. The pseudocode follows.
 \EndFunction
 \end{algorithmic}
 
-We remark that we obtain an exact nearest neighbour algorithm
+We remark that we obtain an exact nearest neighbor algorithm
 when setting $\eps$ to $0$, which means 
 replacing the condition in the if-statement of the loop
 with $a_i\geq v$.
@@ -801,7 +818,7 @@ The proof strategy fails for $\eps=0$ because the $\eps$-ball
 around $p_j$ as described above degenerates, and the packing argument fails.
 Indeed, as the example in \cref{fig:exact_bad_example} (in~\cref{sec:proof_ann}) 
 shows, there are point sets where the expected number
-of distance computations for exact nearest neighbour is linear.
+of distance computations for exact nearest neighbor is linear.
 
 Finally, a fast $2$-approximation algorithm for $\dist$ leads to a straight-forward
 optimization: compute a $2$-approximation of $\dist(p_i,q)$ for all $1\leq i\leq n$
@@ -810,7 +827,7 @@ whose approximate distance is larger than $2m$, and run the above algorithm on t
 
 
 
-\section{Experiments on approximate nearest neighbours}
+\section{Experiments on approximate nearest neighbors}
 \label{sec:experiment_ann}
 
 In order to experimentally evaluate the performance of our algorithm,
@@ -914,7 +931,7 @@ show that the blind spanner can significantly accelerate
 computation of all pairwise distances. We must admit that,
 while in our theoretical model we completely ignore dependency on the number of points $n$,
 the $\Omega(n^3)$ complexity of our algorithms makes it practically
-non-competetive, when $n$ becomes large.
+non-competitive, when $n$ becomes large.
 On the other hand, this overhead is relatively easy to estimate
 in advance, just by knowing $n$, and make a decision,
 whether \bgrdy is worth trying. 
@@ -1191,10 +1208,10 @@ The small black ball between the dashed circle and the solid circle has radius $
 
 \begin{figure}[hb!]
     \includegraphics[width=0.7\textwidth]{\expDistFigPath exact_bad_example.png}
-    \caption{Example of a point set where exact nearest neighbour search cannot be accelerated by maintaining bounds.
-    The exact nearest neighbour is the point $p_1$, next point $p_i$ is placed 
+    \caption{Example of a point set where exact nearest neighbor search cannot be accelerated by maintaining bounds.
+    The exact nearest neighbor is the point $p_1$, next point $p_i$ is placed 
     in the curvilinear triange formed by the balls around the query point, $p_2$ and $p_{i-1}$. Even verifying that $p_1$
-    is the true nearest neighbour cannot be done without computing all distances $\dist(p_i,q)$. Indeed, every computed
+    is the true nearest neighbor cannot be done without computing all distances $\dist(p_i,q)$. Indeed, every computed
     $\dist(p_i,q)$ allows to exclude the region in the corresponding ball around $p_i$, but all these balls contain only one $p_i$.}
     \label{fig:exact_bad_example}
 \end{figure}
@@ -1272,7 +1289,7 @@ in the sequence close to $p_k$ might have caused the lower bound $a_k$ to be
 in the interval $[\frac{v_k}{1+\eps},v_k]$, which leads to not
 computing the distance $r_k$. However, it is true that
 $v_k\leq (1+\eps)r_k$, because otherwise, $c_k$ would not be an approximate
-nearest neighbour of $\{p_1,\ldots,p_k\}$.
+nearest neighbor of $\{p_1,\ldots,p_k\}$.
 
 Now, let $p_k$, $p_\ell$ be two consecutive minima in the sequence
 (we also allow that $\ell=n+1$ if $k$ is the last minimum in the sequence).
