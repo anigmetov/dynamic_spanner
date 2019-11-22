@@ -579,8 +579,10 @@ int main(int argc, char** argv)
         auto end_blind_greedy = std::chrono::steady_clock::now();
         auto dur_blind_greedy = std::chrono::duration_cast<std::chrono::microseconds>(end_blind_greedy - begin_blind_greedy).count();
         dur_blind_greedy += blind_greedy_spanner.get_microseconds_to_compute_distances();
-        console->info("blind_greedy_time = {} microseconds", dur_blind_greedy);
-        exp_logger->info("blind_greedy_time = {} microseconds", dur_blind_greedy);
+        double bf_time = blind_greedy_spanner.get_bruteforce_timing();
+        double savings_time_ratio = dur_blind_greedy / bf_time;
+        console->info("blind_greedy_time = {} microseconds out of {}, ratio  {} ", dur_blind_greedy, bf_time, savings_time_ratio);
+        exp_logger->info("blind_greedy_time = {} microseconds out of {}, ratio  {} ", dur_blind_greedy, bf_time, savings_time_ratio);
         console->info("{};{}", dist_name, blind_greedy_spanner.get_statistics());
         exp_logger->info("{};{}", dist_name, blind_greedy_spanner.get_statistics());
         exp_logger->flush();

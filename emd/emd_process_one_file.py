@@ -16,21 +16,6 @@ def pic_positions(shape):
     result = np.asarray(result, dtype=np.float64)
     return result
 
-def load_picture(fname, pic_size = None):
-    a = Image.open(fname)
-    if pic_size:
-        a = a.resize((pic_size,pic_size))
-    # get grayvalues
-    a_weights = np.asarray(a.convert("L"), dtype=np.float64)
-    # normalize
-    a_weights = a_weights / np.sum(a_weights)
-    # flatten
-    n_pixels = a_weights.shape[0] * a_weights.shape[1]
-    a_weights = a_weights.reshape((n_pixels, 1))
-
-    return a_weights
-
-
 
 def compute_distance(fname_a, fname_b, pic_size):
     pic_shape = (pic_size, pic_size)

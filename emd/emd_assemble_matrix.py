@@ -2,17 +2,7 @@
 
 import numpy as np
 
-def save_matrix(fname, a):
-    n_rows = a.shape[0]
-    n_cols = a.shape[1]
-    n_entries = n_rows * n_cols
-    with open(fname, 'w') as f:
-        f.write("%d\n" % n_rows)
-        for i in range(n_rows):
-            for j in range(n_cols):
-                f.write("%f\n" % a[i][j])
-
-
+from emd_utils import *
 
 if __name__ == "__main__":
     flist = [ "matrix-try" ]

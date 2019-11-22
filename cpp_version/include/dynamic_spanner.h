@@ -519,6 +519,15 @@ public:
 
     }
 
+    double get_bruteforce_timing() const
+    {
+        double brute_force_timing = 0.0;
+        for(int i = 0; i < m_num_points; ++i)
+            for(int j = i + 1; j < m_num_points; ++j)
+                brute_force_timing += m_distance_timings_matrix[i][j];
+        return brute_force_timing;
+    }
+
     std::string get_statistics() const
     {
         double n_pairs = m_num_points * (m_num_points - 1) / 2;

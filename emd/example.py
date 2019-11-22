@@ -4,39 +4,28 @@ from PIL import Image
 import numpy as np
 from emd import emd
 
-def weights(pic_size):
+def get_pic_support(pic_shape):
     result = []
-    for i in range(pic_size):
-        for j in range(pic_size):
+    for i in range(pic_shape[0]):
+        for j in range(pic_shape[1]):
             result.append([float(i),float(j)])
     result = np.asarray(result, dtype=np.float64)
     return result
 
-pic_size = 64
-n_pixels = pic_size * pic_size
+def read_image(fname):
+    pic = Image.open(fname)
+    pic_weights = np.asarray(pic.convert("L"), dtype=np.float64)
+    pic_weights = pic_weights / np.sum(pic_weights)
+    pic_shape = pic_weights.shape
+    n_pixels = pic_shape[0] * pic_shape[1]
+    pic_weights = pic_weights.reshape((n_pixels, 1))
+    pic_support = get_pic_support(pic_shape)
+    return (pic_weights, pic_support)
 
-a = Image.open("bismarck.jpg")
-a = a.resize((pic_size,pic_size))
-a_weights = np.asarray(a.convert("L"), dtype=np.float64)
-a_weights = a_weights / np.sum(a_weights)
 
-b = Image.open("kipling.jpg")
-b = b.resize((pic_size,pic_size))
-b_weights = np.asarray(b.convert("L"), dtype=np.float64)
-b_weights = b_weights / np.sum(b_weights)
-
-a_weights = a_weights.reshape((n_pixels, 1))
-b_weights = b_weights.reshape((n_pixels, 1))
-
-print("read images")
-
-A = weights(pic_size)
-B = weights(pic_size)
-
-# print(A)
-# print(B)
-# print(a_weights)
-# print(b_weights)
-
-res = emd(A, B, a_weights, b_weights)
-print("distance = ", res)
+if __name__ == "__main__":
+    a_weights, A = read_image("00001.ppm")
+    b_weights, B = read_image("00002.ppm")
+    print("read images")
+    res = emd(A, B, a_weights, b_weights)
+    print("distance = ", res)
