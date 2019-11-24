@@ -158,9 +158,12 @@ The experimentally most successful exploration strategy that we found is to
 repeatedly query the distance of a pair with the worst ratio of upper and lower bound.
 We call the obtained spanner the \emph{blind greedy spanner}, as opposed to the well-known
 \emph{greedy spanner} that precomputes all pairwise distances and only maintains upper bounds \cite{althofer1993sparse}.
-We demonstrate experimentally that on a collection
-of persistence diagrams of moderate size, computing a blind greedy spanner is faster than (approximately)
-computing all $\binom{n}{2}$ distances.
+Our experiments with Earth Mover distance and persistence
+diagrams of 3-D shapes show that blind greedy spanner can speed up computations
+by a factor of 3, saving hundreds of hours of machine time,
+even though the images and diagrams in our data sets are of moderate size.
+%of persistence diagrams of moderate size, computing a blind greedy spanner is faster than (approximately)
+%computing all $\binom{n}{2}$ distances.
 Remarkably, we were not able to improve the quality when knowing initial $2$-approximations of all point pairs.
 We also compare with a spanner construction based on WSPD. Our simple algorithms gives much smaller
 spanners on the tested examples. 
@@ -376,8 +379,8 @@ We refer to the former option as \bqsgrdy and to the latter one as \bqsshaker.
 \section{Experiments on spanners}
 \label{sec:experiment_spanners}
 
-We performed two types of experiments: on points sampled from a low-dimensional Euclidean
-space and on persistence diagrams
+We performed three types of experiments: on points sampled from a low-dimensional Euclidean
+space, on images with Earth Mover distance, and on persistence diagrams
 with $q$-Wasserstein distance $\wsdist{q}$.\footnote{See \cref{sec:appendix_background} for the definition of $\wsdist{q}$.}
 Clearly, our model is not meaningful in Euclidean spaces because
 distance computations are cheap.
@@ -701,6 +704,24 @@ linear growth) for larger values of $n$.
 \end{figure}
 
 
+
+For experiments with images, we used the German traffic sign
+dataset and the code for computing the Earth Mover distance
+by Gary Dornan.
+We randomly selected 250 images from the benchmark.
+The first two columns of \cref{tbl:emd_gtsrb}
+compare the sparseness of \bgrdy and greedy spanners.
+For smaller values of $\eps$,
+the \bgrdy spanner contains approximately 3 times more
+edges than the greedy spanner, so the ratio is roughly
+the same as for persistence diagrams.
+The last 3 columns show the advantage
+of \bgrdy in terms of the running time.
+For $10 \%$ approximation, we can reduce
+the running time by more than a factor of $2$,
+saving $98$ hours of computation time.
+For $20 \%$ approximation,
+we speed up the computations by a factor of 3.
 
 
 
@@ -1366,6 +1387,47 @@ the edge is assigned weight 0. Wasserstein distance is defined as the $q$-th
 root of the minimal cost of a perfect matching on $G$; in other words,
 in order to find $\wsdist{q}$, one must solve an \textit{assignment problem}.
 
+
+\myparagraph{Earth Mover distance}
+Let $\mu_P$ and $\mu_Q$
+be two probability measures supported
+on finite sets $P = \{p_1, \dots, p_n \}$
+and $Q = \{ q_1, \dots, q_m \}$.
+An $m \times n$ matrix $C$
+is called a \textit{transportation plan},
+if it satisfies the following three conditions:
+\begin{enumerate}
+    \item $c_{i,j} \geq 0$ for all entries $c_{i, j}$.
+    \item $\sum_{i = 1}^m c_{i, j} = p_j$ for all $j = 1, \dots, n$.
+    \item $\sum_{j = 1}^n c_{i, j} = q_i$ for all $i = 1, \dots, m$.
+\end{enumerate}
+%By definition, the \textit{cost} of transportation plan $C$
+Let $\dist(\cdot, \cdot)$ denote the Euclidean
+distance in plane.
+The earth mover distance between $\mu_P$ and $\mu_Q$
+is defined as
+\[
+    \inf_C \sum_{i, j} c_{i, j} \dist(p_i, q_j)$,
+\]
+where $\inf$ is taken over all transportation
+plans $C$. Intuitively, $c_{i,j}$ is the
+mass concentrated at the point $p_i$ that
+is sent to the point $q_j$, and the earth mover
+distance is the smallest total amount of work
+needed to transform the measure $\mu_P$
+into the measure $\mu_Q$.
+
+
+Let $I_1$, $I_2$ be two greyvalue images.
+We divide each greyvalue of $I_{1,2}$
+by the sum of all greyvalues in the corresponding image.
+Thus we can interpret $I_i$
+as a probability measure supported on a rectangle
+that has one vertex at the origin and
+fully lies in the positive quadrant $\{ (x, y) \| x \geq 0, y \geq 0 \}$.
+The earth mover distance between images $I_1$ and $I_2$
+is, by definition, the earth mover distance between
+these probability measures.
 
 
 \end{document}
