@@ -98,8 +98,8 @@ worse: while several metrics on Reeb graphs have been proposed (\cite{bauer2014m
 \cite{di2016edit}),
 not even an constant-factor approximation algorithm is known that runs
 in polynomial time in the size of the graphs.
-Another instance is a collection of high-resolution images
-endowed with the Wasserstein (or Earth Movers) metric \cite{rubner2000earth}.
+Another instance is a collection of images
+equipped with the Wasserstein (or the Earth Mover's) metric \cite{rubner2000earth}.
 
 In such situations with expensive distance computations, 
 it makes sense to study a different cost model, where only the number of distance computations
@@ -158,10 +158,10 @@ The experimentally most successful exploration strategy that we found is to
 repeatedly query the distance of a pair with the worst ratio of upper and lower bound.
 We call the obtained spanner the \emph{blind greedy spanner}, as opposed to the well-known
 \emph{greedy spanner} that precomputes all pairwise distances and only maintains upper bounds \cite{althofer1993sparse}.
-Our experiments with Earth Mover distance and persistence
+Our experiments with the Earth Mover's distance and persistence
 diagrams of 3-D shapes show that blind greedy spanner can speed up computations
-by a factor of 3, saving hundreds of hours of machine time,
-even though the images and diagrams in our data sets are of moderate size.
+by a factor of 2 to 5, saving hundreds of hours of machine time,
+even though the inputs in our data sets are of moderate size.
 %of persistence diagrams of moderate size, computing a blind greedy spanner is faster than (approximately)
 %computing all $\binom{n}{2}$ distances.
 Remarkably, we were not able to improve the quality when knowing initial $2$-approximations of all point pairs.
@@ -706,8 +706,8 @@ linear growth) for larger values of $n$.
 
 
 For experiments with images, we used the German traffic sign
-dataset and the code for computing the Earth Mover distance
-by Gary Dornan.
+dataset \cite{gtsrb} and the code for computing the Earth Mover distance
+by Doran \cite{doran_pyemd}.
 We randomly selected 250 images from the benchmark.
 The first two columns of \cref{tbl:emd_gtsrb}
 compare the sparseness of \bgrdy and greedy spanners.
@@ -1407,7 +1407,7 @@ distance in plane.
 The earth mover distance between $\mu_P$ and $\mu_Q$
 is defined as
 \[
-    \inf_C \sum_{i, j} c_{i, j} \dist(p_i, q_j)$,
+    \inf_C \sum_{i, j} c_{i, j} \dist(p_i, q_j),
 \]
 where $\inf$ is taken over all transportation
 plans $C$. Intuitively, $c_{i,j}$ is the
