@@ -98,11 +98,21 @@ worse: while several metrics on Reeb graphs have been proposed (\cite{bauer2014m
 \cite{di2016edit}),
 not even a constant-factor approximation algorithm is known that runs
 in polynomial time in the size of the graphs.
-Another instance is a collection of images
-equipped with the Wasserstein (or the Earth Mover's) metric \cite{rubner2000earth}.
 
 
-In such situations with expensive distance computations, 
+Another example is the Earth Mover's distance (EMD, \cite{rubner2000earth}), which
+is often used for images.
+To compute it, one has to solve the optimal
+transportation problem, which has cubical complexity. There exist many papers addressing this issue,
+e.g., \cite{wemd}, \cite{grounded_emd}, \cite{entropy_emd}.
+However, usually these solutions either provide no guarantees of the approximation
+quality at all, as in entropy-regularization based approaches,
+or give only a loose bound on the relative error (e.g., the wavelet EMD \cite{wemd}
+theoretically can differ from the EMD by a factor of 7).
+
+
+
+In such situations with expensive distance computations,
 it makes sense to study a different cost model, where only the number of distance computations
 is taken into account. For instance, that means that quadratic time operations in terms of $n$
 are not counted towards the time complexity, as long as these operations do not query any distance
@@ -163,7 +173,7 @@ We call the obtained spanner the \emph{blind greedy spanner}, as opposed to the 
 
 Our experiments with the Earth Mover's distance and persistence
 diagrams of 3-D shapes show that blind greedy spanner can speed up computations
-by a factor of 2 to 5, saving hundreds of hours of machine time,
+by a factor of up to 5, saving hundreds of hours of machine time,
 even though the inputs in our data sets are of moderate size.
 %of persistence diagrams of moderate size, computing a blind greedy spanner is faster than (approximately)
 %computing all $\binom{n}{2}$ distances.
@@ -405,7 +415,7 @@ then we know that the true distance is in $[v/2, v]$. We want to put the pair $(
 that fully contains this interval, thus we need to find $k$ such that
 $2^k \leq v /2$ and $v \leq 2^{k+2}$. These inequalities give $ 2^{k+1} \leq v \leq 2^{k+2}$,
 and we take $k = \lfloor \log v \rfloor - 1$.
-Afer we found a bucket for each pair $(p_i, p_j)$, 
+After we found a bucket for each pair $(p_i, p_j)$, 
 we have some sort of a weak ordering: we cannot say anything
 about two edges that are assigned to the same bucket or to overlapping buckets, but if the buckets
 are disjoint, we know which edge is longer. Now we can either imitate the greedy spanner (non-blind) algorithm,
@@ -490,7 +500,7 @@ WSPD spanners performed poorly in our experiments
 on non-clustered data, while the plots in a previous experimental study \cite{farshi2009experimental}
 show that WSPD spanners are very sparse, outperformed only by the greedy algorithm.
 We implemented two versions of  WSPD: one for the Euclidean case,
-using quadtrees and the algorithm from \cite{hp-book}, and WSPD for general metric
+using quad trees and the algorithm from \cite{hp-book}, and WSPD for general metric
 spaces with cover trees (using the base $\tau=1.3$). 
 They both give similar results, and we can only conclude
 that the advantage of WSPD shows up on larger point sets than the ones we deal with.
@@ -568,7 +578,7 @@ dense spanners. More data from experiments in $\RR^n$ can be found in
 \begin{table}\centering
     \ra{1.2}
 \begin{tabular}{@{}rrrcrrcrr@{}}\toprule
-                          & \multicolumn{2}{c}{$q=1$} & \phantom{abc} & \multicolumn{2}{c}{$q=2$} & \phantom{abc} & \multicolumn{2}{c}{$q=3$}\\
+                          & \multicolumn{2}{c}{$q=1$} & \phantom{a} & \multicolumn{2}{c}{$q=2$} & \phantom{a} & \multicolumn{2}{c}{$q=3$}\\
                           \cmidrule{2-3} \cmidrule{5-6} \cmidrule{8-9}
                           & Greedy & Blind greedy && Greedy & Blind greedy && Greedy & Blind greedy \\ \midrule
 $\eps = 0.1$                & 0.14  & 0.28         && 0.32  & 0.72      &&   0.41  & 0.78 \\
@@ -579,7 +589,7 @@ $\eps = 0.8$               & 0.01 & 0.08           && 0.02  & 0.13        &&   0
 $\eps = 1.0$               & 0.01 &  0.06  && 0.01 & 0.10        &&   0.02  & 0.14 \\
 \bottomrule
 \end{tabular}
-    \caption{Sparseness of \bgrdy and \textsc{Greedy} spanners for 450 \dtype{original} persistence diagrams
+    \caption{Sparseness of the \bgrdy and the \textsc{Greedy} spanners for 450 \dtype{original} persistence diagrams
  with Wasserstein distance $W_q$.}
 \label{tbl:mcgill_original_blind_greedy_spanner_sparseness}
 \end{table}
@@ -589,64 +599,24 @@ $\eps = 1.0$               & 0.01 &  0.06  && 0.01 & 0.10        &&   0.02  & 0.
     \begin{tabular}{@{}rrrcrrcrr@{}}\toprule
                           & \multicolumn{2}{c}{$q=1$} & \phantom{c} & \multicolumn{2}{c}{$q=2$} & \phantom{c} & \multicolumn{2}{c}{$q=3$}\\
                           \cmidrule{2-3} \cmidrule{5-6} \cmidrule{8-9}
-                          & Brute-force & Blind greedy && Brute-force & Blind greedy && Brute-force & Blind greedy \\ \midrule
-$\eps = 0.1$    &   $2605$  &  $1266$  &&  $3719$  &  $4085$  &&  $11$\,$781$  &  $13$\,$557$\\
-$\eps = 0.2$    &   $2209$  &  $878$  &&  $3338$  &  $2574$  &&  $10$\,$541$  &  $9383$ \\
-$\eps = 0.4$    &   $1988$  &  $586$  &&  $3088$  &  $1590$  &&  $-$    &  $6383$ \\
+                          & BF & BG && BF & BG && BF & BG \\ \midrule
+$\eps = 0.1$    &   $2605$  &  $1266$  &&  $3719$  &  $4085$  &&  $11\,781$  &  $13\,557$\\
+$\eps = 0.2$    &   $2209$  &  $878$  &&  $3338$  &  $2574$  &&  $10\,541$  &  $9383$ \\
+$\eps = 0.4$    &   $1988$  &  $586$  &&  $3088$  &  $1590$  &&  $10\,128$    &  $6383$ \\
 $\eps = 0.5$    &   $1744$  &  $483$  &&  $2835$  &  $1233$  &&  $9418$    &  $5146$ \\
-$\eps = 0.8$    &   $1691$  &  $368$  &&  $2809$  &  $814$  &&  $-$    &  $3419$ \\
-$\eps = 1.0$    &   $1645$  &  $324$  &&  $2780$  &  $672$  &&  $-$    &  $-$ \\
+$\eps = 0.8$    &   $1691$  &  $368$  &&  $2809$  &  $814$  &&  $9578$    &  $3419$ \\
+$\eps = 1.0$    &   $1645$  &  $324$  &&  $2780$  &  $672$  &&  $9539$    &  $2743$ \\
 \bottomrule
 \end{tabular}
-    \caption{Time required to approximate all pairwise distances with \bgrdy algorithm.
-    Data is for 450 \dtype{original} persistence diagrams with Wasserstein distance $W_q$, time in seconds.}
+    \caption{Time required to approximate all pairwise distances with the \bgrdy algorithm.
+    Data is for 450 \dtype{original} persistence diagrams with Wasserstein distance $W_q$, time in seconds.
+    BF stands for brute-force, BG for \bgrdy.}
 \label{tbl:mcgill_original_blind_greedy_spanner_timing}
 \end{table}
 
-\begin{table}\centering
-    \ra{1.2}
-    \begin{tabular}{@{}rrrcrrrc@{}}\toprule
-        & \multicolumn{2}{c}{Sparseness} & \phantom{abc} & \multicolumn{3}{c}{Running time} \\
-        \cmidrule{2-3} \cmidrule{5-7} 
-                & Greedy  & Blind greedy && Brute-force & Blind greedy & Ratio \\ \midrule
-$\eps = 0.1$    &   $0.20$  &  $0.43$    &&  $853\,682$   &  $248\,192$    & $0.29$   \\
-$\eps = 0.2$    &   $0.11$  &  $0.30$    &&  $853\,682$   & $192\,302$    & $0.22$   \\
-$\eps = 0.3$    &   $0.07$  &  $0.24$    &&  $853\,682$   & $161\,007$    & $0.19$   \\
-$\eps = 0.4$    &   $0.05$  &  $0.20$    &&  $853\,682$   & $140\,470$    & $0.16$   \\
-$\eps = 0.5$    &   $0.04$  &  $0.17$    &&  $853\,682$   & $129\,489$    & $0.15$   \\
-$\eps = 0.8$    &   $0.02$  &  $0.13$    &&  $853\,682$   & $104\,851$    & $0.12$   \\
-$\eps = 1.0$    &   $0.02$  &  $0.11$    &&  $853\,682$   & $92\,462$    & $0.11$   \\
-\bottomrule
-\end{tabular}
-    \caption{Results of \bgrdy algorithm on the dataset of 250 images
-    with Earth Mover's Distance, time in seconds.}
-\label{tbl:emd_gtsrb}
-\end{table}
 
 
-\begin{table}\centering
-    \ra{1.2}
-    \begin{tabular}{@{}rrrcrrrc@{}}\toprule
-        & \multicolumn{2}{c}{Sparseness} & \phantom{abc} & \multicolumn{3}{c}{Running time} \\
-        \cmidrule{2-3} \cmidrule{5-7} 
-                & Greedy  & Blind greedy && Brute-force & Blind greedy & Ratio \\ \midrule
-$\eps = 0.2$    &   $0.34$  &  $0.81$    &&  $185\,863$   & $133\,194$    & $0.72$   \\
-$\eps = 0.3$    &   $0.20$  &  $0.69$    &&  $185\,863$   & $105\,723$    & $0.56$   \\
-$\eps = 0.4$    &   $0.13$  &  $0.58$    &&  $185\,863$   & $86\,283$    & $0.46$   \\
-$\eps = 0.5$    &   $0.09$  &  $0.50$    &&  $185\,863$   & $72\,447$    & $0.38$   \\
-$\eps = 0.8$    &   $0.05$  &  $0.35$    &&  $185\,863$   & $48\,870$    & $0.26$   \\
-$\eps = 1.0$    &   $0.04$  &  $0.30$    &&  $185\,863$   & $40\,955$    & $0.22$   \\
-\bottomrule
-\end{tabular}
-    \caption{Results of \bgrdy algorithm on the dataset of 200 images
-    with Earth Mover's Distance on \textit{Lab} histograms, time in seconds.}
-\label{tbl:emd_gtsrb}
-\end{table}
-
-
-
-
-
+\myparagraph{Experiments with Persistence Diagrams}
 The other data sets that we used
 are the persistence diagrams
 computed from the McGill shape benchmark \cite{zhang2005mcgill}.
@@ -654,7 +624,7 @@ More precisely, we generated two sets of diagrams,
 \dtype{original} and \dtype{perturbed}. The \dtype{original}
 diagrams were computed on the points of the 450 original
 point clouds from the shape data set; we only used
-persitence in dimension 0, since the diagrams in this dimension are larger in size.
+persistence in dimension 0, since the diagrams in this dimension are larger in size.
 For the \dtype{perturbed} data set,
 we added random noise to points of the original shapes,
 creating 10 modified versions of each of them;
@@ -664,18 +634,18 @@ Persistence diagrams were computed with the \libraryname{DIPHA}
 library \cite{bauer2014distributed}. 
 Wasserstein distance were computed approximately
 with the software library \hera using a relative error of $0.01$.
-We restricted to approximate computation because computing the
+We restricted to approximate computation, because computing the
 Wasserstein distance exactly (using the Hungarian algorithm)
-has been reported to be very expensice~\cite{kerber2017geometry}.
+has been reported to be very expensive~\cite{kerber2017geometry}.
 
-Sparseness values of \bgrdy spanner on the whole \dtype{original} data set
+Sparseness values of the \bgrdy spanner on the whole \dtype{original} data set
 for different values of $\eps$ and $q$ are presented in \cref{tbl:mcgill_original_blind_greedy_spanner_sparseness};
 the \grdy algorithm is used as baseline.  We observe that for higher values of $q$
 the advantage of our algorithm fades away. A plausible explanation
 is that for higher values of $q$, the doubling dimension becomes larger;
 this is confirmed by the increase in size of the greedy spanner.
 For $\wsdist{1}$ we observe more encouraging figures, avoiding 70 \% of distance
-computations for $\eps = 0.1$; for a $1.5$-approximation, we
+computations for even $\eps = 0.1$; for a $1.5$-approximation, we
 reduce the number of distances computed by a factor of 10.
 
 
@@ -707,20 +677,23 @@ reduce the number of distances computed by a factor of 10.
 \end{axis}
 \end{tikzpicture}
 \end{centering}
-    \caption{Sparseness of \bgrdy spanner algorithm. The plot is for \dtype{perturbed} persistence diagrams,
+    \caption{Sparseness of the \bgrdy spanner. The plot is for \dtype{perturbed} persistence diagrams,
     $\eps = 0.1, 0.2, 0.5$ with $W_1$ distance.}
     \label{fig:spanner_sparseness_mcgill_perturbed}
 \end{figure}
 
 We also compare the time that is needed to compute the matrix of all pairwise distances
-naively with the time that is needed to approximate it with \bgrdy spanner.
+naively with the time that is needed to approximate it with the \bgrdy spanner.
 The timings are given in \cref{tbl:mcgill_original_blind_greedy_spanner_timing}.
-We compared our approach for a fixed
-$\eps$ with the time to compute all pairwise-distance between the
-persistence diagrams using \hera, using the same approximation parameter
-$\eps$. Let us emphasize that the diagrams we have are rather small,
-with average cardinality
-350 points. Nevertheless, on this data set \bgrdy spanner
+We compare our approach with the time to compute all pairwise-distance between the
+persistence diagrams with \hera, using the same approximation parameter
+$\eps$ (that is the reason why the BF column contains different values)\footnote{Let us be completely clear. The time in the BF column is the total running time for computing 
+$\wsdist{q}$ with the corresponding $\eps$, so \textit{all} distances in the BF case are approximate. The time in the BG column
+is the total time of the \bgrdy algorithm, which internally computes $\wsdist{q}$ with $\eps = 0.01$. In particular,
+the sparseness column in \cref{tbl:mcgill_original_blind_greedy_spanner_sparseness} shows the fraction of distances that are almost exact.}.
+Let us emphasize that the diagrams we have are rather small,
+with average cardinality of
+350 points. Nevertheless, on this data set the \bgrdy spanner
 provides a substantial improvement in terms of real running time,
 and we expect this advantage to grow for diagrams of larger cardinality.
 
@@ -728,8 +701,8 @@ and we expect this advantage to grow for diagrams of larger cardinality.
 
 In order to see the growth of the spanner size, we use the \dtype{perturbed}
 data set, drawing from it random samples.
-We plot the sparseness of the spanners obtained by \grdy
-and \bgrdy algorithms in \cref{fig:spanner_sparseness_mcgill_perturbed}
+We plot the sparseness of the spanners obtained by the \grdy
+and the \bgrdy algorithms in \cref{fig:spanner_sparseness_mcgill_perturbed}
 for different values of $\eps$, always using the $\wsdist{1}$ distance.
 As expected, the ratio of computed distances decreases as the number of diagrams
 grows. In \cref{fig:spanner_ratio_mcgill_perturbed} we show
@@ -761,31 +734,59 @@ linear growth) for larger values of $n$.
 \end{axis}
 \end{tikzpicture}
 \end{centering}
-    \caption{Ratio \# edges /  \# diagrams for  \bgrdy spanner. The plot is for 0-dimensional diagrams of perturbed McGill data
+    \caption{Ratio \# edges /  \# diagrams for the \bgrdy spanner. The plot is for 0-dimensional diagrams of perturbed McGill data
     $\eps = 0.1, 0.2, 0.5$ with $W_1$ distance.}
     \label{fig:spanner_ratio_mcgill_perturbed}
 \end{figure}
 
 
 
-For experiments with images, we used the German traffic sign
-dataset GTSRB \cite{gtsrb} and the code for computing the Earth Mover's distance
-by Doran \cite{doran_pyemd}.
-We randomly selected 250 images from the benchmark.
-The results of the experiment are summarized in \cref{tbl:emd_gtsrb}.
-The first two columns compare the sparseness of \bgrdy and greedy spanners.
-For smaller values of $\eps$,
-the \bgrdy spanner contains approximately 3 times more
-edges than the greedy spanner, so the ratio is roughly
-the same as for persistence diagrams.
+\begin{table}\centering
+    \ra{1.2}
+    \begin{tabular}{@{}rrrcrrrc@{}}\toprule
+        & \multicolumn{2}{c}{Sparseness} & \phantom{abc} & \multicolumn{3}{c}{Running time} \\
+        \cmidrule{2-3} \cmidrule{5-7} 
+                & Greedy  & Blind greedy && Brute-force & Blind greedy & Ratio \\ \midrule
+$\eps = 0.2$    &   $0.34$  &  $0.81$    &&  $185\,863$   & $133\,194$    & $0.72$   \\
+$\eps = 0.3$    &   $0.20$  &  $0.69$    &&  $185\,863$   & $105\,723$    & $0.56$   \\
+$\eps = 0.4$    &   $0.13$  &  $0.58$    &&  $185\,863$   & $86\,283$    & $0.46$   \\
+$\eps = 0.5$    &   $0.09$  &  $0.50$    &&  $185\,863$   & $72\,447$    & $0.38$   \\
+$\eps = 0.8$    &   $0.05$  &  $0.35$    &&  $185\,863$   & $48\,870$    & $0.26$   \\
+$\eps = 1.0$    &   $0.04$  &  $0.30$    &&  $185\,863$   & $40\,955$    & $0.22$   \\
+\bottomrule
+\end{tabular}
+    \caption{Results of the \bgrdy algorithm on the dataset of 200 images
+    with Earth Mover's Distance on \textit{Lab} histograms, time in seconds.}
+\label{tbl:emd_lab_caltech}
+\end{table}
+
+\myparagraph{Earth Mover's Distance} 
+We took the standard approach \cite{rubner2000earth} of transforming a colored image
+to the \textit{Lab} color space and creating a $16\times 16\times 16$
+distribution histogram. After that we compute the distance between normalized
+distributions with \cite{doran_pyemd}.
+We used the Caltech 101 dataset \cite{caltech101},
+randomly selecting 200 images from different (randomly chosen)
+categories.  We measured only the time needed to compute
+the Earth Mover's distance, without preprocessing (color space transformation
+and binning). The results are presented in \cref{tbl:emd_lab_caltech}.
+The first two columns of the table compare the sparseness of the \bgrdy and the greedy spanners.
 The last 3 columns show the advantage
 of \bgrdy in terms of the running time.
-If a $1.5$ approximation is acceptable,
+Even for the small relative error $\eps = 0.2$,
+the \bgrdy spanner saves about $28\%$ of time,
+and, if {$2$-approximation} is acceptable,
 then the \bgrdy algorithm speeds up
-the computation by a factor of more than $5$,
-and even for a $10 \%$ approximation, it reduces
-the running time by more than a factor of $2$,
-saving $98$ hours of computation time.
+the computation by a factor of almost $5$.
+
+
+
+Alternatively, one could also compute the Earth Mover's distance
+on gray value images by considering each image as a distribution on pixels.
+The results of this experiment are in \cref{sec:spanners_euclidean_addendum}, since this variant
+does not seem to be used in applications.
+
+
 
 
 
@@ -891,7 +892,7 @@ Now, traversing the points $P$ in random order,
 we call a point a \emph{minimum} if it is closer to $q$
 than all previous points. Note that minima do not necessarily
 correspond to the candidates in the algorithm because
-we look for an approximate neareast neighbor only.
+we look for an approximate nearest neighbor only.
 Standard backwards analysis~\cite{seidel-backwards}
 shows that the expected number of minima encountered is $O(\log n)$.
 The first two ideas together with a packing argument show
@@ -1006,7 +1007,7 @@ or Reeb graphs, this assumption does not hold. For instance,
 the space of persistence diagrams has an infinite doubling dimension.
 Nevertheless, realistic data sets are usually not just a random sample
 in that infinite-dimensional space, but have structures
-(e.g. clusters of close-by diagrams) which should be favourable for our approach.
+(e.g. clusters of close-by diagrams) which should be favorable for our approach.
 Moreover, the size of the \bgrdy spanner can itself be considered as a piece
 of information about the dimensionality of the data set under consideration.
 
@@ -1047,7 +1048,7 @@ We pose the question what heuristic could make more use of this feature.
 \section{Additional Experimental Results on Spanners}
 \label{sec:spanners_euclidean_addendum}
 In this section we include plots that give more information
-about the behaviour of \bgrdy spanner in Euclidean space.
+about the behavior of \bgrdy spanner in Euclidean space.
 
 \ignore{
 \begin{figure}[ht!]
@@ -1178,6 +1179,69 @@ while for $\eps = 1/32$ the ratio is 2.6
         \caption{Number of edges in the blind greedy and greedy spanners for different values of $\eps$. Data is for 400 normally distributed points in $\RR^2$ and $\RR^3$.}
         \label{fig:spanner_eps_dependence}
 \end{figure}
+
+
+\begin{table}\centering
+    \ra{1.2}
+    \begin{tabular}{@{}rrrcrrrc@{}}\toprule
+        & \multicolumn{2}{c}{Sparseness} & \phantom{abc} & \multicolumn{3}{c}{Running time} \\
+        \cmidrule{2-3} \cmidrule{5-7} 
+                & Greedy  & Blind greedy && Brute-force & Blind greedy & Ratio \\ \midrule
+$\eps = 0.1$    &   $0.20$  &  $0.43$    &&  $853\,682$   &  $248\,192$    & $0.29$   \\
+$\eps = 0.2$    &   $0.11$  &  $0.30$    &&  $853\,682$   & $192\,302$    & $0.22$   \\
+$\eps = 0.3$    &   $0.07$  &  $0.24$    &&  $853\,682$   & $161\,007$    & $0.19$   \\
+$\eps = 0.4$    &   $0.05$  &  $0.20$    &&  $853\,682$   & $140\,470$    & $0.16$   \\
+$\eps = 0.5$    &   $0.04$  &  $0.17$    &&  $853\,682$   & $129\,489$    & $0.15$   \\
+$\eps = 0.8$    &   $0.02$  &  $0.13$    &&  $853\,682$   & $104\,851$    & $0.12$   \\
+$\eps = 1.0$    &   $0.02$  &  $0.11$    &&  $853\,682$   & $92\,462$    & $0.11$   \\
+\bottomrule
+\end{tabular}
+    \caption{Results of \bgrdy algorithm on the dataset of 250 images
+    with Earth Mover's Distance, time in seconds.}
+\label{tbl:emd_gtsrb}
+\end{table}
+
+
+\myparagraph{Earth Mover's Distance on Images}
+Let $I_1$, $I_2$ be two gray value images.
+If we divide each gray value of $I_{i}$
+by the total sum, we can interpret $I_i$
+as a probability measure supported on a rectangle
+that has one vertex at the origin and
+fully lies in the positive quadrant $\{ (x, y) \| x \geq 0, y \geq 0 \}$.
+The Earth Mover's distance between images $I_1$ and $I_2$
+is, by definition, the Earth Mover's distance between
+these probability measures.
+Note that this defines a true metric on the space of images,
+while the standard approach with color histograms only defines
+a pseudometric, since any permutaion of pixels does not
+change the distribution in the color space.
+However, this metric is very hard to compute:
+for images with resolution $40\times 40$,
+it takes about 20 minutes. For this reason,
+we cannot test it on the Caltech 101 dataset.
+Instead, we used the German traffic sign
+dataset GTSRB \cite{gtsrb}. This
+dataset contains small images, and usually
+one traffic sign occupies most of the image area.
+It is interesting to see how
+the \bgrdy spanner would behave in this situation.
+
+
+We randomly selected 250 images from the dataset.
+The results of the experiment are summarized in \cref{tbl:emd_gtsrb}.
+As in \cref{sec:experiment_spanners}, 
+the first two columns give the sparseness.
+For smaller values of $\eps$,
+the \bgrdy spanner contains approximately 3 times more
+edges than the greedy spanner, so the ratio is roughly
+the same as for persistence diagrams.
+The last 3 columns compare the running time.
+Note that even for $\eps=0.1$,
+the \bgrdy spanner saves $70\%$ of the computation time.
+If we allow large relative error,
+we see the speed by almost a factor of $10$.
+
 
 
 \section{Proof of \cref{thm:ann_bound}}
@@ -1454,17 +1518,6 @@ distance is the smallest total amount of work
 needed to transform the measure $\mu_P$
 into the measure $\mu_Q$.
 
-
-Let $I_1$, $I_2$ be two greyvalue images.
-We divide each greyvalue of $I_{1,2}$
-by the sum of all greyvalues in the corresponding image.
-Thus we can interpret $I_i$
-as a probability measure supported on a rectangle
-that has one vertex at the origin and
-fully lies in the positive quadrant $\{ (x, y) \| x \geq 0, y \geq 0 \}$.
-The Earth Mover's distance between images $I_1$ and $I_2$
-is, by definition, the Earth Mover's distance between
-these probability measures.
 
 
 \end{document}
