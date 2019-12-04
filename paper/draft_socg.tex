@@ -780,14 +780,10 @@ then the \bgrdy algorithm speeds up
 the computation by a factor of almost $5$.
 
 
-
-Alternatively, one could also compute the Earth Mover's distance
-on gray value images by considering each image as a distribution on pixels.
-The results of this experiment are in \cref{sec:spanners_euclidean_addendum}, since this variant
-does not seem to be used in applications.
-
-
-
+Alternatively, we also experimented with the Earth Mover’s distance on
+gray value images by considering each image as a distribution on pixels.
+For this (non-standard) variant, we obtain even larger speed-ups~-- see
+\cref{sec:spanners_euclidean_addendum} for details.
 
 
 \section{Approximate nearest neighbors}
@@ -1240,7 +1236,7 @@ The last 3 columns compare the running time.
 Note that even for $\eps=0.1$,
 the \bgrdy spanner saves $70\%$ of the computation time.
 If we allow large relative error,
-we see the speed by almost a factor of $10$.
+we see the speed up by almost a factor of $10$.
 
 
 
