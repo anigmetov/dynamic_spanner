@@ -96,10 +96,11 @@ polynomial time in $N$, and $N$ might well be larger than $n$, the number
 of diagrams considered \cite{cohen2007stability}. For the case of Reeb graphs, the situation is even
 worse: while several metrics on Reeb graphs have been proposed (\cite{bauer2014measuring}, \cite{de2016categorified},
 \cite{di2016edit}),
-not even an constant-factor approximation algorithm is known that runs
+not even a constant-factor approximation algorithm is known that runs
 in polynomial time in the size of the graphs.
 Another instance is a collection of images
 equipped with the Wasserstein (or the Earth Mover's) metric \cite{rubner2000earth}.
+
 
 In such situations with expensive distance computations, 
 it makes sense to study a different cost model, where only the number of distance computations
@@ -110,7 +111,7 @@ in $\metricspace$. We also ignore the space complexity in our model.
 We will restrict to the case of \emph{doubling spaces}, that is, the doubling dimension
 of $\metricspace$ is bounded by a constant. 
 In that situation, standard constructions from computational geometry provide partial answers:
-Using net-trees~\cite{hm-fast}, we can construct a $\eps$-well-separated pair decomposition (WSPD)~\cite{CK-decomposition} using $O(n\log n)$ distance queries; a WSPD in turn yields
+Using net-trees~\cite{hm-fast}, we can construct an $\eps$-well-separated pair decomposition (WSPD)~\cite{CK-decomposition} using $O(n\log n)$ distance queries; a WSPD in turn yields
 a {$(1+\eps)$-spanner} immediately. Net-trees can also be used to compute approximate nearest neighbors
 performing $O(\log n)$ distance computations per query point.
 Krauthgamer and Lee \cite{krauthgamer2005black} investigated the \textit{black box model},
@@ -155,9 +156,11 @@ We propose several heuristics of how to explore the metric space to obtain accur
 with a small number of distance computation. Once the ratio of upper and lower bound is at most $(1+\eps)$
 for each point pair, the set of all computed distances forms the spanner.
 The experimentally most successful exploration strategy that we found is to
-repeatedly query the distance of a pair with the worst ratio of upper and lower bound.
+repeatedly query the distance between a pair with the worst ratio of upper and lower bound.
 We call the obtained spanner the \emph{blind greedy spanner}, as opposed to the well-known
 \emph{greedy spanner} that precomputes all pairwise distances and only maintains upper bounds \cite{althofer1993sparse}.
+
+
 Our experiments with the Earth Mover's distance and persistence
 diagrams of 3-D shapes show that blind greedy spanner can speed up computations
 by a factor of 2 to 5, saving hundreds of hours of machine time,
@@ -179,7 +182,19 @@ Our experimental results match the theoretical predictions.
 %We also experimentally evaluate our approach and observe that the approach follows 
 %roughly the theoretical prediction.
 
+\myparagraph{Outline}
+We review the properties of spanner algorithms in \cref{sec:back}.
+In \cref{sec:blind_spanners}, we introduce different
+variants of the blind spanner algorithm. Experimental
+results on spanners are presented in \cref{sec:experiment_spanners}.
+Then we move to the ANN problem, giving
+an outline of the proof of the $O(\log n)$ bound in \cref{sec:ann}.
+The full proof can be found in the appendix.
+We report our experimental results for ANN in \cref{sec:experiment_ann}.
+
+
 \section{Background}
+\label{sec:back}
 %
 \myparagraph{Doubling dimension}
 A metric space is called \textit{doubling} with \textit{doubling constant} $k$,
@@ -193,6 +208,33 @@ is always of doubling dimension $\leq 2d$.
 
 In the following, we will assume throughout that every considered metric space
 has a constant doubling dimension.
+
+\myparagraph{Well-Separated Pair Decomposition}
+Given $t > 1$, two disjoint subsets $A, B$ of a metric space $(\metricspace, \dist)$ are called $t$-\textit{well-separated},
+if 
+\[
+\forall a \in A \,\, \forall b \in B \,\, \dist(a, b) \geq t \max(\diam(A), \diam(B))
+\]
+A well-separated pair decomposition (WSPD) is a set of unordered pairs of sets $\{ \{A_1, B_1 \}, 
+\dots, \{A_s, B_s\} \}$ such that each pair $\{A_i, B_i\}$ is $s$-well-separated, and for every unordered pair $\{a, b\}$ 
+of distinct points of $\metricspace$ there exists a unique $j$ such that $a \in A_j$ and $b \in B_j$.
+The notion of WSPD was introduced by Callahan and Kosaraju \cite{cal-kos-wspd} for Euclidean spaces.
+Har-Peled and Mendel \cite{hm-fast} 
+introduced the notion of net-trees and
+generalized the results of \cite{cal-kos-wspd} for WSPD, proving the following:
+\begin{enumerate}
+    \item A net-tree for a metric space with $n$ points can be constructed in $2^{O(\mbox{dim})} n \log n$ expected time.
+    \item If $\{ \{A_1, B_1 \}, 
+\dots, \{A_s, B_s\} \}$ is an $\eps / 16$-WSPD on $\metricspace$, and $a_i \in A_i, b_i \in B_i$ for $i = 1\dots s$
+are chosen arbitrarily, then we get an $\eps$-spanner by taking $s$ edges $(a_i, b_i)$.
+    \item For $\eps \in (0, 1]$,  an $\eps$-WSPD of size $n \eps^{-O({\dim})}$ can be constructed in $2^{O({\dim})} n \log n + n \eps ^{-O({\dim})}$ expected time. The algorithm uses the net-tree structure.
+\end{enumerate}
+The algorithm of constructing a net-tree is complicated and not easy to implement. Beygelzimer
+et al. \cite{cover-trees} introduced the notion of a cover tree, which is a simpler data structure 
+than net-trees. We mention in passing that cover trees can also be used for building
+a spanner (this can be proven with the same methods), and we use cover trees for
+building WSPD spanners in one of our implementations.
+
 
 
 \myparagraph{Spanners and known constructions}
@@ -229,8 +271,7 @@ has to compute all $\binom{n}{2}$ pairwise distances for sorting;
 this means that in our cost model, the greedy spanner has the worst possible
 performance.
 
-On the other hand, spanner constructions based on Well-Separated Pair Decomposition\footnote{ 
-for convenience, we repeat the definition of WSPD in \cref{sec:appendix_background}}~\cite{cal-kos-wspd,hm-fast} only compute
+On the other hand, spanner constructions based on Well-Separated Pair Decomposition~\cite{cal-kos-wspd,hm-fast} only compute
 $O(n\log n+n \eps^{-d})$ distances 
 to construct a \espanner in doubling dimension $d$.
 The spanner size is $O(n\eps^{-d})$. Assuming $\eps$ and $d$ again as constants,
@@ -238,6 +279,7 @@ this construction yields a $O(n)$-size spanner using only $O(n\log n)$ distance
 computations. However, the algorithm is significantly more involved.
 
 \section{Blind spanners}
+\label{sec:blind_spanners}
 %
 We introduce a new framework for constructing spanners
 which we call \emph{blind spanners}: the idea is to maintain,
@@ -380,7 +422,7 @@ We refer to the former option as \bqsgrdy and to the latter one as \bqsshaker.
 \label{sec:experiment_spanners}
 
 We performed three types of experiments: on points sampled from a low-dimensional Euclidean
-space, on images with Earth Mover distance, and on persistence diagrams
+space, on images with Earth Mover's distance, and on persistence diagrams
 with $q$-Wasserstein distance $\wsdist{q}$.\footnote{See \cref{sec:appendix_background} for the definition of $\wsdist{q}$.}
 Clearly, our model is not meaningful in Euclidean spaces because
 distance computations are cheap.
@@ -529,13 +571,12 @@ dense spanners. More data from experiments in $\RR^n$ can be found in
                           & \multicolumn{2}{c}{$q=1$} & \phantom{abc} & \multicolumn{2}{c}{$q=2$} & \phantom{abc} & \multicolumn{2}{c}{$q=3$}\\
                           \cmidrule{2-3} \cmidrule{5-6} \cmidrule{8-9}
                           & Greedy & Blind greedy && Greedy & Blind greedy && Greedy & Blind greedy \\ \midrule
-%\#edges                    & 12755 & 28350         && 32606 & 72933      &&  41875  & 78977 \\
 $\eps = 0.1$                & 0.14  & 0.28         && 0.32  & 0.72      &&   0.41  & 0.78 \\
-%\#edges                    & 6314 & 19518         && 13560 & 44282       &&  20335  & 52482 \\
 $\eps = 0.2$                & 0.06 & 0.19          && 0.13 & 0.44       &&   0.20  & 0.52 \\
-%\#edges                    & 2263 & 10414         && 3411 & 20143        &&  4705  & 27154 \\
-%\% of distances computed   & 2.24 & 10.3          && 3.38 & 19.94        &&   4.66  & 26.88 \\
+$\eps = 0.4$               & 0.03 &  0.13          && 0.05 & 0.26        &&   0.06  & 0.34 \\
 $\eps = 0.5$               & 0.02 &  0.10          && 0.03 & 0.20        &&   0.05  & 0.27 \\
+$\eps = 0.8$               & 0.01 & 0.08           && 0.02  & 0.13        &&   0.02  & 0.17 \\
+$\eps = 1.0$               & 0.01 &  0.06  && 0.01 & 0.10        &&   0.02  & 0.14 \\
 \bottomrule
 \end{tabular}
     \caption{Sparseness of \bgrdy and \textsc{Greedy} spanners for 450 \dtype{original} persistence diagrams
@@ -549,14 +590,12 @@ $\eps = 0.5$               & 0.02 &  0.10          && 0.03 & 0.20        &&   0.
                           & \multicolumn{2}{c}{$q=1$} & \phantom{c} & \multicolumn{2}{c}{$q=2$} & \phantom{c} & \multicolumn{2}{c}{$q=3$}\\
                           \cmidrule{2-3} \cmidrule{5-6} \cmidrule{8-9}
                           & Brute-force & Blind greedy && Brute-force & Blind greedy && Brute-force & Blind greedy \\ \midrule
-%$\eps = 0.1$    &   4093  &  1266  &&  5331  &  4085  &&  16852  &  13557\\
-%$\eps = 0.2$    &   4093  &  878  &&  5331  &  2574  &&  16852  &  9383\\
-%$\eps = 0.5$    &   4093  &  483  &&  5331  &  1233  &&  16852  &  5146\\
-%$\eps = 0.01$    &   4093 &  - &&  5331 &  - &&  16852  &  - \\
-%$\eps = 0.01$    &   4093  &  0  &&  5331  &  0  &&  16852  &  0\\
-$\eps = 0.1$    &   2605  &  1266  &&  3719  &  4085  &&  11781  &  13557\\
-$\eps = 0.2$    &   2209  &  878  &&  3338  &  2574  &&  10541   &  9383\\
-$\eps = 0.5$    &   1744  &  483  &&  2835  &  1233  &&  9418    &  5146\\
+$\eps = 0.1$    &   $2605$  &  $1266$  &&  $3719$  &  $4085$  &&  $11$\,$781$  &  $13$\,$557$\\
+$\eps = 0.2$    &   $2209$  &  $878$  &&  $3338$  &  $2574$  &&  $10$\,$541$  &  $9383$ \\
+$\eps = 0.4$    &   $1988$  &  $586$  &&  $3088$  &  $1590$  &&  $-$    &  $6383$ \\
+$\eps = 0.5$    &   $1744$  &  $483$  &&  $2835$  &  $1233$  &&  $9418$    &  $5146$ \\
+$\eps = 0.8$    &   $1691$  &  $368$  &&  $2809$  &  $814$  &&  $-$    &  $3419$ \\
+$\eps = 1.0$    &   $1645$  &  $324$  &&  $2780$  &  $672$  &&  $-$    &  $-$ \\
 \bottomrule
 \end{tabular}
     \caption{Time required to approximate all pairwise distances with \bgrdy algorithm.
@@ -570,13 +609,37 @@ $\eps = 0.5$    &   1744  &  483  &&  2835  &  1233  &&  9418    &  5146\\
         & \multicolumn{2}{c}{Sparseness} & \phantom{abc} & \multicolumn{3}{c}{Running time} \\
         \cmidrule{2-3} \cmidrule{5-7} 
                 & Greedy  & Blind greedy && Brute-force & Blind greedy & Ratio \\ \midrule
-$\eps = 0.1$    &   $0.19$  &  $0.42$    &&  $618,587$   &  $262,770$    & $0.42$   \\
-$\eps = 0.2$    &   $0.11$  &  $0.30$    &&  $618,587$   & $196,309$    & $0.31$   \\
-$\eps = 0.5$    &   $0.04$  &  $0.18$    &&  $618,587$   & $112,995$    & $0.18$   \\
+$\eps = 0.1$    &   $0.20$  &  $0.43$    &&  $853\,682$   &  $248\,192$    & $0.29$   \\
+$\eps = 0.2$    &   $0.11$  &  $0.30$    &&  $853\,682$   & $192\,302$    & $0.22$   \\
+$\eps = 0.3$    &   $0.07$  &  $0.24$    &&  $853\,682$   & $161\,007$    & $0.19$   \\
+$\eps = 0.4$    &   $0.05$  &  $0.20$    &&  $853\,682$   & $140\,470$    & $0.16$   \\
+$\eps = 0.5$    &   $0.04$  &  $0.17$    &&  $853\,682$   & $129\,489$    & $0.15$   \\
+$\eps = 0.8$    &   $0.02$  &  $0.13$    &&  $853\,682$   & $104\,851$    & $0.12$   \\
+$\eps = 1.0$    &   $0.02$  &  $0.11$    &&  $853\,682$   & $92\,462$    & $0.11$   \\
 \bottomrule
 \end{tabular}
     \caption{Results of \bgrdy algorithm on the dataset of 250 images
-    with Earth Mover Distance, time in seconds.}
+    with Earth Mover's Distance, time in seconds.}
+\label{tbl:emd_gtsrb}
+\end{table}
+
+
+\begin{table}\centering
+    \ra{1.2}
+    \begin{tabular}{@{}rrrcrrrc@{}}\toprule
+        & \multicolumn{2}{c}{Sparseness} & \phantom{abc} & \multicolumn{3}{c}{Running time} \\
+        \cmidrule{2-3} \cmidrule{5-7} 
+                & Greedy  & Blind greedy && Brute-force & Blind greedy & Ratio \\ \midrule
+$\eps = 0.2$    &   $0.34$  &  $0.81$    &&  $185\,863$   & $133\,194$    & $0.72$   \\
+$\eps = 0.3$    &   $0.20$  &  $0.69$    &&  $185\,863$   & $105\,723$    & $0.56$   \\
+$\eps = 0.4$    &   $0.13$  &  $0.58$    &&  $185\,863$   & $86\,283$    & $0.46$   \\
+$\eps = 0.5$    &   $0.09$  &  $0.50$    &&  $185\,863$   & $72\,447$    & $0.38$   \\
+$\eps = 0.8$    &   $0.05$  &  $0.35$    &&  $185\,863$   & $48\,870$    & $0.26$   \\
+$\eps = 1.0$    &   $0.04$  &  $0.30$    &&  $185\,863$   & $40\,955$    & $0.22$   \\
+\bottomrule
+\end{tabular}
+    \caption{Results of \bgrdy algorithm on the dataset of 200 images
+    with Earth Mover's Distance on \textit{Lab} histograms, time in seconds.}
 \label{tbl:emd_gtsrb}
 \end{table}
 
@@ -706,22 +769,23 @@ linear growth) for larger values of $n$.
 
 
 For experiments with images, we used the German traffic sign
-dataset \cite{gtsrb} and the code for computing the Earth Mover distance
+dataset GTSRB \cite{gtsrb} and the code for computing the Earth Mover's distance
 by Doran \cite{doran_pyemd}.
 We randomly selected 250 images from the benchmark.
-The first two columns of \cref{tbl:emd_gtsrb}
-compare the sparseness of \bgrdy and greedy spanners.
+The results of the experiment are summarized in \cref{tbl:emd_gtsrb}.
+The first two columns compare the sparseness of \bgrdy and greedy spanners.
 For smaller values of $\eps$,
 the \bgrdy spanner contains approximately 3 times more
 edges than the greedy spanner, so the ratio is roughly
 the same as for persistence diagrams.
 The last 3 columns show the advantage
 of \bgrdy in terms of the running time.
-For $10 \%$ approximation, we can reduce
+If a $1.5$ approximation is acceptable,
+then the \bgrdy algorithm speeds up
+the computation by a factor of more than $5$,
+and even for a $10 \%$ approximation, it reduces
 the running time by more than a factor of $2$,
 saving $98$ hours of computation time.
-For $20 \%$ approximation,
-we speed up the computations by a factor of 3.
 
 
 
@@ -1329,34 +1393,7 @@ Since $p_1,\ldots,p_n$ decomposes into $O(\log n)$ such sequences in expectation
 
 
 \section{Additional Definitions}
-\myparagraph{Well-Separated Pair Decomposition}
 \label{sec:appendix_background}
-Given $t > 1$, two disjoint subsets $A, B$ of a metric space $(\metricspace, \dist)$ are called $t$-\textit{well-separated},
-if 
-\[
-\forall a \in A \,\, \forall b \in B \,\, \dist(a, b) \geq t \max(\diam(A), \diam(B))
-\]
-A well-separated pair decomposition (WSPD) is a set of unordered pairs of sets $\{ \{A_1, B_1 \}, 
-\dots, \{A_s, B_s\} \}$ such that each pair $\{A_i, B_i\}$ is $s$-well-separated, and for every unordered pair $\{a, b\}$ 
-of distinct points of $\metricspace$ there exists a unique $j$ such that $a \in A_j$ and $b \in B_j$.
-The notion of WSPD was introduced by Callahan and Kosaraju \cite{cal-kos-wspd} for Euclidean spaces.
-Har-Peled and Mendel \cite{hm-fast} 
-introduced the notion of net-trees and
-generalized the results of \cite{cal-kos-wspd} for WSPD, proving the following:
-\begin{enumerate}
-    \item A net-tree for a metric space with $n$ points can be constructed in $2^{O(\mbox{dim})} n \log n$ expected time.
-    \item If $\{ \{A_1, B_1 \}, 
-\dots, \{A_s, B_s\} \}$ is an $\eps / 16$-WSPD on $\metricspace$, and $a_i \in A_i, b_i \in B_i$ for $i = 1\dots s$
-are chosen arbitrarily, then we get an $\eps$-spanner by taking $s$ edges $(a_i, b_i)$.
-    \item For $\eps \in (0, 1]$,  an $\eps$-WSPD of size $n \eps^{-O({\dim})}$ can be constructed in $2^{O({\dim})} n \log n + n \eps ^{-O({\dim})}$ expected time. The algorithm uses the net-tree structure.
-\end{enumerate}
-The algorithm of constructing a net-tree is complicated and not easy to implement. Beygelzimer
-et al. \cite{cover-trees} introduced the notion of a cover tree, which is a simpler data structure 
-than net-trees. We mention in passing that cover trees can also be used for building
-a spanner (this can be proven with the same methods), and we use cover trees for
-building WSPD spanners in one of our implementations.
-
-
 
 
 \myparagraph{Wasserstein Distance}
@@ -1388,7 +1425,7 @@ root of the minimal cost of a perfect matching on $G$; in other words,
 in order to find $\wsdist{q}$, one must solve an \textit{assignment problem}.
 
 
-\myparagraph{Earth Mover distance}
+\myparagraph{Earth Mover's distance}
 Let $\mu_P$ and $\mu_Q$
 be two probability measures supported
 on finite sets $P = \{p_1, \dots, p_n \}$
@@ -1404,7 +1441,7 @@ if it satisfies the following three conditions:
 %By definition, the \textit{cost} of transportation plan $C$
 Let $\dist(\cdot, \cdot)$ denote the Euclidean
 distance in plane.
-The earth mover distance between $\mu_P$ and $\mu_Q$
+The Earth Mover's distance between $\mu_P$ and $\mu_Q$
 is defined as
 \[
     \inf_C \sum_{i, j} c_{i, j} \dist(p_i, q_j),
@@ -1412,7 +1449,7 @@ is defined as
 where $\inf$ is taken over all transportation
 plans $C$. Intuitively, $c_{i,j}$ is the
 mass concentrated at the point $p_i$ that
-is sent to the point $q_j$, and the earth mover
+is sent to the point $q_j$, and the Earth Mover's
 distance is the smallest total amount of work
 needed to transform the measure $\mu_P$
 into the measure $\mu_Q$.
@@ -1425,8 +1462,8 @@ Thus we can interpret $I_i$
 as a probability measure supported on a rectangle
 that has one vertex at the origin and
 fully lies in the positive quadrant $\{ (x, y) \| x \geq 0, y \geq 0 \}$.
-The earth mover distance between images $I_1$ and $I_2$
-is, by definition, the earth mover distance between
+The Earth Mover's distance between images $I_1$ and $I_2$
+is, by definition, the Earth Mover's distance between
 these probability measures.
 
 
