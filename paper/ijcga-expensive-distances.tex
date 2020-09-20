@@ -322,8 +322,8 @@ triangle inequality.}
 \label{fig:1st_example}
 \end{figure}
 
-We propose several heuristics of how to explore the metric space to obtain accurate lower and upper bounds
-with a small number of distance computation. Once the ratio of upper and lower bound is at most $(1+\eps)$
+We propose several heuristics to explore the metric space to obtain accurate lower and upper bounds
+with a small number of distance computations. Once the ratio of upper and lower bound is at most $(1+\eps)$
 for each point pair, the set of all computed distances forms the spanner.
 The experimentally most successful exploration strategy that we found is to
 repeatedly query the distance between a pair with the worst ratio of upper and lower bound.
@@ -399,7 +399,7 @@ generalized the results of \cite{cal-kos-wspd} for WSPD, proving the following:
 are chosen arbitrarily, then we get an $\eps$-spanner by taking $s$ edges $(a_i, b_i)$.
     \item For $\eps \in (0, 1]$,  an $\eps$-WSPD of size $n \eps^{-O({\dim})}$ can be constructed in $2^{O({\dim})} n \log n + n \eps ^{-O({\dim})}$ expected time. The algorithm uses the net-tree structure.
 \end{enumerate}
-The algorithm of constructing a net-tree is complicated and not easy to implement. Beygelzimer
+The algorithm for constructing a net-tree is complicated and not easy to implement. Beygelzimer
 et al. \cite{cover-trees} introduced the notion of a cover tree, which is a simpler data structure 
 than net-trees. We mention in passing that cover trees can also be used for building
 a spanner (this can be proven with the same methods), and we use cover trees for
@@ -443,7 +443,7 @@ performance.
 
 On the other hand, spanner constructions based on Well-Separated Pair Decomposition~\cite{cal-kos-wspd,hm-fast} only compute
 $O(n\log n+n \eps^{-d})$ distances 
-to construct a \espanner in doubling dimension $d$.
+to construct a {\espanner} in doubling dimension $d$.
 The spanner size is $O(n\eps^{-d})$. Assuming $\eps$ and $d$ again as constants,
 this construction yields a $O(n)$-size spanner using only $O(n\log n)$ distance
 computations. However, the algorithm is significantly more involved.
@@ -452,7 +452,7 @@ computations. However, the algorithm is significantly more involved.
 \label{sec:blind_spanners}
 %
 We introduce a new framework for constructing spanners
-which we call \emph{blind spanners}: the idea is to maintain,
+that we call \emph{blind spanners}: the idea is to maintain,
 for every pair of points $(p_i,p_j)$,
 a lower bound $a_{ij}$ and an upper bound $b_{ij}$ for $\dist(p_i,p_j)$,
 initially set to $0$ and $\infty$, respectively. While there exists some pair for which $\frac{b_{ij}}{a_{ij}}>(1+\eps)$,
@@ -593,7 +593,7 @@ We refer to the former option as \bqsgrdy and to the latter one as \bqsshaker.
 
 We performed three types of experiments: on points sampled from a low-dimensional Euclidean
 space, on images with Earth Mover's distance, and on persistence diagrams
-with $q$-Wasserstein distance $\wsdist{q}$.\footnote{See Section~\ref{sec:appendix_background} for the definition of $\wsdist{q}$.}
+with $q$-Wasserstein distance $\wsdist{q}$.\footnote{See \ref{sec:appendix_background} for the definition of $\wsdist{q}$.}
 Clearly, our model is not meaningful in Euclidean spaces because
 distance computations are cheap.
 However, in this case we can easily check the performance
@@ -722,7 +722,7 @@ While it would seem plausible that access to approximate value of the distance
 could be exploited in the spanner construction,
 we could not find a working heuristic; \bqsgrdy and \bqsshaker produce extremely
 dense spanners. More data from experiments in $\RR^n$ can be found in
-Section~\ref{sec:spanners_euclidean_addendum}.
+\ref{sec:spanners_euclidean_addendum}.
 
 \begin{table}\centering
     \ra{1.2}
@@ -931,8 +931,8 @@ the computation by a factor of almost $5$.
 
 Alternatively, we also experimented with the Earth Mover’s distance on
 gray value images by considering each image as a distribution on pixels.
-For this (non-standard) variant, we obtain even larger speed-ups~-- see
-Section~\ref{sec:spanners_euclidean_addendum} for details.
+For this (non-standard) variant, we obtain even larger speed-ups~--- see
+\ref{sec:spanners_euclidean_addendum} for details.
 
 
 \section{Approximate nearest neighbors}
@@ -1019,7 +1019,7 @@ from triangle inequality.
     algorithm computes $O(\log n)$ distances $\dist(p_i, q)$ in expectation.
 \end{theorem}
 
-The full proof is given in Section~\ref{sec:proof_ann},
+The full proof is given in \ref{sec:proof_ann},
 we summarize the main ideas:
 first, we notice that points ``far away'' from the current candidate $c$ 
 can be disregarded in the algorithm. More precisely, if $p_i$
@@ -1047,7 +1047,7 @@ and the bound follows.
 
 The proof strategy fails for $\eps=0$ because the $\eps$-ball
 around $p_j$ as described above degenerates, and the packing argument fails.
-Indeed, as the example in Figure~\ref{fig:exact_bad_example} (in Section~\ref{sec:proof_ann}) 
+Indeed, as the example in Figure~\ref{fig:exact_bad_example} (in \ref{sec:proof_ann}) 
 shows, there are point sets where the expected number
 of distance computations for exact nearest neighbor is linear.
 
@@ -1181,8 +1181,8 @@ experimental evaluation on worst-case examples do not show such a quadratic
 behavior. Therefore, we postpone the theoretical analysis of the spanner construction
 to an extended version of this article.
 
-The existence of a $2$-approximation algorithm did not help us to significantly
-reduce the number of exact distance computations, although it seems obvious
+The existence of a $2$-approximation algorithm did not help in significantly
+reducing the number of exact distance computations, although it seems obvious
 that knowing the all approximate distances is useful.
 We pose the question what heuristic could make more use of this feature.
 
@@ -1555,7 +1555,7 @@ and we need to modify it slightly.
 \begin{proof} (of Theorem~\ref{thm:ann_bound})
 %
 In the sequence $p_1,\ldots,p_n$, let $p_k$ be a point 
-such that $r_i<r_k$ for all $1\leq i\leq k-1$. We call an element
+such that $r_i > r_k$ for all $1\leq i\leq k-1$. We call an element
 of this form a \emph{minimum} of the sequence. 
 A standard backwards analysis argument~\cite{seidel-backwards} shows that the probability
 of $p_k$ being a minimum is at most $1/k$, so that the number of minima
@@ -1591,20 +1591,22 @@ Since $p_1,\ldots,p_n$ decomposes into $O(\log n)$ such sequences in expectation
 
 \myparagraph{Wasserstein Distance}
 Let $\diag$ denote the line in the plane with the equation $y = x$; we call it the diagonal.
-A persistence diagram is a finite multiset of points $(x, y)$ with $x > y$
-$\Delta$ and all points of $\Delta$ with infinite cardinality.
+A \textit{persistence diagram} is a
+multiset that consists of all points of $\diag$ with infinite multiplicity
+and finitely many points $(x, y)$ with $y > x$, each with finite multiplicity.
 The points with $y > x$ are called \textit{off-diagonal} points,
-and points on $\Delta$ are called \textit{diagonal} points.
-The \emph{$q$-Wasserstein distance} is defined as
+and the points on $\diag$ are called \textit{diagonal} points.
+Let $X$ and $Y$ be two persistence diagrams.
+The \emph{$q$-Wasserstein distance} between $X$ and $Y$ is defined as
 \[
     \wsdist{q}(X,Y) = \left[ \inf_{\eta:X\rightarrow Y} \sum_{x\in X} \|x-\eta(x)\|_\infty^q\right]^{1/q},
 \]
 where $\eta$ ranges over all bijections between $X$ and $Y$.
 Equivalent definition, which is better suited for actual computations,
-is as follows. Let $\pi\colon \RR^2 \to \Delta$ be defined
+is as follows. Let $\pi\colon \RR^2 \to \diag$ be defined
 as $(x,y) \mapsto (\frac{x+y}{2}, \frac{x+y}{2})$; we refer to $\pi$ as \textit{diagonal
-projection}. Let $\tX$ be the set $(X\setminus \Delta) \cup \pi(Y \setminus \Delta)$
-and $\tY$ be the set $(Y\setminus \Delta) \cup \pi(X \setminus \Delta)$; in plain words,
+projection}. Let $\tX$ be the set $(X\setminus \diag) \cup \pi(Y \setminus \diag)$
+and $\tY$ be the set $(Y\setminus \diag) \cup \pi(X \setminus \diag)$; in plain words,
 to obtain $\tX$, we add to the off-diagonal points of $X$
 the diagonal projections of the off-diagonal points of $Y$,
 and perform the same operation to obtain $\tY$. Notice that $\tX$ and $\tY$
